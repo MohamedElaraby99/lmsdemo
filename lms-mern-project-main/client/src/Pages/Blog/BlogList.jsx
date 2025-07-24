@@ -84,7 +84,9 @@ export default function BlogList() {
                   {/* Blog Image */}
                   <div className="h-48 overflow-hidden">
                     <img
-                      src={blog.image?.secure_url || placeholderImages.blog}
+                                src={blog.image?.secure_url?.startsWith('/uploads/') 
+            ? `http://localhost:5000${blog.image.secure_url}` 
+            : blog.image?.secure_url || placeholderImages.blog}
                       alt={blog.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {

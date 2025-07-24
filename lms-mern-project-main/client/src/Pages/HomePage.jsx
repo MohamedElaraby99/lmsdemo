@@ -76,7 +76,9 @@ export default function HomePage() {
                 <div key={blog._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                   <div className="h-48 overflow-hidden">
                     <img
-                      src={blog.image?.secure_url || placeholderImages.blog}
+                                src={blog.image?.secure_url?.startsWith('/uploads/') 
+            ? `http://localhost:5000${blog.image.secure_url}` 
+            : blog.image?.secure_url || placeholderImages.blog}
                       alt={blog.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {

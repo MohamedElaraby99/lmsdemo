@@ -20,8 +20,32 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan('dev'));
-app.use(cors({ origin: [process.env.CLIENT_URL], credentials: true }));
+app.use(cors({ 
+  origin: [process.env.CLIENT_URL, 'http://localhost:5173', 'http://localhost:5000'], 
+  credentials: true 
+}));
 
+// Serve uploaded files
+app.use('/uploads', express.static('uploads', {
+  setHeaders: (res, path) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+  }
+}));
+
+// Test route to check uploads
+app.get('/test-uploads', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const uploadsDir = path.join(__dirname, 'uploads');
+  const files = fs.readdirSync(uploadsDir);
+  res.json({ 
+    message: 'Uploads directory accessible',
+    files: files,
+    uploadsPath: uploadsDir
+  });
+});
 
 app.use('/api/v1/user', userRoutes); 
 app.use('/api/v1/courses', courseRoutes); 

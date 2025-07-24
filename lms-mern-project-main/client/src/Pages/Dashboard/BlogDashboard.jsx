@@ -349,11 +349,21 @@ export default function BlogDashboard() {
                         <td className="px-6 py-4">
                           <div className="flex items-center">
                             <img
-                              src={blog.image?.secure_url || placeholderImages.blogSmall}
+                              src={(() => {
+                                const imageUrl = blog.image?.secure_url?.startsWith('/uploads/') 
+                                  ? `http://localhost:5000${blog.image.secure_url}` 
+                                  : blog.image?.secure_url || placeholderImages.blogSmall;
+                                console.log('Generated image URL:', imageUrl);
+                                return imageUrl;
+                              })()}
                               alt={blog.title}
                               className="h-10 w-10 rounded-lg object-cover mr-3"
                               onError={(e) => {
+                                console.log('Image failed to load:', blog.image?.secure_url);
                                 e.target.src = placeholderImages.blogSmall;
+                              }}
+                              onLoad={() => {
+                                console.log('Image loaded successfully:', blog.image?.secure_url);
                               }}
                             />
                             <div>

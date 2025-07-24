@@ -139,11 +139,11 @@ export const createBlog = async (req, res, next) => {
                 if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
                     process.env.CLOUDINARY_API_KEY === 'placeholder' || 
                     process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-                    // Skip Cloudinary upload if using placeholder credentials
-                    console.log('Cloudinary not configured, using placeholder image');
+                    // Use local file path when Cloudinary is not configured
+                    console.log('Cloudinary not configured, using local file path');
                     blogData.image = {
-                        public_id: 'placeholder',
-                        secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMjAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIEJsb2cgSW1hZ2UKICA8L3RleHQ+Cjwvc3ZnPgo='
+                        public_id: req.file.filename,
+                        secure_url: `/uploads/${req.file.filename}`
                     };
                 } else {
                     const result = await cloudinary.v2.uploader.upload(req.file.path, {
@@ -221,9 +221,9 @@ export const updateBlog = async (req, res, next) => {
                 if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
                     process.env.CLOUDINARY_API_KEY === 'placeholder' || 
                     process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-                    console.log('Cloudinary not configured, using placeholder image');
-                    blog.image.public_id = 'placeholder';
-                    blog.image.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMjAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIEJsb2cgSW1hZ2UKICA8L3RleHQ+Cjwvc3ZnPgo=';
+                    console.log('Cloudinary not configured, using local file path');
+                    blog.image.public_id = req.file.filename;
+                    blog.image.secure_url = `/uploads/${req.file.filename}`;
                 } else {
                     // Delete old image if exists
                     if (blog.image.public_id && blog.image.public_id !== 'placeholder') {
@@ -243,15 +243,13 @@ export const updateBlog = async (req, res, next) => {
                     }
                 }
                 
-                // Remove file from server
-                if (fs.existsSync(`uploads/${req.file.filename}`)) {
-                    fs.rmSync(`uploads/${req.file.filename}`);
-                }
+                // Keep file on server for local serving (since Cloudinary is not configured)
+                console.log('File kept on server:', `uploads/${req.file.filename}`);
             } catch (e) {
                 console.log('Image upload error:', e.message);
-                // Set placeholder image if upload fails
-                blog.image.public_id = 'placeholder';
-                blog.image.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMjAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIEJsb2cgSW1hZ2UKICA8L3RleHQ+Cjwvc3ZnPgo=';
+                // Set local file path if upload fails
+                blog.image.public_id = req.file.filename;
+                blog.image.secure_url = `/uploads/${req.file.filename}`;
             }
         }
         
