@@ -1,6 +1,6 @@
 import React from "react";
-
 import { Routes, Route } from "react-router-dom";
+import useScrollToTop from "./Helpers/useScrollToTop";
 import HomePage from "./Pages/HomePage";
 import AboutUs from "./Pages/About";
 import NotFound from "./Pages/NotFound";
@@ -36,6 +36,9 @@ import AddLecture from "./Pages/Dashboard/AddLecture";
 import AdminDashboard from "./Pages/Dashboard/AdminDashboard";
 
 function App() {
+  // Auto scroll to top on route change
+  useScrollToTop();
+
   return (
     <>
       <Routes>

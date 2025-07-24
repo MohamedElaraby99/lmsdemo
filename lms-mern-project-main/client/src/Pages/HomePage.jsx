@@ -26,7 +26,8 @@ import {
   FaAward,
   FaClock,
   FaCheckCircle,
-  FaQuestionCircle
+  FaQuestionCircle,
+  FaArrowUp
 } from "react-icons/fa";
 import { placeholderImages } from "../utils/placeholderImages";
 import FAQAccordion from "../Components/FAQAccordion";
@@ -40,6 +41,7 @@ export default function HomePage() {
   const { blogs } = useSelector((state) => state.blog);
   const { featuredSubjects } = useSelector((state) => state.subject);
   const [isVisible, setIsVisible] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     // Fetch latest blogs for homepage
@@ -49,7 +51,23 @@ export default function HomePage() {
     
     // Trigger animations
     setIsVisible(true);
+
+    // Add scroll event listener
+    const handleScroll = () => {
+      const scrolled = window.scrollY;
+      setShowScrollTop(scrolled > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [dispatch]);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -478,6 +496,17 @@ export default function HomePage() {
           <FAQAccordion />
         </div>
       </section>
+
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 group"
+          aria-label="Scroll to top"
+        >
+          <FaArrowUp className="w-5 h-5 group-hover:animate-bounce" />
+        </button>
+      )}
     </Layout>
   );
 }
