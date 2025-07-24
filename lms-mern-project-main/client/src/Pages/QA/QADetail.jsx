@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, Link } from "react-router-dom";
-import { getQAById, upvoteQA, downvoteQA } from "../../Redux/Slices/QASlice";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { getQAById, upvoteQA, downvoteQA, answerQuestion, updateQA, deleteQA } from "../../Redux/Slices/QASlice";
 import Layout from "../../Layout/Layout";
 import { 
   FaThumbsUp, 
@@ -18,9 +18,13 @@ import {
 
 export default function QADetail() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { id } = useParams();
   const { currentQA, loading } = useSelector((state) => state.qa);
-  const { role } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user && user.role === "ADMIN";
+  const [showAnswerForm, setShowAnswerForm] = useState(false);
+  const [answer, setAnswer] = useState("");
 
   useEffect(() => {
     if (id) {
@@ -81,6 +85,31 @@ export default function QADetail() {
     } else {
       navigator.clipboard.writeText(window.location.href);
       // You can add a toast notification here
+    }
+  };
+
+  const handleAnswerSubmit = async (e) => {
+    e.preventDefault();
+    if (!answer.trim()) return;
+    
+    try {
+      await dispatch(answerQuestion({ id, answer }));
+      setAnswer("");
+      setShowAnswerForm(false);
+    } catch (error) {
+      console.error('Answer submission error:', error);
+    }
+  };
+
+  const handleDeleteQA = async () => {
+    if (window.confirm('Are you sure you want to delete this Q&A?')) {
+      try {
+        await dispatch(deleteQA(id));
+        // Redirect to Q&A list
+        navigate('/qa');
+      } catch (error) {
+        console.error('Delete error:', error);
+      }
     }
   };
 
@@ -180,9 +209,31 @@ export default function QADetail() {
 
             {/* Question */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">
-                {currentQA.question}
-              </h1>
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+                  {currentQA.question}
+                </h1>
+                
+                {/* Admin Actions */}
+                {isAdmin && (
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/qa/edit/${id}`}
+                      className="flex items-center gap-1 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm transition-colors"
+                    >
+                      <FaEdit />
+                      Edit
+                    </Link>
+                    <button
+                      onClick={handleDeleteQA}
+                      className="flex items-center gap-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-colors"
+                    >
+                      <FaTrash />
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
               
               {/* Meta Info */}
               <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -215,14 +266,70 @@ export default function QADetail() {
 
             {/* Answer */}
             <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-                Answer
-              </h2>
-              <div className="prose prose-lg dark:prose-invert max-w-none">
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {currentQA.answer}
-                </p>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+                  Answer
+                </h2>
+                
+                {/* Admin Answer Button */}
+                {isAdmin && !currentQA.answer && (
+                  <button
+                    onClick={() => setShowAnswerForm(true)}
+                    className="flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+                  >
+                    <FaEdit />
+                    Provide Answer
+                  </button>
+                )}
               </div>
+              
+              {currentQA.answer ? (
+                <div className="prose prose-lg dark:prose-invert max-w-none">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {currentQA.answer}
+                  </p>
+                </div>
+              ) : isAdmin && (
+                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                  <p className="text-yellow-800 dark:text-yellow-200">
+                    This question is waiting for an admin to provide an answer.
+                  </p>
+                </div>
+              )}
+              
+              {/* Admin Answer Form */}
+              {isAdmin && showAnswerForm && (
+                <div className="mt-6 p-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                    Provide Answer
+                  </h3>
+                  <form onSubmit={handleAnswerSubmit}>
+                    <textarea
+                      value={answer}
+                      onChange={(e) => setAnswer(e.target.value)}
+                      placeholder="Write your answer here..."
+                      className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
+                      rows="6"
+                      required
+                    />
+                    <div className="flex items-center gap-3 mt-4">
+                      <button
+                        type="submit"
+                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                      >
+                        Submit Answer
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowAnswerForm(false)}
+                        className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
 
             {/* Voting Section */}

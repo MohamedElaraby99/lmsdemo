@@ -25,13 +25,14 @@ import {
   FaBookOpen,
   FaAward,
   FaClock,
-  FaCheckCircle
+  FaCheckCircle,
+  FaQuestionCircle
 } from "react-icons/fa";
 import { placeholderImages } from "../utils/placeholderImages";
 import FAQAccordion from "../Components/FAQAccordion";
 import SubjectCard from "../Components/SubjectCard";
-import TestimonialSection from "../Components/TestimonialSection";
-import PricingSection from "../Components/PricingSection";
+
+
 import NewsletterSection from "../Components/NewsletterSection";
 
 export default function HomePage() {
@@ -385,15 +386,80 @@ export default function HomePage() {
                 Browse Courses
               </button>
             </Link>
+            <Link to="/qa">
+              <button className="px-8 py-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2">
+                <FaQuestionCircle className="w-5 h-5" />
+                Ask a Question
+              </button>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <TestimonialSection />
 
-      {/* Pricing Section */}
-      <PricingSection />
+
+
+
+      {/* Q&A Section */}
+      <section className="py-20 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              Have Questions? Get Answers!
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Join our community of learners and experts. Ask questions, share knowledge, and learn together.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaQuestionCircle className="text-3xl text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Ask Questions
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Get help from our community of experts and fellow learners
+              </p>
+            </div>
+
+            <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaUsers className="text-3xl text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Community Support
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Connect with thousands of learners worldwide
+              </p>
+            </div>
+
+            <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
+              <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaStar className="text-3xl text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Expert Answers
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Get answers from industry professionals and instructors
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Link to="/qa">
+              <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2 mx-auto">
+                <FaQuestionCircle className="w-5 h-5" />
+                Ask a Question
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Newsletter Section */}
       <NewsletterSection />

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllQAs, upvoteQA, downvoteQA } from "../../Redux/Slices/QASlice";
+import { getAllQAs, upvoteQA, downvoteQA, deleteQA, answerQuestion } from "../../Redux/Slices/QASlice";
 import Layout from "../../Layout/Layout";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   FaThumbsUp, 
   FaThumbsDown, 
@@ -13,26 +13,36 @@ import {
   FaFilter,
   FaPlus,
   FaTag,
-  FaClock
+  FaClock,
+  FaEdit,
+  FaTrash,
+  FaReply,
+  FaCheck
 } from "react-icons/fa";
 
 export default function QAList() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { qas, loading, totalPages, currentPage, total, categories } = useSelector((state) => state.qa);
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user && user.role === "ADMIN";
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
   const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
+    // For normal users, only show answered questions
+    const statusFilter = isAdmin ? status : (status || "answered");
+    
     dispatch(getAllQAs({ 
       page: currentPage, 
       category, 
       search, 
-      status,
+      status: statusFilter,
       sortBy 
     }));
-  }, [currentPage, category, search, status, sortBy]);
+  }, [currentPage, category, search, status, sortBy, isAdmin]);
 
   const handleVote = async (qaId, voteType) => {
     try {
@@ -44,6 +54,34 @@ export default function QAList() {
     } catch (error) {
       console.error('Vote error:', error);
     }
+  };
+
+  const handleEditQA = (qaId) => {
+    // Navigate to edit page
+    navigate(`/qa/edit/${qaId}`);
+  };
+
+  const handleDeleteQA = async (qaId) => {
+    if (window.confirm('Are you sure you want to delete this Q&A?')) {
+      try {
+        await dispatch(deleteQA(qaId));
+        // Refresh the Q&A list after deletion
+        dispatch(getAllQAs({ 
+          page: currentPage, 
+          category, 
+          search, 
+          status,
+          sortBy 
+        }));
+      } catch (error) {
+        console.error('Delete error:', error);
+      }
+    }
+  };
+
+  const handleAnswerQA = (qaId) => {
+    // Navigate to answer page or open answer modal
+    navigate(`/qa/${qaId}#answer`);
   };
 
   const formatDate = (dateString) => {
@@ -82,18 +120,23 @@ export default function QAList() {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
-              Q&A Community
+              {isAdmin ? "Q&A Management" : "Q&A Community"}
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-              Ask questions, share knowledge, and learn from our community
+              {isAdmin 
+                ? "Manage questions, provide answers, and moderate the community"
+                : "Browse questions and learn from our community"
+              }
             </p>
-            <Link
-              to="/qa/create"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
-            >
-              <FaPlus />
-              Ask a Question
-            </Link>
+            {!isAdmin && (
+              <Link
+                to="/qa/create"
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
+              >
+                <FaPlus />
+                Ask a Question
+              </Link>
+            )}
           </div>
 
           {/* Search and Filters */}
@@ -131,7 +174,7 @@ export default function QAList() {
               >
                 <option value="">All Status</option>
                 <option value="answered">Answered</option>
-                <option value="pending">Pending</option>
+                {isAdmin && <option value="pending">Pending</option>}
                 <option value="featured">Featured</option>
               </select>
 
@@ -150,7 +193,7 @@ export default function QAList() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className={`grid gap-4 mb-8 ${isAdmin ? 'grid-cols-1 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{total}</div>
               <div className="text-sm text-blue-600 dark:text-blue-400">Total Q&As</div>
@@ -161,12 +204,14 @@ export default function QAList() {
               </div>
               <div className="text-sm text-green-600 dark:text-green-400">Answered</div>
             </div>
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                {qas.filter(qa => qa.status === 'pending').length}
+            {isAdmin && (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                  {qas.filter(qa => qa.status === 'pending').length}
+                </div>
+                <div className="text-sm text-yellow-600 dark:text-yellow-400">Pending</div>
               </div>
-              <div className="text-sm text-yellow-600 dark:text-yellow-400">Pending</div>
-            </div>
+            )}
             <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
               <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {qas.filter(qa => qa.status === 'featured').length}
@@ -209,7 +254,7 @@ export default function QAList() {
                         <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
                           {qa.answer}
                         </p>
-                      ) : (
+                      ) : isAdmin && (
                         <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                           <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
                             <FaClock className="text-sm" />
@@ -250,22 +295,57 @@ export default function QAList() {
                           </span>
                         </div>
 
-                        {/* Voting */}
+                        {/* Voting and Admin Actions */}
                         <div className="flex items-center gap-4">
-                          <button
-                            onClick={() => handleVote(qa._id, 'upvote')}
-                            className="flex items-center gap-1 text-green-600 hover:text-green-700 transition-colors"
-                          >
-                            <FaThumbsUp />
-                            <span>{qa.upvotes}</span>
-                          </button>
-                          <button
-                            onClick={() => handleVote(qa._id, 'downvote')}
-                            className="flex items-center gap-1 text-red-600 hover:text-red-700 transition-colors"
-                          >
-                            <FaThumbsDown />
-                            <span>{qa.downvotes}</span>
-                          </button>
+                          {/* Voting - Only for non-admin users */}
+                          {!isAdmin && (
+                            <>
+                              <button
+                                onClick={() => handleVote(qa._id, 'upvote')}
+                                className="flex items-center gap-1 text-green-600 hover:text-green-700 transition-colors"
+                              >
+                                <FaThumbsUp />
+                                <span>{qa.upvotes}</span>
+                              </button>
+                              <button
+                                onClick={() => handleVote(qa._id, 'downvote')}
+                                className="flex items-center gap-1 text-red-600 hover:text-red-700 transition-colors"
+                              >
+                                <FaThumbsDown />
+                                <span>{qa.downvotes}</span>
+                              </button>
+                            </>
+                          )}
+
+                          {/* Admin Actions */}
+                          {isAdmin && (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleAnswerQA(qa._id)}
+                                className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+                                title="Answer Question"
+                              >
+                                <FaReply />
+                                Answer
+                              </button>
+                              <button
+                                onClick={() => handleEditQA(qa._id)}
+                                className="flex items-center gap-1 px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm transition-colors"
+                                title="Edit Question"
+                              >
+                                <FaEdit />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteQA(qa._id)}
+                                className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-colors"
+                                title="Delete Question"
+                              >
+                                <FaTrash />
+                                Delete
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -282,10 +362,12 @@ export default function QAList() {
               <p className="text-gray-600 dark:text-gray-300 mb-6">
                 {search || category || status 
                   ? "Try adjusting your search criteria" 
-                  : "Be the first to ask a question!"
+                  : isAdmin 
+                    ? "No questions have been asked yet."
+                    : "Be the first to ask a question!"
                 }
               </p>
-              {!search && !category && !status && (
+              {!search && !category && !status && !isAdmin && (
                 <Link
                   to="/qa/create"
                   className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"

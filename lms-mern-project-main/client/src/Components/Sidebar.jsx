@@ -150,6 +150,18 @@ export default function Sidebar({ hideBar = false }) {
               </li>
             )}
 
+            {role === "ADMIN" && (
+              <li>
+                <Link to="/admin/qa-dashboard" className="flex gap-4 items-center">
+                  <FaQuestionCircle
+                    size={18}
+                    className="text-gray-500 dark:text-slate-100"
+                  />
+                  Q&A Management
+                </Link>
+              </li>
+            )}
+
             <li>
               <Link to="/courses" className="flex gap-4 items-center">
                 <FaList
