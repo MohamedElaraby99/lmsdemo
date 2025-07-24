@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createNewCourse } from "../../Redux/Slices/CourseSlice";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { 
   FaPlus, 
   FaTrash, 
   FaEdit, 
+  FaEye, 
   FaBook, 
   FaPlay, 
   FaGripVertical,
@@ -20,30 +19,23 @@ import Layout from "../../Layout/Layout";
 import InputBox from "../../Components/InputBox/InputBox";
 import TextArea from "../../Components/InputBox/TextArea";
 
-export default function CreateCourse() {
+export default function CourseStructure() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { data: user } = useSelector((state) => state.auth);
-
-  const [isCreatingCourse, setIsCreatingCourse] = useState(false);
-  const [activeTab, setActiveTab] = useState("course-info");
-  const [expandedUnits, setExpandedUnits] = useState(new Set());
-  const [editingUnit, setEditingUnit] = useState(null);
-  const [editingLesson, setEditingLesson] = useState(null);
-
+  
   const [courseData, setCourseData] = useState({
     title: "",
     description: "",
     category: "",
     createdBy: user?.fullName || "Admin",
-    thumbnail: null,
-    previewImage: "",
-    price: 0,
-    currency: "EGP",
-    isPaid: false,
     units: [],
     directLessons: []
   });
+
+  const [activeTab, setActiveTab] = useState("course-info");
+  const [expandedUnits, setExpandedUnits] = useState(new Set());
+  const [editingUnit, setEditingUnit] = useState(null);
+  const [editingLesson, setEditingLesson] = useState(null);
 
   // Course Info Handlers
   const handleCourseInput = (e) => {
@@ -53,22 +45,6 @@ export default function CreateCourse() {
       [name]: value
     }));
   };
-
-  function handleImageUpload(e) {
-    e.preventDefault();
-    const uploadImage = e.target.files[0];
-    if (uploadImage) {
-      const fileReader = new FileReader();
-      fileReader.readAsDataURL(uploadImage);
-      fileReader.addEventListener("load", function () {
-        setCourseData(prev => ({
-          ...prev,
-          previewImage: this.result,
-          thumbnail: uploadImage,
-        }));
-      });
-    }
-  }
 
   // Unit Handlers
   const addUnit = () => {
@@ -255,7 +231,7 @@ export default function CreateCourse() {
     }
   };
 
-  async function onFormSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!courseData.title || !courseData.description) {
@@ -268,28 +244,9 @@ export default function CreateCourse() {
     const totalDirectLessons = courseData.directLessons.length;
     const totalLessons = totalUnitLessons + totalDirectLessons;
 
-    if (totalLessons === 0) {
-      toast.error("Please add at least one lesson to your course!");
-      return;
-    }
-
-    setIsCreatingCourse(true);
-
-    const formData = new FormData();
-    formData.append("title", courseData.title);
-    formData.append("description", courseData.description);
-    formData.append("category", courseData.category);
-    formData.append("createdBy", courseData.createdBy);
-    if (courseData.thumbnail) {
-      formData.append("thumbnail", courseData.thumbnail);
-    }
-    formData.append("numberOfLectures", totalLessons);
-    formData.append("price", courseData.price);
-    formData.append("currency", courseData.currency);
-    formData.append("isPaid", courseData.isPaid);
-
-    // Add course structure data
-    const courseStructure = {
+    const courseToSubmit = {
+      ...courseData,
+      numberOfLectures: totalLessons,
       units: courseData.units.map(unit => ({
         title: unit.title,
         description: unit.description,
@@ -311,22 +268,17 @@ export default function CreateCourse() {
       }))
     };
 
-    formData.append("courseStructure", JSON.stringify(courseStructure));
-
-    const response = await dispatch(createNewCourse(formData));
-    if (response?.payload?.success) {
-      toast.success("Course created successfully!");
-      navigate("/courses");
-    }
-    setIsCreatingCourse(false);
-  }
+    console.log("Course to submit:", courseToSubmit);
+    toast.success("Course structure saved!");
+    // Here you would dispatch the action to save the course
+  };
 
   return (
     <Layout>
       <section className="py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">
-            Create New Course
+            Course Structure Manager
           </h1>
 
           {/* Navigation Tabs */}
@@ -370,38 +322,6 @@ export default function CreateCourse() {
                 Course Information
               </h2>
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Thumbnail Upload */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Course Thumbnail (Optional)
-                  </label>
-                  <div className="border border-gray-300 rounded-lg">
-                    <label htmlFor="image_uploads" className="cursor-pointer">
-                      {courseData.previewImage ? (
-                        <img
-                          className="w-full h-44 object-cover rounded-lg"
-                          src={courseData.previewImage}
-                          alt="Course thumbnail"
-                        />
-                      ) : (
-                        <div className="w-full h-44 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-lg">
-                          <h1 className="font-bold text-lg text-gray-500">
-                            Upload your course thumbnail
-                          </h1>
-                        </div>
-                      )}
-                    </label>
-                    <input
-                      className="hidden"
-                      type="file"
-                      id="image_uploads"
-                      accept=".jpg, .jpeg, .png"
-                      name="thumbnail"
-                      onChange={handleImageUpload}
-                    />
-                  </div>
-                </div>
-
                 <InputBox
                   label="Course Title *"
                   name="title"
@@ -438,34 +358,6 @@ export default function CreateCourse() {
                   onChange={handleCourseInput}
                   value={courseData.createdBy}
                 />
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <InputBox
-                      label="Price (EGP)"
-                      name="price"
-                      type="number"
-                      placeholder="0"
-                      onChange={handleCourseInput}
-                      value={courseData.price}
-                      min="0"
-                    />
-                  </div>
-                  <div className="flex items-end">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                      <input
-                        type="checkbox"
-                        name="isPaid"
-                        checked={courseData.isPaid}
-                        onChange={(e) => setCourseData(prev => ({
-                          ...prev,
-                          isPaid: e.target.checked
-                        }))}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      Paid Course
-                    </label>
-                  </div>
-                </div>
               </div>
             </div>
           )}
@@ -851,15 +743,14 @@ export default function CreateCourse() {
           {/* Submit Button */}
           <div className="mt-8 flex justify-center">
             <button
-              onClick={onFormSubmit}
-              disabled={isCreatingCourse}
-              className="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors disabled:opacity-50"
+              onClick={handleSubmit}
+              className="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors"
             >
-              {isCreatingCourse ? "Creating Course..." : "Create Course"}
+              Save Course Structure
             </button>
           </div>
         </div>
       </section>
     </Layout>
   );
-}
+} 

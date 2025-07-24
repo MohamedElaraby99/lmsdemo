@@ -1,23 +1,58 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema } from "mongoose";
 
 const paymentSchema = new Schema({
-    razorpay_payment_id: {
-        type: String,
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
-    razorpay_subscription_id: {
-        type: String,
+    course: {
+        type: Schema.Types.ObjectId,
+        ref: 'Course',
         required: true
     },
-    razorpay_signature: {
+    amount: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    currency: {
         type: String,
-        required: true
+        default: 'EGP'
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'completed', 'failed', 'refunded'],
+        default: 'completed'
+    },
+    paymentMethod: {
+        type: String,
+        default: 'course_purchase'
+    },
+    transactionId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    description: {
+        type: String,
+        default: 'Course purchase'
+    },
+    metadata: {
+        courseTitle: String,
+        coursePrice: Number,
+        userEmail: String,
+        userName: String
     }
-},
-    {
-        timestamps: true
-    })
+}, {
+    timestamps: true
+});
 
-const Payment = model("Payments", paymentSchema);
+// Index for better query performance
+paymentSchema.index({ user: 1, course: 1 });
+paymentSchema.index({ status: 1 });
+paymentSchema.index({ createdAt: 1 });
 
-export default Payment
+const Payment = model("Payment", paymentSchema);
+
+export default Payment; 

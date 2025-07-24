@@ -58,17 +58,43 @@ const getLecturesByCourseId = async (req, res, next) => {
 // create course
 const createCourse = async (req, res, next) => {
     try {
-        const { title, description, category, createdBy } = req.body;
+        const { title, description, category, createdBy, numberOfLectures, courseStructure, price, currency, isPaid } = req.body;
 
         if (!title || !description) {
             return next(new AppError('Title and description are mandatory', 400));
+        }
+
+        // Parse course structure if provided
+        let units = [];
+        let directLessons = [];
+        let totalLessons = numberOfLectures || 0;
+
+        if (courseStructure) {
+            try {
+                const structure = JSON.parse(courseStructure);
+                units = structure.units || [];
+                directLessons = structure.directLessons || [];
+                
+                // Recalculate total lessons from structure
+                const totalUnitLessons = units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
+                const totalDirectLessons = directLessons.length;
+                totalLessons = totalUnitLessons + totalDirectLessons;
+            } catch (error) {
+                console.log('Error parsing course structure:', error);
+            }
         }
 
         const course = await courseModel.create({
             title,
             description,
             category: category || 'General',
-            createdBy: createdBy || 'Admin'
+            createdBy: createdBy || 'Admin',
+            units: units,
+            directLessons: directLessons,
+            numberOfLectures: totalLessons,
+            price: price || 0,
+            currency: currency || 'EGP',
+            isPaid: isPaid || false
         })
 
         if (!course) {
@@ -225,7 +251,7 @@ const removeCourse = async (req, res, next) => {
 // add lecture to course by id
 const addLectureToCourseById = async (req, res, next) => {
     try {
-        const { title, description, youtubeUrl } = req.body;
+        const { title, description, youtubeUrl, lessonId, unitId } = req.body;
         const { id } = req.params;
 
         if (!title || !description) {
@@ -291,8 +317,33 @@ const addLectureToCourseById = async (req, res, next) => {
             }
         }
 
-        course.lectures.push(lectureData);
-        course.numberOfLectures = course.lectures.length;
+        // Add lecture to course structure if lessonId is provided
+        if (lessonId) {
+            if (unitId) {
+                // Add to unit lesson
+                const unit = course.units.find(u => u._id.toString() === unitId);
+                if (unit) {
+                    const lesson = unit.lessons.find(l => l._id.toString() === lessonId);
+                    if (lesson) {
+                        lesson.lecture = lectureData.lecture;
+                    }
+                }
+            } else {
+                // Add to direct lesson
+                const lesson = course.directLessons.find(l => l._id.toString() === lessonId);
+                if (lesson) {
+                    lesson.lecture = lectureData.lecture;
+                }
+            }
+        } else {
+            // Fallback to old method - add to lectures array
+            course.lectures.push(lectureData);
+        }
+
+        // Update lecture count
+        const totalUnitLessons = course.units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
+        const totalDirectLessons = course.directLessons.length;
+        course.numberOfLectures = totalUnitLessons + totalDirectLessons;
 
         await course.save();
 
@@ -438,6 +489,44 @@ const updateCourseLecture = async (req, res, next) => {
 };
 
 
+// Simulate course sale for testing
+const simulateCourseSale = async (req, res, next) => {
+    try {
+        const { courseId } = req.params;
+        const { quantity = 1 } = req.body;
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        if (!course.isPaid || course.price <= 0) {
+            return next(new AppError('Course is not a paid course', 400));
+        }
+
+        // Update sales count and revenue
+        course.salesCount = (course.salesCount || 0) + quantity;
+        course.totalRevenue = (course.totalRevenue || 0) + (course.price * quantity);
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Course sale simulated successfully',
+            course: {
+                id: course._id,
+                title: course.title,
+                salesCount: course.salesCount,
+                totalRevenue: course.totalRevenue,
+                currency: course.currency
+            }
+        });
+
+    } catch (e) {
+        return next(new AppError(e.message, 500));
+    }
+};
+
 export {
     getAllCourses,
     getLecturesByCourseId,
@@ -446,5 +535,6 @@ export {
     removeCourse,
     addLectureToCourseById,
     deleteCourseLecture,
-    updateCourseLecture
+    updateCourseLecture,
+    simulateCourseSale
 }

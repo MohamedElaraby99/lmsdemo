@@ -52,43 +52,40 @@ const stats = async (req, res, next) => {
         const totalCourses = allCourses.length;
         const totalLectures = allCourses.reduce((sum, course) => sum + (course.numberOfLectures || 0), 0);
         
-        // Get all payments
-        const allPayments = await paymentModel.find({});
+        // Calculate revenue from actual payment records
+        const allPayments = await paymentModel.find({ status: 'completed' });
         const totalPayments = allPayments.length;
-        const totalRevenue = allPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+        const totalRevenue = allPayments.reduce((sum, payment) => sum + payment.amount, 0);
         
-        // Get monthly sales data for the current year
+        // Calculate monthly sales data for the current year
         const currentYear = new Date().getFullYear();
-        const monthlySales = await paymentModel.aggregate([
-            {
-                $match: {
-                    createdAt: {
-                        $gte: new Date(currentYear, 0, 1),
-                        $lt: new Date(currentYear + 1, 0, 1)
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: { $month: '$createdAt' },
-                    count: { $sum: 1 },
-                    revenue: { $sum: '$amount' }
-                }
-            },
-            { $sort: { '_id': 1 } }
-        ]);
-        
-        // Create monthly sales array (12 months)
         const monthlySalesData = new Array(12).fill(0);
-        monthlySales.forEach(month => {
-            monthlySalesData[month._id - 1] = month.count;
+        
+        // Calculate monthly revenue from actual payments
+        allPayments.forEach(payment => {
+            const paymentYear = payment.createdAt.getFullYear();
+            if (paymentYear === currentYear) {
+                const month = payment.createdAt.getMonth();
+                monthlySalesData[month] += payment.amount;
+            }
         });
         
-        // Get recent activities
-        const recentPayments = await paymentModel.find({})
+        // Recent activities (actual payments)
+        const recentPayments = await paymentModel.find({ status: 'completed' })
+            .populate('user', 'fullName email')
+            .populate('course', 'title price')
             .sort({ createdAt: -1 })
             .limit(5)
-            .populate('user', 'fullName email');
+            .then(payments => payments.map(payment => ({
+                id: payment._id,
+                title: payment.course?.title || 'Unknown Course',
+                amount: payment.amount,
+                currency: payment.currency,
+                userName: payment.user?.fullName || 'Unknown User',
+                userEmail: payment.user?.email || 'Unknown Email',
+                date: payment.createdAt,
+                transactionId: payment.transactionId
+            })));
             
         const recentCourses = await courseModel.find({})
             .sort({ createdAt: -1 })
@@ -96,7 +93,7 @@ const stats = async (req, res, next) => {
  
         res.status(200).json({
             success: true,
-            message: 'Comprehensive stats retrieved successfully',
+            message: 'Stats retrieved successfully with actual payment data',
             allUsersCount,
             subscribedUsersCount,
             totalCourses,

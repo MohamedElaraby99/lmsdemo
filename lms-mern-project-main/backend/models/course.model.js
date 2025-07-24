@@ -27,10 +27,66 @@ const courseSchema = new Schema({
             type: String
         }
     },
-    lectures: [
+    units: [
         {
-            title: String,
-            description: String,
+            title: {
+                type: String,
+                required: true,
+                trim: true
+            },
+            description: {
+                type: String,
+                trim: true
+            },
+            lessons: [
+                {
+                    title: {
+                        type: String,
+                        required: true,
+                        trim: true
+                    },
+                    description: {
+                        type: String,
+                        trim: true
+                    },
+                    lecture: {
+                        public_id: {
+                            type: String 
+                        },
+                        secure_url: {
+                            type: String
+                        },
+                        youtubeUrl: {
+                            type: String
+                        }
+                    },
+                    duration: {
+                        type: Number, // in minutes
+                        default: 0
+                    },
+                    order: {
+                        type: Number,
+                        default: 0
+                    }
+                }
+            ],
+            order: {
+                type: Number,
+                default: 0
+            }
+        }
+    ],
+    directLessons: [
+        {
+            title: {
+                type: String,
+                required: true,
+                trim: true
+            },
+            description: {
+                type: String,
+                trim: true
+            },
             lecture: {
                 public_id: {
                     type: String 
@@ -41,10 +97,39 @@ const courseSchema = new Schema({
                 youtubeUrl: {
                     type: String
                 }
+            },
+            duration: {
+                type: Number, // in minutes
+                default: 0
+            },
+            order: {
+                type: Number,
+                default: 0
             }
         }
     ],
     numberOfLectures: {
+        type: Number,
+        default: 0
+    },
+    price: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    currency: {
+        type: String,
+        default: 'EGP'
+    },
+    isPaid: {
+        type: Boolean,
+        default: false
+    },
+    salesCount: {
+        type: Number,
+        default: 0
+    },
+    totalRevenue: {
         type: Number,
         default: 0
     },

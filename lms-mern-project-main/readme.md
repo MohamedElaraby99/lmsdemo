@@ -18,7 +18,7 @@ LMS-Project/
 │   ├── controllers/
 │   │   ├── user.controller.js
 │   │   ├── course.controller.js
-│   │   ├── payment.controller.js
+
 │   │   ├── miscellaneous.controller.js
 │   ├── middleware/
 │   │   ├── auth.middleware.js
@@ -27,11 +27,11 @@ LMS-Project/
 │   ├── models/
 │   │   ├── user.model.js
 │   │   ├── course.model.js
-│   │   ├── payment.model.js
+
 │   ├── routes/
 │   │   ├── user.routes.js
 │   │   ├── course.routes.js
-│   │   ├── payment.routes.js
+
 │   │   ├── miscellaneous.routes.js
 │   ├── uploads/
 │   ├── utils/
@@ -104,7 +104,7 @@ Click the image above to watch the demo video.
 
 ### Payment Routes
 
-- `GET /razorpay-key`: Get Razorpay API key.
+
 - `POST /subscribe`: Buy a subscription.
 - `POST /verify`: Verify a subscription.
 - `POST /unsubscribe`: Cancel a subscription.
@@ -131,7 +131,7 @@ Click the image above to watch the demo video.
 - Multer
 - Cloudinary
 - Nodemailer
-- Razorpay
+
 
 ### Frontend
 

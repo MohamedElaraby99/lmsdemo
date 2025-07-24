@@ -7,7 +7,7 @@ import { IoIosLock, IoIosRefresh } from "react-icons/io";
 import { FiMoreVertical } from "react-icons/fi";
 import Layout from "../../Layout/Layout";
 import { useNavigate } from "react-router-dom";
-import { cancelCourseBundle } from "../../Redux/Slices/RazorpaySlice";
+
 
 export default function Profile() {
   const navigate = useNavigate();

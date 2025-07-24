@@ -33,10 +33,9 @@ import AdminUserDashboard from "./Pages/Dashboard/AdminUserDashboard";
 import RequireAuth from "./Components/auth/RequireAuth";
 import CreateCourse from "./Pages/Course/CreateCourse";
 import EditCourse from "./Pages/Course/EditCourse";
+import CourseStructure from "./Pages/Course/CourseStructure";
 import Profile from "./Pages/User/Profile";
-import Checkout from "./Pages/Payment/Checkout";
-import CheckoutSuccess from "./Pages/Payment/CheckoutSuccess";
-import CheckoutFail from "./Pages/Payment/CheckoutFail";
+
 import DisplayLecture from "./Pages/Dashboard/DisplayLecture";
 import AddLecture from "./Pages/Dashboard/AddLecture";
 import AdminDashboard from "./Pages/Dashboard/AdminDashboard";
@@ -79,10 +78,11 @@ function App() {
         <Route path="/qa/:id" element={<QADetail />} />
         <Route path="/subjects" element={<SubjectList />} />
 
-        <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
-          <Route path="/course/create" element={<CreateCourse />} />
-          <Route path="/course/edit" element={<EditCourse />} />
-          <Route path="/course/addlecture" element={<AddLecture />} />
+                  <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
+            <Route path="/course/create" element={<CreateCourse />} />
+            <Route path="/course/edit" element={<EditCourse />} />
+            <Route path="/course/structure" element={<CourseStructure />} />
+            <Route path="/course/addlecture" element={<AddLecture />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/blog-dashboard" element={<BlogDashboard />} />
           <Route path="/admin/qa-dashboard" element={<QADashboard />} />
@@ -96,9 +96,7 @@ function App() {
             path="/user/profile/change-password"
             element={<ChangePassword />}
           />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/checkout/success" element={<CheckoutSuccess />} />
-          <Route path="/checkout/fail" element={<CheckoutFail />} />
+          
           <Route path="/course/displaylectures" element={<DisplayLecture />} />
         </Route>
 

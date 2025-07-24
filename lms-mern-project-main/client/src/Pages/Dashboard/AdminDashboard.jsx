@@ -19,7 +19,6 @@ import { useNavigate } from "react-router-dom";
 
 import Layout from "../../Layout/Layout";
 import { getAllCourses, deleteCourse } from "../../Redux/Slices/CourseSlice";
-import { getPaymentRecord } from "../../Redux/Slices/RazorpaySlice";
 import { getStatsData } from "../../Redux/Slices/StatSlice";
 ChartJS.register(
   ArcElement,
@@ -45,9 +44,7 @@ export default function AdminDashboard() {
     monthlySalesData 
   } = useSelector((state) => state.stat);
 
-  const { allPayments } = useSelector(
-    (state) => state.razorpay
-  );
+
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -168,7 +165,6 @@ export default function AdminDashboard() {
     (async () => {
       await dispatch(getAllCourses());
       await dispatch(getStatsData());
-      await dispatch(getPaymentRecord());
     })();
   }, []);
 
@@ -328,6 +324,15 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => {
+                    navigate("/course/structure");
+                  }}
+                  className="w-fit bg-purple-500  transition-all ease-in-out duration-300 rounded py-2 px-4 font-[600] font-inter text-lg text-white cursor-pointer flex items-center gap-2"
+                >
+                  <FaBook />
+                  Course Structure
+                </button>
+                <button
+                  onClick={() => {
                     navigate("/admin/blog-dashboard");
                   }}
                   className="w-fit bg-blue-500  transition-all ease-in-out duration-300 rounded py-2 px-4 font-[600] font-inter text-lg text-white cursor-pointer flex items-center gap-2"
@@ -352,6 +357,50 @@ export default function AdminDashboard() {
                 >
                   <FaBook />
                   Subject Dashboard
+                </button>
+                <button
+                  onClick={() => {
+                    // Test revenue system with actual payment tracking
+                    if (myCourses.length > 0) {
+                      const paidCourse = myCourses.find(course => course.isPaid && course.price > 0);
+                      if (paidCourse) {
+                        // Simulate a course purchase
+                        fetch(`/api/v1/payments/simulate`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                          },
+                          body: JSON.stringify({ 
+                            courseId: paidCourse._id,
+                            userId: user?.data?._id || '64f1a2b3c4d5e6f7a8b9c0d1', // Default test user
+                            amount: paidCourse.price
+                          })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                          if (data.success) {
+                            alert(`Purchase simulated! Revenue updated for ${paidCourse.title} - EGP ${paidCourse.price}`);
+                            dispatch(getStatsData()); // Refresh stats
+                          } else {
+                            alert('Error: ' + data.message);
+                          }
+                        })
+                        .catch(error => {
+                          console.error('Error simulating purchase:', error);
+                          alert('Error simulating purchase. Check console for details.');
+                        });
+                      } else {
+                        alert('No paid courses found. Create a paid course first!');
+                      }
+                    } else {
+                      alert('No courses found. Create some courses first!');
+                    }
+                  }}
+                  className="w-fit bg-orange-500  transition-all ease-in-out duration-300 rounded py-2 px-4 font-[600] font-inter text-lg text-white cursor-pointer flex items-center gap-2"
+                >
+                  <GiMoneyStack />
+                  Test Revenue
                 </button>
               </div>
             </div>
@@ -505,6 +554,20 @@ export default function AdminDashboard() {
                           <span className="text-sm text-gray-600 dark:text-gray-400">Status:</span>
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                             Active
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Price:</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {course?.isPaid ? `${course?.currency || 'EGP'} ${course?.price || 0}` : 'Free'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Sales:</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {course?.salesCount || 0} ({course?.totalRevenue || 0} {course?.currency || 'EGP'})
                           </span>
                         </div>
                       </div>
