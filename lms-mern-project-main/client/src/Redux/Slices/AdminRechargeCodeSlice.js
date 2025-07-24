@@ -21,15 +21,23 @@ export const getAllRechargeCodes = createAsyncThunk(
     "adminRechargeCode/getAll",
     async ({ page = 1, limit = 20, status, amount }, { rejectWithValue }) => {
         try {
+            console.log('=== getAllRechargeCodes called ===');
+            console.log('Params:', { page, limit, status, amount });
+            
             const params = new URLSearchParams({
                 page,
                 limit,
                 ...(status && { status }),
                 ...(amount && { amount })
             });
+            
+            console.log('API URL:', `/admin/recharge-codes/codes?${params}`);
             const response = await axiosInstance.get(`/admin/recharge-codes/codes?${params}`);
+            console.log('API Response:', response.data);
             return response.data;
         } catch (error) {
+            console.error('getAllRechargeCodes error:', error);
+            console.error('Error response:', error.response?.data);
             return rejectWithValue(error.response?.data?.message || "Failed to get codes");
         }
     }
@@ -39,9 +47,13 @@ export const getRechargeCodeStats = createAsyncThunk(
     "adminRechargeCode/getStats",
     async (_, { rejectWithValue }) => {
         try {
+            console.log('=== getRechargeCodeStats called ===');
             const response = await axiosInstance.get("/admin/recharge-codes/stats");
+            console.log('Stats API Response:', response.data);
             return response.data;
         } catch (error) {
+            console.error('getRechargeCodeStats error:', error);
+            console.error('Stats error response:', error.response?.data);
             return rejectWithValue(error.response?.data?.message || "Failed to get stats");
         }
     }
@@ -136,16 +148,22 @@ const adminRechargeCodeSlice = createSlice({
         // Get all recharge codes
         builder
             .addCase(getAllRechargeCodes.pending, (state) => {
+                console.log('=== getAllRechargeCodes.pending ===');
                 state.loading = true;
                 state.error = null;
             })
             .addCase(getAllRechargeCodes.fulfilled, (state, action) => {
+                console.log('=== getAllRechargeCodes.fulfilled ===');
+                console.log('Action payload:', action.payload);
                 state.loading = false;
                 state.codes = action.payload.data.codes;
                 state.pagination = action.payload.data.pagination;
                 state.stats = action.payload.data.stats;
+                console.log('Updated state codes:', state.codes);
             })
             .addCase(getAllRechargeCodes.rejected, (state, action) => {
+                console.log('=== getAllRechargeCodes.rejected ===');
+                console.log('Error payload:', action.payload);
                 state.loading = false;
                 state.error = action.payload;
             });
@@ -153,14 +171,20 @@ const adminRechargeCodeSlice = createSlice({
         // Get recharge code stats
         builder
             .addCase(getRechargeCodeStats.pending, (state) => {
+                console.log('=== getRechargeCodeStats.pending ===');
                 state.loading = true;
                 state.error = null;
             })
             .addCase(getRechargeCodeStats.fulfilled, (state, action) => {
+                console.log('=== getRechargeCodeStats.fulfilled ===');
+                console.log('Stats action payload:', action.payload);
                 state.loading = false;
                 state.stats = action.payload.data.stats;
+                console.log('Updated state stats:', state.stats);
             })
             .addCase(getRechargeCodeStats.rejected, (state, action) => {
+                console.log('=== getRechargeCodeStats.rejected ===');
+                console.log('Stats error payload:', action.payload);
                 state.loading = false;
                 state.error = action.payload;
             });

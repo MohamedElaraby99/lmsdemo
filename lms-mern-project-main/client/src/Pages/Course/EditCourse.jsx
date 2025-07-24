@@ -1,25 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { createNewCourse } from "../../Redux/Slices/CourseSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { updateCourse } from "../../Redux/Slices/CourseSlice";
 import Layout from "../../Layout/Layout";
 import toast from "react-hot-toast";
 import InputBox from "../../Components/InputBox/InputBox";
 import TextArea from "../../Components/InputBox/TextArea";
 
-export default function CreateCourse() {
+export default function EditCourse() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const courseData = location.state;
 
-  const [isCreatingCourse, setIsCreatingCourse] = useState(false);
+  const [isUpdatingCourse, setIsUpdatingCourse] = useState(false);
   const [userInput, setUserInput] = useState({
-    title: "",
-    category: "",
-    createdBy: "",
-    description: "",
+    title: courseData?.title || "",
+    category: courseData?.category || "",
+    createdBy: courseData?.createdBy || "",
+    description: courseData?.description || "",
     thumbnail: null,
-    previewImage: "",
+    previewImage: courseData?.thumbnail?.secure_url || "",
   });
+
+  useEffect(() => {
+    if (!courseData) {
+      toast.error("No course data found");
+      navigate("/admin/dashboard");
+    }
+  }, [courseData, navigate]);
 
   function handleImageUpload(e) {
     e.preventDefault();
@@ -53,28 +62,34 @@ export default function CreateCourse() {
       return;
     }
 
-    setIsCreatingCourse(true);
+    setIsUpdatingCourse(true);
     const formData = new FormData();
     formData.append("title", userInput.title);
     formData.append("description", userInput.description);
     formData.append("category", userInput.category);
     formData.append("createdBy", userInput.createdBy);
-    formData.append("thumbnail", userInput.thumbnail);
-
-
-
-    const response = await dispatch(createNewCourse(formData));
-    if (response?.payload?.success) {
-      setUserInput({
-        title: "",
-        category: "",
-        createdBy: "",
-        description: "",
-        thumbnail: null,
-        previewImage: "",
-      });
+    
+    // Only append thumbnail if a new one is selected
+    if (userInput.thumbnail) {
+      formData.append("thumbnail", userInput.thumbnail);
     }
-    setIsCreatingCourse(false);
+
+
+
+    try {
+      const response = await dispatch(updateCourse({ id: courseData._id, formData }));
+      if (response?.payload?.success) {
+        toast.success("Course updated successfully!");
+        navigate("/admin/dashboard");
+      }
+    } catch (error) {
+      toast.error("Failed to update course");
+    }
+    setIsUpdatingCourse(false);
+  }
+
+  if (!courseData) {
+    return null;
   }
 
   return (
@@ -84,10 +99,10 @@ export default function CreateCourse() {
           onSubmit={onFormSubmit}
           autoComplete="off"
           noValidate
-          className="flex flex-col dark:bg-base-100 gap-7 rounded-lg md:py-5 py-7 md:px-7 px-3 md:w-[750px] w-full shadow-custom dark:shadow-xl  "
+          className="flex flex-col dark:bg-base-100 gap-7 rounded-lg md:py-5 py-7 md:px-7 px-3 md:w-[750px] w-full shadow-custom dark:shadow-xl"
         >
           <h1 className="text-center dark:text-purple-500 text-4xl font-bold font-inter">
-            Create New Course
+            Edit Course
           </h1>
           <div className="w-full flex md:flex-row md:justify-between justify-center flex-col md:gap-0 gap-5">
             <div className="md:w-[48%] w-full flex flex-col gap-5">
@@ -98,11 +113,12 @@ export default function CreateCourse() {
                     <img
                       className="w-full h-44 m-auto"
                       src={userInput.previewImage}
+                      alt="course thumbnail"
                     />
                   ) : (
                     <div className="w-full h-44 m-auto flex items-center justify-center">
                       <h1 className="font-bold text-lg">
-                        Upload your course thumbnail (Optional)
+                        Upload new course thumbnail (Optional)
                       </h1>
                     </div>
                   )}
@@ -163,13 +179,13 @@ export default function CreateCourse() {
           {/* submit btn */}
           <button
             type="submit"
-            disabled={isCreatingCourse}
-            className="mt-3 bg-yellow-500 text-white dark:text-base-200  transition-all ease-in-out duration-300 rounded-md py-2 font-nunito-sans font-[500]  text-lg cursor-pointer"
+            disabled={isUpdatingCourse}
+            className="mt-3 bg-yellow-500 text-white dark:text-base-200 transition-all ease-in-out duration-300 rounded-md py-2 font-nunito-sans font-[500] text-lg cursor-pointer disabled:opacity-50"
           >
-            {isCreatingCourse ? "Creating Course..." : "Create Course"}
+            {isUpdatingCourse ? "Updating Course..." : "Update Course"}
           </button>
         </form>
       </section>
     </Layout>
   );
-}
+} 

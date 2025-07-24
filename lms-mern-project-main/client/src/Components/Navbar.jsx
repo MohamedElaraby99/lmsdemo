@@ -282,7 +282,7 @@ export default function Navbar() {
                 </div>
 
                 {/* Admin Menu */}
-                {user.role === "admin" && (
+                {user.role === "ADMIN" && (
                   <div className="space-y-2">
                     <div className="px-4 py-2">
                       <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">

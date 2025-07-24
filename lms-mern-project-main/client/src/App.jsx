@@ -32,6 +32,7 @@ import AdminUserDashboard from "./Pages/Dashboard/AdminUserDashboard";
 
 import RequireAuth from "./Components/auth/RequireAuth";
 import CreateCourse from "./Pages/Course/CreateCourse";
+import EditCourse from "./Pages/Course/EditCourse";
 import Profile from "./Pages/User/Profile";
 import Checkout from "./Pages/Payment/Checkout";
 import CheckoutSuccess from "./Pages/Payment/CheckoutSuccess";
@@ -80,6 +81,7 @@ function App() {
 
         <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
           <Route path="/course/create" element={<CreateCourse />} />
+          <Route path="/course/edit" element={<EditCourse />} />
           <Route path="/course/addlecture" element={<AddLecture />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/blog-dashboard" element={<BlogDashboard />} />

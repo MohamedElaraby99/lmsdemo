@@ -17,7 +17,7 @@ const courseSchema = new Schema({
     },
     category: {
         type: String,
-        required: [true, 'Category is required'],
+        default: 'General',
     },
     thumbnail: {
         public_id: {
@@ -50,7 +50,7 @@ const courseSchema = new Schema({
     },
     createdBy: {
         type: String,
-        required: true,
+        default: 'Admin',
     }
 },
     {

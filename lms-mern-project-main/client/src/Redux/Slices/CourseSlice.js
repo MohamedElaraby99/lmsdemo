@@ -32,6 +32,19 @@ export const createNewCourse = createAsyncThunk("/courses/create", async (data) 
     }
 })
 
+// ....update course....
+export const updateCourse = createAsyncThunk("/courses/update", async ({ id, formData }) => {
+    const loadingMessage = toast.loading("Updating course...");
+    try {
+        const res = await axiosInstance.put(`/courses/${id}`, formData);
+        toast.success(res?.data?.message, { id: loadingMessage });
+        return res?.data
+    } catch (error) {
+        toast.error(error?.response?.data?.message, { id: loadingMessage });
+        throw error;
+    }
+})
+
 // ....delete course......
 export const deleteCourse = createAsyncThunk("/course/delete", async (id) => {
     const loadingId = toast.loading("deleting course ...")

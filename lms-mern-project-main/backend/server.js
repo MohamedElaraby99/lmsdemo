@@ -11,7 +11,8 @@ process.env.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_placehold
 process.env.RAZORPAY_SECRET = process.env.RAZORPAY_SECRET || 'placeholder_secret';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_here';
 process.env.MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/lms';
-process.env.CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173'; 
+process.env.CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+process.env.BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000'; 
          
 // cloudinary configuration
 cloudinary.config({ 

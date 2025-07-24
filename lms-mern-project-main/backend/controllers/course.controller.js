@@ -60,15 +60,15 @@ const createCourse = async (req, res, next) => {
     try {
         const { title, description, category, createdBy } = req.body;
 
-        if (!title || !description || !category || !createdBy) {
-            return next(new AppError('All fields are required', 400));
+        if (!title || !description) {
+            return next(new AppError('Title and description are mandatory', 400));
         }
 
         const course = await courseModel.create({
             title,
             description,
-            category,
-            createdBy
+            category: category || 'General',
+            createdBy: createdBy || 'Admin'
         })
 
         if (!course) {
@@ -82,10 +82,9 @@ const createCourse = async (req, res, next) => {
                 if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
                     process.env.CLOUDINARY_API_KEY === 'placeholder' || 
                     process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-                    // Skip Cloudinary upload if using placeholder credentials
-                    console.log('Cloudinary not configured, using placeholder thumbnail');
-                    course.thumbnail.public_id = 'placeholder';
-                    course.thumbnail.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBUaHVtYm5haWwKICA8L3RleHQ+Cjwvc3ZnPgo=';
+                    // Use local file storage when Cloudinary is not configured
+                    course.thumbnail.public_id = req.file.filename;
+                    course.thumbnail.secure_url = `${process.env.BACKEND_URL || 'http://localhost:5000'}/uploads/${req.file.filename}`;
                 } else {
                     const result = await cloudinary.v2.uploader.upload(req.file.path, {
                         folder: 'Learning-Management-System'
@@ -95,11 +94,11 @@ const createCourse = async (req, res, next) => {
                         course.thumbnail.public_id = result.public_id;
                         course.thumbnail.secure_url = result.secure_url;
                     }
-                }
 
-                // Remove file from server
-                if (fs.existsSync(`uploads/${req.file.filename}`)) {
-                    fs.rmSync(`uploads/${req.file.filename}`);
+                    // Remove file from server only after successful Cloudinary upload
+                    if (fs.existsSync(`uploads/${req.file.filename}`)) {
+                        fs.rmSync(`uploads/${req.file.filename}`);
+                    }
                 }
             } catch (e) {
                 console.log('File upload error:', e.message);
@@ -126,30 +125,41 @@ const createCourse = async (req, res, next) => {
 const updateCourse = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const course = await courseModel.findByIdAndUpdate(
-            id,
-            {
-                $set: req.body
-            },
-            {
-                runValidators: true
-            }
-        )
+        const { title, description, category, createdBy } = req.body;
+
+        // Find the course first
+        const course = await courseModel.findById(id);
 
         if (!course) {
             return next(new AppError('Course with given id does not exist', 500));
         }
 
+        // Update basic fields
+        if (title) course.title = title;
+        if (description) course.description = description;
+        if (category) course.category = category;
+        if (createdBy) course.createdBy = createdBy;
+
+        // Handle file upload
         if (req.file) {
             try {
                 // Check if Cloudinary is properly configured
                 if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
                     process.env.CLOUDINARY_API_KEY === 'placeholder' || 
                     process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-                    // Skip Cloudinary upload if using placeholder credentials
-                    console.log('Cloudinary not configured, using placeholder thumbnail');
-                    course.thumbnail.public_id = 'placeholder';
-                    course.thumbnail.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBUaHVtYm5haWwKICA8L3RleHQ+Cjwvc3ZnPgo=';
+                    // Use local file storage when Cloudinary is not configured
+                    
+                    // Remove old local file if it exists
+                    if (course.thumbnail.public_id && course.thumbnail.public_id !== 'placeholder' && 
+                        !course.thumbnail.public_id.startsWith('http')) {
+                        const oldFilePath = `uploads/${course.thumbnail.public_id}`;
+                        if (fs.existsSync(oldFilePath)) {
+                            fs.rmSync(oldFilePath);
+                        }
+                    }
+                    
+                    course.thumbnail.public_id = req.file.filename;
+                    course.thumbnail.secure_url = `${process.env.BACKEND_URL || 'http://localhost:5000'}/uploads/${req.file.filename}`;
                 } else {
                     // Only destroy if we have a valid public_id
                     if (course.thumbnail.public_id && course.thumbnail.public_id !== 'placeholder') {
@@ -164,14 +174,13 @@ const updateCourse = async (req, res, next) => {
                         course.thumbnail.public_id = result.public_id;
                         course.thumbnail.secure_url = result.secure_url;
                     }
-                }
 
-                // Remove file from server
-                if (fs.existsSync(`uploads/${req.file.filename}`)) {
-                    fs.rmSync(`uploads/${req.file.filename}`);
+                    // Remove file from server only after successful Cloudinary upload
+                    if (fs.existsSync(`uploads/${req.file.filename}`)) {
+                        fs.rmSync(`uploads/${req.file.filename}`);
+                    }
                 }
             } catch (e) {
-                console.log('File upload error:', e.message);
                 // Set placeholder thumbnail if upload fails
                 course.thumbnail.public_id = 'placeholder';
                 course.thumbnail.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBUaHVtYm5haWwKICA8L3RleHQ+Cjwvc3ZnPgo=';

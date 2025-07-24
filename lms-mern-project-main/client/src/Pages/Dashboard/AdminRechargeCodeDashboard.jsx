@@ -31,7 +31,7 @@ import {
 
 export default function AdminRechargeCodeDashboard() {
     const dispatch = useDispatch();
-    const { user } = useSelector((state) => state.auth);
+    const { data: user } = useSelector((state) => state.auth);
     const { 
         codes, 
         stats, 
@@ -41,7 +41,11 @@ export default function AdminRechargeCodeDashboard() {
         generateLoading, 
         generateError,
         deleteLoading 
-    } = useSelector((state) => state.adminRechargeCode);
+    } = useSelector((state) => {
+        console.log('=== Redux State Debug ===');
+        console.log('adminRechargeCode state:', state.adminRechargeCode);
+        return state.adminRechargeCode;
+    });
 
     const [generateForm, setGenerateForm] = useState({
         amount: "",
@@ -56,9 +60,17 @@ export default function AdminRechargeCodeDashboard() {
     const [activeTab, setActiveTab] = useState("generate");
 
     useEffect(() => {
+        console.log('=== AdminRechargeCodeDashboard useEffect ===');
+        console.log('User:', user);
+        console.log('User role:', user?.role);
+        console.log('Is user admin?', user && user.role === "ADMIN");
+        
         if (user && user.role === "ADMIN") {
+            console.log('Dispatching API calls...');
             dispatch(getAllRechargeCodes({ page: 1, limit: 20 }));
             dispatch(getRechargeCodeStats());
+        } else {
+            console.log('User not admin or not logged in');
         }
     }, [dispatch, user]);
 

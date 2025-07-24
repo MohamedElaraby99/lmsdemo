@@ -4,7 +4,14 @@ import toast from "react-hot-toast";
 
 const initialState = {
     allUsersCount: 0,
-    subscribedCount: 0
+    subscribedCount: 0,
+    totalCourses: 0,
+    totalLectures: 0,
+    totalPayments: 0,
+    totalRevenue: 0,
+    monthlySalesData: new Array(12).fill(0),
+    recentPayments: [],
+    recentCourses: []
 };
 
 // ......get stats data......
@@ -28,6 +35,13 @@ const statSlice = createSlice({
         builder.addCase(getStatsData.fulfilled, (state, action) => {
             state.allUsersCount = action?.payload?.allUsersCount;
             state.subscribedCount = action?.payload?.subscribedUsersCount;
+            state.totalCourses = action?.payload?.totalCourses;
+            state.totalLectures = action?.payload?.totalLectures;
+            state.totalPayments = action?.payload?.totalPayments;
+            state.totalRevenue = action?.payload?.totalRevenue;
+            state.monthlySalesData = action?.payload?.monthlySalesData;
+            state.recentPayments = action?.payload?.recentPayments;
+            state.recentCourses = action?.payload?.recentCourses;
         })
     }
 });

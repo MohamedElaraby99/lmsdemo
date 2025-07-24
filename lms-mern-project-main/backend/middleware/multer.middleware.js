@@ -7,12 +7,18 @@ const upload = multer({
   limits: { fileSize: 500 * 1024 * 1024 }, // 500 mb in size max limit
   storage: multer.diskStorage({
     destination: "uploads/",
-    filename: (_req, file, cb) => {
+    filename: (req, file, cb) => {
+      console.log('=== Multer Debug ===');
+      console.log('File being processed:', file);
+      console.log('Original filename:', file.originalname);
       cb(null, file.originalname);
     },
   }),
-  fileFilter: (_req, file, cb) => {
+  fileFilter: (req, file, cb) => {
+    console.log('=== File Filter Debug ===');
+    console.log('Checking file:', file.originalname);
     let ext = path.extname(file.originalname);
+    console.log('File extension:', ext);
     if (
       ext !== ".jpg" &&
       ext !== ".jpeg" &&
@@ -20,9 +26,11 @@ const upload = multer({
       ext !== ".png" &&
       ext !== ".mp4"
     ) {
+      console.log('File type rejected:', ext);
       cb(new Error(`Unsupported file type! ${ext}`), false);
       return;
     }
+    console.log('File type accepted:', ext);
     cb(null, true);
   },
 });
