@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaSun, FaMoon, FaBars, FaHome, FaUser, FaGraduationCap, FaBlog, FaQuestionCircle, FaSignOutAlt } from "react-icons/fa";
+import { FaSun, FaMoon, FaBars, FaHome, FaUser, FaGraduationCap, FaBlog, FaQuestionCircle, FaSignOutAlt, FaPlus, FaList, FaInfoCircle, FaPhone } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../Redux/Slices/AuthSlice";
@@ -18,7 +18,11 @@ export default function Navbar() {
   };
 
   const toggleMenu = () => {
-    setIsMenuOpen((prev) => !prev);
+    // Trigger the Sidebar drawer instead of mobile menu
+    const drawerToggle = document.getElementById('my-drawer');
+    if (drawerToggle) {
+      drawerToggle.checked = !drawerToggle.checked;
+    }
   };
 
   const handleLogout = () => {
@@ -63,8 +67,11 @@ export default function Navbar() {
   const menuItems = [
     { name: "Home", path: "/", icon: FaHome },
     { name: "Courses", path: "/subjects", icon: FaGraduationCap },
+    { name: "All Courses", path: "/courses", icon: FaList },
     { name: "Blog", path: "/blogs", icon: FaBlog },
     { name: "Q&A", path: "/qa", icon: FaQuestionCircle },
+    { name: "About", path: "/about", icon: FaInfoCircle },
+    { name: "Contact", path: "/contact", icon: FaPhone },
   ];
 
   const adminMenuItems = [
@@ -90,23 +97,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
-            {menuItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium navbar-item menu-item ${
-                  location.pathname === item.path
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 active-menu-item"
-                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-                }`}
-              >
-                <item.icon className="w-4 h-4" />
-                <span>{item.name}</span>
-              </Link>
-            ))}
-          </div>
+
 
           {/* Right Side */}
           <div className="flex items-center space-x-4">
@@ -123,7 +114,7 @@ export default function Navbar() {
             </button>
 
             {/* Desktop User Menu */}
-            {user ? (
+            {user && user.fullName ? (
               <div className="hidden md:flex items-center space-x-4">
                 <div className="flex items-center space-x-2 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
                   <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center user-avatar">
@@ -163,25 +154,10 @@ export default function Navbar() {
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="hidden md:flex items-center space-x-2">
-                <Link
-                  to="/login"
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors duration-300"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-300 transform hover:scale-105"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            )}
+            ) : null}
 
-            {/* Mobile User Avatar - ONLY on mobile */}
-            <div className="md:hidden flex items-center space-x-2">
+            {/* Menu Button - Visible on all devices */}
+            <div className="flex items-center space-x-2">
               {user && (
                 <div className="flex items-center space-x-2 p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
                   <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center user-avatar">
@@ -191,6 +167,14 @@ export default function Navbar() {
                   </div>
                 </div>
               )}
+              
+              {/* Burger Menu Button */}
+              <button
+                onClick={toggleMenu}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300"
+              >
+                <FaBars className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+              </button>
             </div>
           </div>
         </div>

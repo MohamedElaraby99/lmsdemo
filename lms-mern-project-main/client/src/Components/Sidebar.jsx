@@ -29,6 +29,9 @@ export default function Sidebar({ hideBar = false }) {
   function changeWidth() {
     const drawerSide = document.getElementsByClassName("drawer-side");
     drawerSide[0].style.width = "auto";
+    drawerSide[0].style.right = "0";
+    drawerSide[0].style.left = "auto";
+    drawerSide[0].classList.add("drawer-open");
   }
 
   function hideDrawer() {
@@ -37,25 +40,29 @@ export default function Sidebar({ hideBar = false }) {
 
     const drawerSide = document.getElementsByClassName("drawer-side");
     drawerSide[0].style.width = "0";
+    drawerSide[0].style.right = "0";
+    drawerSide[0].style.left = "auto";
+    drawerSide[0].classList.remove("drawer-open");
   }
 
-  if (!hideBar) {
-    return (
-      <div className="drawer absolute left-0 z-50 w-fit">
-        <input className="drawer-toggle" id="my-drawer" type="checkbox" />
-        <div className="drawer-content ">
-          <label
-            htmlFor="my-drawer"
-            className="cursor-pointer fixed top-0 right-3 md:hidden"
-          >
+  return (
+    <div className="drawer absolute right-0 z-50 w-fit">
+      <input className="drawer-toggle" id="my-drawer" type="checkbox" />
+      <div className="drawer-content ">
+        <label
+          htmlFor="my-drawer"
+          className="cursor-pointer fixed top-4 right-4 z-50"
+        >
+          <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300">
             <FiMenu
               onClick={changeWidth}
-              size={"32px"}
-              className="font-bold text-base-200 dark:text-white m-4"
+              size={"24px"}
+              className="text-gray-700 dark:text-gray-300"
             />
-          </label>
-        </div>
-        <div className="drawer-side  w-0 shadow-custom dark:shadow-lg">
+          </div>
+        </label>
+      </div>
+        <div className="drawer-side drawer-side-right w-0 shadow-custom dark:shadow-lg" style={{right: '0', left: 'auto'}}>
           <label
             htmlFor="my-drawer"
             className="drawer-overlay w-screen"
@@ -193,5 +200,4 @@ export default function Sidebar({ hideBar = false }) {
         </div>
       </div>
     );
-  }
 }
