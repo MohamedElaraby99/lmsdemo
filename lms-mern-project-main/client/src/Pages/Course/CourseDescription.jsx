@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import Layout from "../../Layout/Layout";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { placeholderImages } from "../../utils/placeholderImages";
 
 export default function CourseDescription() {
   const { state } = useLocation();
@@ -22,7 +23,10 @@ export default function CourseDescription() {
             <img
               className="md:w-[87%] w-full h-auto lg:h-64 rounded-md shadow-md"
               alt="thumbnail"
-              src={state?.thumbnail?.secure_url}
+              src={state?.thumbnail?.secure_url || placeholderImages.course}
+              onError={(e) => {
+                e.target.src = placeholderImages.course;
+              }}
             />
 
             <div className="space-y-4">

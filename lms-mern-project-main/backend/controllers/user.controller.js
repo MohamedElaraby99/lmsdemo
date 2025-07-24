@@ -61,7 +61,9 @@ const register = async (req, res, next) => {
                     process.env.CLOUDINARY_API_KEY === 'placeholder' || 
                     process.env.CLOUDINARY_API_SECRET === 'placeholder') {
                     // Skip Cloudinary upload if using placeholder credentials
-                    console.log('Cloudinary not configured, skipping file upload');
+                    console.log('Cloudinary not configured, using placeholder avatar');
+                    user.avatar.public_id = 'placeholder';
+                    user.avatar.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjEyNSIgeT0iMTI1IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIFVzZXIgQXZhdGFyCiAgPC90ZXh0Pgo8L3N2Zz4K';
                 } else {
                     const result = await cloudinary.v2.uploader.upload(req.file.path, {
                         folder: "Learning-Management-System",
@@ -83,7 +85,9 @@ const register = async (req, res, next) => {
                 }
             } catch (e) {
                 console.log('File upload error:', e.message);
-                // Don't fail registration if file upload fails
+                // Set placeholder avatar if upload fails
+                user.avatar.public_id = 'placeholder';
+                user.avatar.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjEyNSIgeT0iMTI1IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIFVzZXIgQXZhdGFyCiAgPC90ZXh0Pgo8L3N2Zz4K';
             }
         }
 
@@ -311,7 +315,9 @@ const updateUser = async (req, res, next) => {
                     process.env.CLOUDINARY_API_KEY === 'placeholder' || 
                     process.env.CLOUDINARY_API_SECRET === 'placeholder') {
                     // Skip Cloudinary upload if using placeholder credentials
-                    console.log('Cloudinary not configured, skipping file upload');
+                    console.log('Cloudinary not configured, using placeholder avatar');
+                    user.avatar.public_id = 'placeholder';
+                    user.avatar.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjEyNSIgeT0iMTI1IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIFVzZXIgQXZhdGFyCiAgPC90ZXh0Pgo8L3N2Zz4K';
                 } else {
                     // Only destroy if we have a valid public_id
                     if (user.avatar.public_id && user.avatar.public_id !== 'placeholder') {
@@ -338,7 +344,9 @@ const updateUser = async (req, res, next) => {
                 }
             } catch (e) {
                 console.log('File upload error:', e.message);
-                // Don't fail user update if file upload fails
+                // Set placeholder avatar if upload fails
+                user.avatar.public_id = 'placeholder';
+                user.avatar.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjEyNSIgeT0iMTI1IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIFVzZXIgQXZhdGFyCiAgPC90ZXh0Pgo8L3N2Zz4K';
             }
         }
 

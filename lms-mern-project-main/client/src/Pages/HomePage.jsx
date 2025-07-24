@@ -5,6 +5,7 @@ import Layout from "../Layout/Layout";
 import heroPng from "../assets/images/hero.png";
 import { getAllBlogs } from "../Redux/Slices/BlogSlice";
 import { FaEye, FaHeart, FaCalendar, FaUser, FaArrowRight } from "react-icons/fa";
+import { placeholderImages } from "../utils/placeholderImages";
 
 export default function HomePage() {
   const dispatch = useDispatch();
@@ -73,15 +74,16 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {blogs.slice(0, 3).map((blog) => (
                 <div key={blog._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                  {blog.image?.secure_url && (
-                    <div className="h-48 overflow-hidden">
-                      <img
-                        src={blog.image.secure_url}
-                        alt={blog.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
+                  <div className="h-48 overflow-hidden">
+                    <img
+                      src={blog.image?.secure_url || placeholderImages.blog}
+                      alt={blog.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = placeholderImages.blog;
+                      }}
+                    />
+                  </div>
                   
                   <div className="p-6">
                     <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">

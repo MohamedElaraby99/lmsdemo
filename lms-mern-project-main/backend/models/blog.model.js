@@ -43,7 +43,7 @@ const blogSchema = new Schema({
     status: {
         type: String,
         enum: ['draft', 'published'],
-        default: 'published'
+        default: 'draft'
     },
     views: {
         type: Number,

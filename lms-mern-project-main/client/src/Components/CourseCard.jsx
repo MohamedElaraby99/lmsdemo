@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaPlay, FaBook, FaUser } from "react-icons/fa";
+import { placeholderImages } from "../utils/placeholderImages";
 
 export default function CourseCard({ data }) {
   const navigate = useNavigate();
@@ -14,8 +15,11 @@ export default function CourseCard({ data }) {
       <div className="relative overflow-hidden">
         <img
           className="h-48 w-full rounded-tl-lg rounded-tr-lg group-hover:scale-[1.05] transition-all ease-in-out duration-300"
-          src={data?.thumbnail?.secure_url}
+          src={data?.thumbnail?.secure_url || placeholderImages.course}
           alt="course thumbnail"
+          onError={(e) => {
+            e.target.src = placeholderImages.course;
+          }}
         />
         <div className="absolute top-2 right-2 p-2 bg-white dark:bg-zinc-700 rounded-full">
           <FaPlay className="text-yellow-500 dark:text-yellow-400 text-xl" />

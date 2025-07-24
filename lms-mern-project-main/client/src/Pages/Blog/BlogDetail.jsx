@@ -4,6 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { getBlogById, likeBlog } from "../../Redux/Slices/BlogSlice";
 import Layout from "../../Layout/Layout";
 import { FaEye, FaHeart, FaCalendar, FaUser, FaArrowLeft } from "react-icons/fa";
+import { placeholderImages } from "../../utils/placeholderImages";
 
 export default function BlogDetail() {
   const dispatch = useDispatch();
@@ -113,15 +114,16 @@ export default function BlogDetail() {
           </div>
 
           {/* Blog Image */}
-          {currentBlog.image?.secure_url && (
-            <div className="mb-8">
-              <img
-                src={currentBlog.image.secure_url}
-                alt={currentBlog.title}
-                className="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg"
-              />
-            </div>
-          )}
+          <div className="mb-8">
+            <img
+              src={currentBlog.image?.secure_url || placeholderImages.blogLarge}
+              alt={currentBlog.title}
+              className="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg"
+              onError={(e) => {
+                e.target.src = placeholderImages.blogLarge;
+              }}
+            />
+          </div>
 
           {/* Blog Content */}
           <div className="prose prose-lg max-w-none dark:prose-invert">

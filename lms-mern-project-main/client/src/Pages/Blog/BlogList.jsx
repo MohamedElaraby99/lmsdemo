@@ -4,6 +4,7 @@ import { getAllBlogs } from "../../Redux/Slices/BlogSlice";
 import Layout from "../../Layout/Layout";
 import { Link } from "react-router-dom";
 import { FaEye, FaHeart, FaCalendar, FaUser } from "react-icons/fa";
+import { placeholderImages } from "../../utils/placeholderImages";
 
 export default function BlogList() {
   const dispatch = useDispatch();
@@ -81,15 +82,16 @@ export default function BlogList() {
               {blogs?.map((blog) => (
                 <div key={blog._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                   {/* Blog Image */}
-                  {blog.image?.secure_url && (
-                    <div className="h-48 overflow-hidden">
-                      <img
-                        src={blog.image.secure_url}
-                        alt={blog.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
+                  <div className="h-48 overflow-hidden">
+                    <img
+                      src={blog.image?.secure_url || placeholderImages.blog}
+                      alt={blog.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = placeholderImages.blog;
+                      }}
+                    />
+                  </div>
                   
                   {/* Blog Content */}
                   <div className="p-6">

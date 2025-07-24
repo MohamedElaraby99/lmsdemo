@@ -11,12 +11,26 @@ const initialState = {
     total: 0
 };
 
-// Get all blogs
+// Get all blogs (public)
 export const getAllBlogs = createAsyncThunk("/blogs/get", async (params = {}) => {
     const { page = 1, limit = 10, category = '', search = '' } = params;
     const loadingMessage = toast.loading("Fetching blogs...");
     try {
         const res = await axiosInstance.get(`/blogs?page=${page}&limit=${limit}&category=${category}&search=${search}`);
+        toast.success(res?.data?.message, { id: loadingMessage });
+        return res?.data;
+    } catch (error) {
+        toast.error(error?.response?.data?.message, { id: loadingMessage });
+        throw error;
+    }
+});
+
+// Get all blogs for admin (including drafts)
+export const getAllBlogsForAdmin = createAsyncThunk("/blogs/getForAdmin", async (params = {}) => {
+    const { page = 1, limit = 10, category = '', search = '', status = '' } = params;
+    const loadingMessage = toast.loading("Fetching blogs...");
+    try {
+        const res = await axiosInstance.get(`/admin/blogs?page=${page}&limit=${limit}&category=${category}&search=${search}&status=${status}`);
         toast.success(res?.data?.message, { id: loadingMessage });
         return res?.data;
     } catch (error) {
@@ -97,7 +111,7 @@ const blogSlice = createSlice({
         }
     },
     extraReducers: (builder) => {
-        // Get all blogs
+        // Get all blogs (public)
         builder.addCase(getAllBlogs.pending, (state) => {
             state.loading = true;
         });
@@ -109,6 +123,21 @@ const blogSlice = createSlice({
             state.total = action?.payload?.total;
         });
         builder.addCase(getAllBlogs.rejected, (state) => {
+            state.loading = false;
+        });
+
+        // Get all blogs for admin
+        builder.addCase(getAllBlogsForAdmin.pending, (state) => {
+            state.loading = true;
+        });
+        builder.addCase(getAllBlogsForAdmin.fulfilled, (state, action) => {
+            state.loading = false;
+            state.blogs = action?.payload?.blogs;
+            state.totalPages = action?.payload?.totalPages;
+            state.currentPage = action?.payload?.currentPage;
+            state.total = action?.payload?.total;
+        });
+        builder.addCase(getAllBlogsForAdmin.rejected, (state) => {
             state.loading = false;
         });
 

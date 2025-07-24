@@ -83,7 +83,9 @@ const createCourse = async (req, res, next) => {
                     process.env.CLOUDINARY_API_KEY === 'placeholder' || 
                     process.env.CLOUDINARY_API_SECRET === 'placeholder') {
                     // Skip Cloudinary upload if using placeholder credentials
-                    console.log('Cloudinary not configured, skipping file upload');
+                    console.log('Cloudinary not configured, using placeholder thumbnail');
+                    course.thumbnail.public_id = 'placeholder';
+                    course.thumbnail.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBUaHVtYm5haWwKICA8L3RleHQ+Cjwvc3ZnPgo=';
                 } else {
                     const result = await cloudinary.v2.uploader.upload(req.file.path, {
                         folder: 'Learning-Management-System'
@@ -101,7 +103,9 @@ const createCourse = async (req, res, next) => {
                 }
             } catch (e) {
                 console.log('File upload error:', e.message);
-                // Don't fail course creation if file upload fails
+                // Set placeholder thumbnail if upload fails
+                course.thumbnail.public_id = 'placeholder';
+                course.thumbnail.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBUaHVtYm5haWwKICA8L3RleHQ+Cjwvc3ZnPgo=';
             }
         }
 
@@ -143,7 +147,9 @@ const updateCourse = async (req, res, next) => {
                     process.env.CLOUDINARY_API_KEY === 'placeholder' || 
                     process.env.CLOUDINARY_API_SECRET === 'placeholder') {
                     // Skip Cloudinary upload if using placeholder credentials
-                    console.log('Cloudinary not configured, skipping file upload');
+                    console.log('Cloudinary not configured, using placeholder thumbnail');
+                    course.thumbnail.public_id = 'placeholder';
+                    course.thumbnail.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBUaHVtYm5haWwKICA8L3RleHQ+Cjwvc3ZnPgo=';
                 } else {
                     // Only destroy if we have a valid public_id
                     if (course.thumbnail.public_id && course.thumbnail.public_id !== 'placeholder') {
@@ -166,7 +172,9 @@ const updateCourse = async (req, res, next) => {
                 }
             } catch (e) {
                 console.log('File upload error:', e.message);
-                // Don't fail course update if file upload fails
+                // Set placeholder thumbnail if upload fails
+                course.thumbnail.public_id = 'placeholder';
+                course.thumbnail.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBUaHVtYm5haWwKICA8L3RleHQ+Cjwvc3ZnPgo=';
             }
         }
 

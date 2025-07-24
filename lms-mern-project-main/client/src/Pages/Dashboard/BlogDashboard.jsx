@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllBlogs, deleteBlog, createBlog, updateBlog } from "../../Redux/Slices/BlogSlice";
+import { getAllBlogsForAdmin, deleteBlog, createBlog, updateBlog } from "../../Redux/Slices/BlogSlice";
 import Layout from "../../Layout/Layout";
 import { FaPlus, FaEdit, FaTrash, FaEye, FaHeart, FaCalendar, FaUser, FaSearch, FaFilter } from "react-icons/fa";
+import { placeholderImages } from "../../utils/placeholderImages";
 import toast from "react-hot-toast";
 
 export default function BlogDashboard() {
@@ -17,6 +18,7 @@ export default function BlogDashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
   
   // Form states
   const [formData, setFormData] = useState({
@@ -26,12 +28,15 @@ export default function BlogDashboard() {
     category: "",
     author: "",
     tags: "",
-    status: "published"
+    status: "draft",
+    image: null
   });
 
   useEffect(() => {
-    dispatch(getAllBlogs({ page: currentPage, category, search, status }));
+    dispatch(getAllBlogsForAdmin({ page: currentPage, category, search, status }));
   }, [currentPage, category, search, status]);
+
+
 
   const categories = [
     "Technology",
@@ -47,7 +52,10 @@ export default function BlogDashboard() {
     try {
       const formDataObj = new FormData();
       Object.keys(formData).forEach(key => {
-        if (key === 'tags') {
+        if (key === 'image' && formData[key]) {
+          console.log('Adding image to form data:', formData[key].name, formData[key].size);
+          formDataObj.append('image', formData[key]);
+        } else if (key === 'tags') {
           formDataObj.append(key, formData[key]);
         } else {
           formDataObj.append(key, formData[key]);
@@ -63,8 +71,10 @@ export default function BlogDashboard() {
         category: "",
         author: "",
         tags: "",
-        status: "published"
+        status: "draft",
+        image: null
       });
+      setSelectedImage(null);
     } catch (error) {
       console.error("Error creating blog:", error);
     }
@@ -75,7 +85,9 @@ export default function BlogDashboard() {
     try {
       const formDataObj = new FormData();
       Object.keys(formData).forEach(key => {
-        if (key === 'tags') {
+        if (key === 'image' && formData[key]) {
+          formDataObj.append('image', formData[key]);
+        } else if (key === 'tags') {
           formDataObj.append(key, formData[key]);
         } else {
           formDataObj.append(key, formData[key]);
@@ -92,8 +104,10 @@ export default function BlogDashboard() {
         category: "",
         author: "",
         tags: "",
-        status: "published"
+        status: "draft",
+        image: null
       });
+      setSelectedImage(null);
     } catch (error) {
       console.error("Error updating blog:", error);
     }
@@ -119,8 +133,10 @@ export default function BlogDashboard() {
       category: blog.category,
       author: blog.author,
       tags: blog.tags?.join(", ") || "",
-      status: blog.status
+      status: blog.status,
+      image: null
     });
+    setSelectedImage(null);
     setShowEditModal(true);
   };
 
@@ -332,13 +348,14 @@ export default function BlogDashboard() {
                       <tr key={blog._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td className="px-6 py-4">
                           <div className="flex items-center">
-                            {blog.image?.secure_url && (
-                              <img
-                                src={blog.image.secure_url}
-                                alt={blog.title}
-                                className="h-10 w-10 rounded-lg object-cover mr-3"
-                              />
-                            )}
+                            <img
+                              src={blog.image?.secure_url || placeholderImages.blogSmall}
+                              alt={blog.title}
+                              className="h-10 w-10 rounded-lg object-cover mr-3"
+                              onError={(e) => {
+                                e.target.src = placeholderImages.blogSmall;
+                              }}
+                            />
                             <div>
                               <div className="text-sm font-medium text-gray-900 dark:text-white">
                                 {blog.title}
@@ -537,16 +554,29 @@ export default function BlogDashboard() {
                     onChange={(e) => {
                       if (e.target.files[0]) {
                         setFormData({...formData, image: e.target.files[0]});
+                        setSelectedImage(URL.createObjectURL(e.target.files[0]));
                       }
                     }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                  {selectedImage && (
+                    <div className="mt-2">
+                      <img 
+                        src={selectedImage} 
+                        alt="Preview" 
+                        className="w-32 h-32 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-end gap-4 pt-4">
                   <button
                     type="button"
-                    onClick={() => setShowCreateModal(false)}
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setSelectedImage(null);
+                    }}
                     className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Cancel
@@ -688,16 +718,39 @@ export default function BlogDashboard() {
                     onChange={(e) => {
                       if (e.target.files[0]) {
                         setFormData({...formData, image: e.target.files[0]});
+                        setSelectedImage(URL.createObjectURL(e.target.files[0]));
                       }
                     }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                  {selectedImage && (
+                    <div className="mt-2">
+                      <img 
+                        src={selectedImage} 
+                        alt="Preview" 
+                        className="w-32 h-32 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
+                  {selectedBlog?.image?.secure_url && !selectedImage && (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Current Image:</p>
+                      <img 
+                        src={selectedBlog.image.secure_url} 
+                        alt="Current" 
+                        className="w-32 h-32 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-end gap-4 pt-4">
                   <button
                     type="button"
-                    onClick={() => setShowEditModal(false)}
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setSelectedImage(null);
+                    }}
                     className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Cancel
