@@ -117,7 +117,7 @@ export default function Sidebar({ hideBar = false }) {
               </Link>
             </li>
 
-            {isLoggedIn && (
+            {isLoggedIn && role !== "ADMIN" && (
               <li>
                 <Link to="/wallet" className="flex gap-4 items-center">
                   <FaWallet
