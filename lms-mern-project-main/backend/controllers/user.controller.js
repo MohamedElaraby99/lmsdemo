@@ -20,9 +20,22 @@ const register = async (req, res, next) => {
     try {
         const { fullName, email, password, phoneNumber, fatherPhoneNumber, governorate, grade, age, adminCode } = req.body;
 
-        // Check if user misses any fields
-        if (!fullName || !email || !password || !phoneNumber || !fatherPhoneNumber || !governorate || !grade || !age) {
-            return next(new AppError("All fields are required", 400));
+        // Determine user role based on admin code
+        let userRole = 'USER';
+        if (adminCode === 'ADMIN123') {
+            userRole = 'ADMIN';
+        }
+
+        // Check required fields based on role
+        if (!fullName || !email || !password) {
+            return next(new AppError("Name, email, and password are required", 400));
+        }
+
+        // For regular users, check all required fields
+        if (userRole === 'USER') {
+            if (!phoneNumber || !fatherPhoneNumber || !governorate || !grade || !age) {
+                return next(new AppError("All fields are required for regular users", 400));
+            }
         }
 
         // Check if the user already exists
@@ -31,28 +44,29 @@ const register = async (req, res, next) => {
             return next(new AppError("Email already exists, please login", 400));
         }
 
-        // Determine user role based on admin code
-        let userRole = 'USER';
-        if (adminCode === 'ADMIN123') {
-            userRole = 'ADMIN';
-        }
-
-        // Save user in the database and log the user in
-        const user = await userModel.create({
+        // Prepare user data based on role
+        const userData = {
             fullName,
             email,
             password,
-            phoneNumber,
-            fatherPhoneNumber,
-            governorate,
-            grade,
-            age: parseInt(age),
             role: userRole,
             avatar: {
                 public_id: email,
                 secure_url: "",
             },
-        });
+        };
+
+        // Add optional fields for regular users
+        if (userRole === 'USER') {
+            userData.phoneNumber = phoneNumber;
+            userData.fatherPhoneNumber = fatherPhoneNumber;
+            userData.governorate = governorate;
+            userData.grade = grade;
+            userData.age = parseInt(age);
+        }
+
+        // Save user in the database and log the user in
+        const user = await userModel.create(userData);
 
         if (!user) {
             return next(new AppError("User registration failed, please try again", 400));

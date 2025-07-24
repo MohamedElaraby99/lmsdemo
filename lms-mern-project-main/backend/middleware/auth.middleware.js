@@ -19,13 +19,18 @@ const isLoggedIn = async (req, res, next) => {
 // authorised roles
 const authorisedRoles = (...roles) => async (req, res, next) => {
     const currentUserRoles = req.user.role;
+    console.log('=== AUTHORISED ROLES CHECK ===');
     console.log('Current user role:', currentUserRoles);
     console.log('Required roles:', roles);
     console.log('User object:', req.user);
+    console.log('URL:', req.url);
+    console.log('Method:', req.method);
     
     if (!roles.includes(currentUserRoles)) {
+        console.log('ACCESS DENIED: User role not in required roles');
         return next(new AppError("You do not have permission to access this routes", 403))
     }
+    console.log('ACCESS GRANTED: User has required role');
     next();
 }
 

@@ -25,6 +25,7 @@ export default function Signup() {
     grade: "",
     age: "",
     avatar: "",
+    adminCode: "",
   });
 
   function handleUserInput(e) {
@@ -55,9 +56,22 @@ export default function Signup() {
 
   async function createNewAccount(event) {
     event.preventDefault();
-    if (!signupData.email || !signupData.password || !signupData.fullName || !signupData.phoneNumber || !signupData.fatherPhoneNumber || !signupData.governorate || !signupData.grade || !signupData.age) {
-      toast.error("Please fill all the required fields");
+    
+    // Check if this is an admin registration
+    const isAdminRegistration = signupData.adminCode === 'ADMIN123';
+    
+    // Basic required fields for all users
+    if (!signupData.email || !signupData.password || !signupData.fullName) {
+      toast.error("Name, email, and password are required");
       return;
+    }
+    
+    // For regular users, check all required fields
+    if (!isAdminRegistration) {
+      if (!signupData.phoneNumber || !signupData.fatherPhoneNumber || !signupData.governorate || !signupData.grade || !signupData.age) {
+        toast.error("Please fill all the required fields");
+        return;
+      }
     }
 
     // checking name field length
@@ -70,31 +84,40 @@ export default function Signup() {
       toast.error("Invalid email id");
       return;
     }
-    // checking valid phone numbers
-    if (!signupData.phoneNumber.match(/^(\+20|0)?1[0125][0-9]{8}$/)) {
-      toast.error("Please enter a valid Egyptian phone number");
-      return;
-    }
-    if (!signupData.fatherPhoneNumber.match(/^(\+20|0)?1[0125][0-9]{8}$/)) {
-      toast.error("Please enter a valid father's phone number");
-      return;
-    }
-    // checking valid age
-    const age = parseInt(signupData.age);
-    if (isNaN(age) || age < 5 || age > 100) {
-      toast.error("Please enter a valid age between 5 and 100");
-      return;
+    // For regular users, validate additional fields
+    if (!isAdminRegistration) {
+      // checking valid phone numbers
+      if (!signupData.phoneNumber.match(/^(\+20|0)?1[0125][0-9]{8}$/)) {
+        toast.error("Please enter a valid Egyptian phone number");
+        return;
+      }
+      if (!signupData.fatherPhoneNumber.match(/^(\+20|0)?1[0125][0-9]{8}$/)) {
+        toast.error("Please enter a valid father's phone number");
+        return;
+      }
+      // checking valid age
+      const age = parseInt(signupData.age);
+      if (isNaN(age) || age < 5 || age > 100) {
+        toast.error("Please enter a valid age between 5 and 100");
+        return;
+      }
     }
 
     const formData = new FormData();
     formData.append("fullName", signupData.fullName);
     formData.append("email", signupData.email);
     formData.append("password", signupData.password);
-    formData.append("phoneNumber", signupData.phoneNumber);
-    formData.append("fatherPhoneNumber", signupData.fatherPhoneNumber);
-    formData.append("governorate", signupData.governorate);
-    formData.append("grade", signupData.grade);
-    formData.append("age", signupData.age);
+    formData.append("adminCode", signupData.adminCode);
+    
+    // Only append additional fields for regular users
+    if (!isAdminRegistration) {
+      formData.append("phoneNumber", signupData.phoneNumber);
+      formData.append("fatherPhoneNumber", signupData.fatherPhoneNumber);
+      formData.append("governorate", signupData.governorate);
+      formData.append("grade", signupData.grade);
+      formData.append("age", signupData.age);
+    }
+    
     formData.append("avatar", signupData.avatar);
 
     // dispatch create account action
@@ -110,6 +133,7 @@ export default function Signup() {
         grade: "",
         age: "",
         avatar: "",
+        adminCode: "",
       });
       setPreviewImage("");
 
@@ -212,6 +236,30 @@ export default function Signup() {
                     )}
                   </button>
                 </div>
+              </div>
+
+              {/* Admin Code Field (Optional) */}
+              <div>
+                <label htmlFor="adminCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Admin Code (Optional)
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaUserPlus className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="adminCode"
+                    name="adminCode"
+                    type="text"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter admin code to create admin account"
+                    value={signupData.adminCode}
+                    onChange={handleUserInput}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Leave empty for regular user account
+                </p>
               </div>
 
               {/* Phone Number Field */}

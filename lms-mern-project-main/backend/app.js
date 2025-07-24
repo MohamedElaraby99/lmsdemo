@@ -12,6 +12,7 @@ import qaRoutes from './routes/qa.routes.js';
 import subjectRoutes from './routes/subject.routes.js';
 import walletRoutes from './routes/wallet.routes.js';
 import adminRechargeCodeRoutes from './routes/adminRechargeCode.routes.js';
+import adminUserRoutes from './routes/adminUser.routes.js';
 import express from 'express';
 import connectToDb from './config/db.config.js';
 import errorMiddleware from './middleware/error.middleware.js';
@@ -59,6 +60,7 @@ app.use('/api/v1/', qaRoutes);
 app.use('/api/v1/', subjectRoutes);
 app.use('/api/v1/wallet', walletRoutes);
 app.use('/api/v1/admin/recharge-codes', adminRechargeCodeRoutes);
+app.use('/api/v1/admin/users', adminUserRoutes);
  
 
 app.all('*', (req, res) => {

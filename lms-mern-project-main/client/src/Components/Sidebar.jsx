@@ -15,6 +15,7 @@ import {
   FaQuestionCircle,
   FaWallet,
   FaCreditCard,
+  FaUsers,
 } from "react-icons/fa";
 
 export default function Sidebar({ hideBar = false }) {
@@ -184,6 +185,18 @@ export default function Sidebar({ hideBar = false }) {
                     className="text-gray-500 dark:text-slate-100"
                   />
                   Recharge Codes
+                </Link>
+              </li>
+            )}
+
+            {role === "ADMIN" && (
+              <li>
+                <Link to="/admin/users" className="flex gap-4 items-center">
+                  <FaUsers
+                    size={18}
+                    className="text-gray-500 dark:text-slate-100"
+                  />
+                  User Management
                 </Link>
               </li>
             )}

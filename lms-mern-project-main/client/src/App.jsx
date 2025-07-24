@@ -28,6 +28,7 @@ import TermsOfService from "./Pages/TermsOfService";
 import PrivacyPolicy from "./Pages/PrivacyPolicy";
 import Wallet from "./Pages/Wallet/Wallet";
 import AdminRechargeCodeDashboard from "./Pages/Dashboard/AdminRechargeCodeDashboard";
+import AdminUserDashboard from "./Pages/Dashboard/AdminUserDashboard";
 
 import RequireAuth from "./Components/auth/RequireAuth";
 import CreateCourse from "./Pages/Course/CreateCourse";
@@ -54,6 +55,7 @@ function App() {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/admin/recharge-codes" element={<AdminRechargeCodeDashboard />} />
+        <Route path="/admin/users" element={<AdminUserDashboard />} />
 
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />

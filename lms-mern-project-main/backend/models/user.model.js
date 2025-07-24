@@ -27,27 +27,37 @@ const userSchema = new Schema({
     },
     phoneNumber: {
         type: String,
-        required: [true, 'Phone number is required'],
+        required: function() {
+            return this.role !== 'ADMIN';
+        },
         trim: true
     },
     fatherPhoneNumber: {
         type: String,
-        required: [true, 'Father phone number is required'],
+        required: function() {
+            return this.role !== 'ADMIN';
+        },
         trim: true
     },
     governorate: {
         type: String,
-        required: [true, 'Governorate is required'],
+        required: function() {
+            return this.role !== 'ADMIN';
+        },
         trim: true
     },
     grade: {
         type: String,
-        required: [true, 'Grade is required'],
+        required: function() {
+            return this.role !== 'ADMIN';
+        },
         trim: true
     },
     age: {
         type: Number,
-        required: [true, 'Age is required'],
+        required: function() {
+            return this.role !== 'ADMIN';
+        },
         min: [5, 'Age must be at least 5'],
         max: [100, 'Age cannot exceed 100']
     },
@@ -63,6 +73,10 @@ const userSchema = new Schema({
         type: String,
         default: 'USER',
         enum: ['USER', 'ADMIN']
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     },
     forgotPasswordToken: String,
     forgotPasswordExpiry: Date,
