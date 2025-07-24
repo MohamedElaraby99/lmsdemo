@@ -113,7 +113,7 @@ export default function Navbar() {
             {/* Theme Toggle */}
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 group"
+              className="p-2 mr-11 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300 group"
             >
               {darkMode ? (
                 <FaSun className="w-5 h-5 text-yellow-500 group-hover:scale-110 transition-transform duration-300" />

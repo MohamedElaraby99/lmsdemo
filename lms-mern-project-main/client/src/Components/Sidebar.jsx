@@ -46,7 +46,7 @@ export default function Sidebar({ hideBar = false }) {
         <div className="drawer-content ">
           <label
             htmlFor="my-drawer"
-            className="cursor-pointer fixed top-0 left-3 md:hidden"
+            className="cursor-pointer fixed top-0 right-3 md:hidden"
           >
             <FiMenu
               onClick={changeWidth}
