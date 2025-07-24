@@ -24,6 +24,10 @@ import QAEdit from "./Pages/QA/QAEdit";
 import QAPendingQuestions from "./Pages/QA/QAPendingQuestions";
 import SubjectList from "./Pages/Subjects/SubjectList";
 import SubjectDashboard from "./Pages/Dashboard/SubjectDashboard";
+import TermsOfService from "./Pages/TermsOfService";
+import PrivacyPolicy from "./Pages/PrivacyPolicy";
+import Wallet from "./Pages/Wallet/Wallet";
+import AdminRechargeCodeDashboard from "./Pages/Dashboard/AdminRechargeCodeDashboard";
 
 import RequireAuth from "./Components/auth/RequireAuth";
 import CreateCourse from "./Pages/Course/CreateCourse";
@@ -46,6 +50,10 @@ function App() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/denied" element={<Denied />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/wallet" element={<Wallet />} />
+        <Route path="/admin/recharge-codes" element={<AdminRechargeCodeDashboard />} />
 
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />

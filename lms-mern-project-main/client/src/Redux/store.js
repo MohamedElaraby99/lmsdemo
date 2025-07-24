@@ -7,6 +7,8 @@ import StatSliceReducer from "./Slices/StatSlice"
 import BlogSliceReducer from "./Slices/BlogSlice"
 import QASliceReducer from "./Slices/QASlice"
 import SubjectSliceReducer from "./Slices/SubjectSlice"
+import WalletSliceReducer from "./Slices/WalletSlice"
+import AdminRechargeCodeSliceReducer from "./Slices/AdminRechargeCodeSlice"
 
  const store = configureStore({
     reducer: {
@@ -17,7 +19,9 @@ import SubjectSliceReducer from "./Slices/SubjectSlice"
         stat: StatSliceReducer,
         blog: BlogSliceReducer,
         qa: QASliceReducer,
-        subject: SubjectSliceReducer
+        subject: SubjectSliceReducer,
+        wallet: WalletSliceReducer,
+        adminRechargeCode: AdminRechargeCodeSliceReducer
     },
     devTools: true
 })

@@ -10,6 +10,7 @@ const isLoggedIn = async (req, res, next) => {
     }
 
     const userDetails = await jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Decoded user details:', userDetails);
     req.user = userDetails;
 
     next();
@@ -18,6 +19,10 @@ const isLoggedIn = async (req, res, next) => {
 // authorised roles
 const authorisedRoles = (...roles) => async (req, res, next) => {
     const currentUserRoles = req.user.role;
+    console.log('Current user role:', currentUserRoles);
+    console.log('Required roles:', roles);
+    console.log('User object:', req.user);
+    
     if (!roles.includes(currentUserRoles)) {
         return next(new AppError("You do not have permission to access this routes", 403))
     }

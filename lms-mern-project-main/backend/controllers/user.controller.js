@@ -18,10 +18,10 @@ const cookieOptions = {
 // Register  
 const register = async (req, res, next) => {
     try {
-        const { fullName, email, password, adminCode } = req.body;
+        const { fullName, email, password, phoneNumber, fatherPhoneNumber, governorate, grade, age, adminCode } = req.body;
 
         // Check if user misses any fields
-        if (!fullName || !email || !password) {
+        if (!fullName || !email || !password || !phoneNumber || !fatherPhoneNumber || !governorate || !grade || !age) {
             return next(new AppError("All fields are required", 400));
         }
 
@@ -42,6 +42,11 @@ const register = async (req, res, next) => {
             fullName,
             email,
             password,
+            phoneNumber,
+            fatherPhoneNumber,
+            governorate,
+            grade,
+            age: parseInt(age),
             role: userRole,
             avatar: {
                 public_id: email,

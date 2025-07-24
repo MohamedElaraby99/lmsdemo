@@ -13,6 +13,8 @@ import {
   FaPhone,
   FaBlog,
   FaQuestionCircle,
+  FaWallet,
+  FaCreditCard,
 } from "react-icons/fa";
 
 export default function Sidebar({ hideBar = false }) {
@@ -114,6 +116,18 @@ export default function Sidebar({ hideBar = false }) {
               </Link>
             </li>
 
+            {isLoggedIn && (
+              <li>
+                <Link to="/wallet" className="flex gap-4 items-center">
+                  <FaWallet
+                    size={18}
+                    className="text-gray-500 dark:text-slate-100"
+                  />
+                  My Wallet
+                </Link>
+              </li>
+            )}
+
             {role === "ADMIN" && (
               <li>
                 <Link to="/admin/dashboard" className="flex gap-4 items-center">
@@ -158,6 +172,18 @@ export default function Sidebar({ hideBar = false }) {
                     className="text-gray-500 dark:text-slate-100"
                   />
                   Q&A Management
+                </Link>
+              </li>
+            )}
+
+            {role === "ADMIN" && (
+              <li>
+                <Link to="/admin/recharge-codes" className="flex gap-4 items-center">
+                  <FaCreditCard
+                    size={18}
+                    className="text-gray-500 dark:text-slate-100"
+                  />
+                  Recharge Codes
                 </Link>
               </li>
             )}

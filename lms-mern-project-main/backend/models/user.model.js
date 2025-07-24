@@ -7,8 +7,8 @@ const userSchema = new Schema({
     fullName: {
         type: String,
         required: [true, 'Name is required'],
-        minLength: [3, 'Name must be at least 5 character'],
-        maxLength: [20, 'Name should be less than 20 character'],
+        minLength: [3, 'Name must be at least 3 character'],
+        maxLength: [50, 'Name should be less than 50 character'],
         lowercase: true,
         trim: true
     },
@@ -24,6 +24,32 @@ const userSchema = new Schema({
         required: [true, 'Password is required'],
         minLength: [4, 'Password must be at least 4 character'],
         select: false
+    },
+    phoneNumber: {
+        type: String,
+        required: [true, 'Phone number is required'],
+        trim: true
+    },
+    fatherPhoneNumber: {
+        type: String,
+        required: [true, 'Father phone number is required'],
+        trim: true
+    },
+    governorate: {
+        type: String,
+        required: [true, 'Governorate is required'],
+        trim: true
+    },
+    grade: {
+        type: String,
+        required: [true, 'Grade is required'],
+        trim: true
+    },
+    age: {
+        type: Number,
+        required: [true, 'Age is required'],
+        min: [5, 'Age must be at least 5'],
+        max: [100, 'Age cannot exceed 100']
     },
     avatar: {
         public_id: {
@@ -43,6 +69,40 @@ const userSchema = new Schema({
     subscription: {
         id: String,
         status: String
+    },
+    wallet: {
+        balance: {
+            type: Number,
+            default: 0
+        },
+        transactions: [{
+            type: {
+                type: String,
+                enum: ['recharge', 'purchase', 'refund'],
+                required: true
+            },
+            amount: {
+                type: Number,
+                required: true
+            },
+            code: {
+                type: String,
+                required: true
+            },
+            description: {
+                type: String,
+                required: true
+            },
+            date: {
+                type: Date,
+                default: Date.now
+            },
+            status: {
+                type: String,
+                enum: ['pending', 'completed', 'failed'],
+                default: 'completed'
+            }
+        }]
     }
 },
     {

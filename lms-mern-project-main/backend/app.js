@@ -10,6 +10,8 @@ import miscellaneousRoutes from './routes/miscellaneous.routes.js';
 import blogRoutes from './routes/blog.routes.js';
 import qaRoutes from './routes/qa.routes.js';
 import subjectRoutes from './routes/subject.routes.js';
+import walletRoutes from './routes/wallet.routes.js';
+import adminRechargeCodeRoutes from './routes/adminRechargeCode.routes.js';
 import express from 'express';
 import connectToDb from './config/db.config.js';
 import errorMiddleware from './middleware/error.middleware.js';
@@ -55,6 +57,8 @@ app.use('/api/v1/', miscellaneousRoutes);
 app.use('/api/v1/', blogRoutes);
 app.use('/api/v1/', qaRoutes);
 app.use('/api/v1/', subjectRoutes);
+app.use('/api/v1/wallet', walletRoutes);
+app.use('/api/v1/admin/recharge-codes', adminRechargeCodeRoutes);
  
 
 app.all('*', (req, res) => {
