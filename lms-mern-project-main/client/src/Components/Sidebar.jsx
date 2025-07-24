@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../Redux/Slices/AuthSlice";
 import { Link, useNavigate } from "react-router-dom";
@@ -19,7 +19,18 @@ export default function Sidebar({ hideBar = false }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const { isLoggedIn, role, data } = useSelector((state) => state.auth);
+
+  // Listen for window resize to force re-render
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const onLogout = async function () {
     await dispatch(logout());
@@ -46,7 +57,7 @@ export default function Sidebar({ hideBar = false }) {
   }
 
   return (
-    <div className="drawer absolute right-0 z-50 w-fit">
+    <div className="drawer absolute right-0 z-50 w-fit" key={windowWidth}>
       <input className="drawer-toggle" id="my-drawer" type="checkbox" />
       <div className="drawer-content ">
         <label
