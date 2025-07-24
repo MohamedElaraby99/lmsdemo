@@ -12,6 +12,11 @@ export default {
         'nunito-sans': ['Nunito Sans', 'sans-serif'],
         'open-sans': ['Open Sans', 'sans-serif'],
         'roboto': ['Roboto', 'sans-serif'],
+      },
+      colors: {
+        'input-bg': '#ffffff',
+        'input-text': '#000000',
+        'input-border': '#d1d5db',
       }
     },
   },

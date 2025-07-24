@@ -11,7 +11,7 @@ import {
 } from "chart.js";
 import { Bar, Pie } from "react-chartjs-2";
 import { BsCollectionPlayFill, BsTrash } from "react-icons/bs";
-import { FaUsers, FaBlog } from "react-icons/fa";
+import { FaUsers, FaBlog, FaQuestionCircle, FaBook } from "react-icons/fa";
 import { FcSalesPerformance } from "react-icons/fc";
 import { GiMoneyStack } from "react-icons/gi";
 import { useDispatch, useSelector } from "react-redux";
@@ -224,6 +224,24 @@ export default function AdminDashboard() {
                   <FaBlog />
                   Blog Dashboard
                 </button>
+                <button
+                  onClick={() => {
+                    navigate("/admin/qa-dashboard");
+                  }}
+                  className="w-fit bg-purple-500  transition-all ease-in-out duration-300 rounded py-2 px-4 font-[600] font-inter text-lg text-white cursor-pointer flex items-center gap-2"
+                >
+                  <FaQuestionCircle />
+                  Q&A Dashboard
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/admin/subject-dashboard");
+                  }}
+                  className="w-fit bg-green-500  transition-all ease-in-out duration-300 rounded py-2 px-4 font-[600] font-inter text-lg text-white cursor-pointer flex items-center gap-2"
+                >
+                  <FaBook />
+                  Subject Dashboard
+                </button>
               </div>
             </div>
 
@@ -246,21 +264,21 @@ export default function AdminDashboard() {
                       <tr key={course._id}>
                         <td>{idx + 1}</td>
                         <td>
-                          <textarea
-                            readOnly
-                            value={course?.title}
-                            className="w-40 h-auto bg-transparent resize-none"
-                          ></textarea>
+                                                      <textarea
+                              readOnly
+                              value={course?.title}
+                              className="w-40 h-auto bg-white text-black resize-none border border-gray-300 rounded px-2 py-1 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                            ></textarea>
                         </td>
                         <td>{course?.category}</td>
                         <td>{course?.createdBy}</td>
                         <td>{course?.numberOfLectures}</td>
                         <td className="max-w-28  whitespace-nowrap">
-                          <textarea
-                            value={course?.description}
-                            readOnly
-                            className="w-80 h-auto bg-transparent  line-clamp-2 resize-none"
-                          ></textarea>
+                                                      <textarea
+                              value={course?.description}
+                              readOnly
+                              className="w-80 h-auto bg-white text-black line-clamp-2 resize-none border border-gray-300 rounded px-2 py-1 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                            ></textarea>
                         </td>
                         <td className="flex items-center gap-4">
                           <button

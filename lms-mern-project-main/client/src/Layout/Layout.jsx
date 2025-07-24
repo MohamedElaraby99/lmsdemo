@@ -10,8 +10,10 @@ export default function Layout({ children, hideBar, hideNav, hideFooter }) {
         {/* navbar */}
         {!hideNav && <Navbar />}
 
-        {/* sidebar */}
-        <Sidebar hideBar={hideBar} />
+        {/* sidebar - hidden on desktop */}
+        <div className="md:hidden">
+          <Sidebar hideBar={hideBar} />
+        </div>
 
         {/* main content */}
         {children}

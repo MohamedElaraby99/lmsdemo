@@ -69,28 +69,34 @@ export const getQAById = async (req, res, next) => {
     }
 };
 
-// Create new Q&A
+// Create new Q&A (Ask Question)
 export const createQA = async (req, res, next) => {
     try {
         const { question, answer, category, author, tags } = req.body;
         
-        if (!question || !answer || !category || !author) {
-            return next(new AppError('All required fields must be provided', 400));
+        if (!question || !category || !author) {
+            return next(new AppError('Question, category, and author are required', 400));
         }
         
         const qaData = {
             question,
-            answer,
             category,
             author,
-            tags: tags ? tags.split(',').map(tag => tag.trim()) : []
+            tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+            status: 'pending' // Questions start as pending
         };
+        
+        // Only add answer if provided (for admin creating Q&A with answer)
+        if (answer) {
+            qaData.answer = answer;
+            qaData.status = 'answered';
+        }
         
         const qa = await qaModel.create(qaData);
         
         res.status(201).json({
             success: true,
-            message: 'Q&A created successfully',
+            message: answer ? 'Q&A created successfully' : 'Question asked successfully',
             qa
         });
     } catch (e) {
@@ -123,6 +129,45 @@ export const updateQA = async (req, res, next) => {
             success: true,
             message: 'Q&A updated successfully',
             qa
+        });
+    } catch (e) {
+        return next(new AppError(e.message, 500));
+    }
+};
+
+// Answer a question (Admin only)
+export const answerQuestion = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { answer } = req.body;
+        
+        if (!answer) {
+            return next(new AppError('Answer is required', 400));
+        }
+        
+        const qa = await qaModel.findById(id);
+        
+        if (!qa) {
+            return next(new AppError('Question not found', 404));
+        }
+        
+        if (qa.status === 'answered') {
+            return next(new AppError('Question is already answered', 400));
+        }
+        
+        const updatedQA = await qaModel.findByIdAndUpdate(
+            id,
+            {
+                answer,
+                status: 'answered'
+            },
+            { new: true }
+        );
+        
+        res.status(200).json({
+            success: true,
+            message: 'Question answered successfully',
+            qa: updatedQA
         });
     } catch (e) {
         return next(new AppError(e.message, 500));
@@ -211,6 +256,32 @@ export const getFeaturedQAs = async (req, res, next) => {
             success: true,
             message: 'Featured Q&As fetched successfully',
             qas
+        });
+    } catch (e) {
+        return next(new AppError(e.message, 500));
+    }
+};
+
+// Get pending questions (Admin only)
+export const getPendingQuestions = async (req, res, next) => {
+    try {
+        const { page = 1, limit = 10 } = req.query;
+        
+        const pendingQuestions = await qaModel.find({ status: 'pending' })
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .exec();
+            
+        const total = await qaModel.countDocuments({ status: 'pending' });
+        
+        res.status(200).json({
+            success: true,
+            message: 'Pending questions fetched successfully',
+            questions: pendingQuestions,
+            totalPages: Math.ceil(total / limit),
+            currentPage: page,
+            total
         });
     } catch (e) {
         return next(new AppError(e.message, 500));

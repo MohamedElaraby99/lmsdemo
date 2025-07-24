@@ -9,6 +9,7 @@ import paymentRoutes from './routes/payment.routes.js';
 import miscellaneousRoutes from './routes/miscellaneous.routes.js';
 import blogRoutes from './routes/blog.routes.js';
 import qaRoutes from './routes/qa.routes.js';
+import subjectRoutes from './routes/subject.routes.js';
 import express from 'express';
 import connectToDb from './config/db.config.js';
 import errorMiddleware from './middleware/error.middleware.js';
@@ -53,6 +54,7 @@ app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/', miscellaneousRoutes);
 app.use('/api/v1/', blogRoutes);
 app.use('/api/v1/', qaRoutes);
+app.use('/api/v1/', subjectRoutes);
  
 
 app.all('*', (req, res) => {

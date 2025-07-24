@@ -12,6 +12,7 @@ import {
   FaInfoCircle,
   FaPhone,
   FaBlog,
+  FaQuestionCircle,
 } from "react-icons/fa";
 
 export default function Sidebar({ hideBar = false }) {
@@ -45,7 +46,7 @@ export default function Sidebar({ hideBar = false }) {
         <div className="drawer-content ">
           <label
             htmlFor="my-drawer"
-            className="cursor-pointer fixed top-0 left-3"
+            className="cursor-pointer fixed top-0 left-3 md:hidden"
           >
             <FiMenu
               onClick={changeWidth}
@@ -82,6 +83,16 @@ export default function Sidebar({ hideBar = false }) {
                   className="text-gray-500 dark:text-slate-100"
                 />
                 Blog
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/qa" className="flex gap-4 items-center">
+                <FaQuestionCircle
+                  size={18}
+                  className="text-gray-500 dark:text-slate-100"
+                />
+                Q&A
               </Link>
             </li>
 

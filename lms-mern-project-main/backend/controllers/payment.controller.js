@@ -129,7 +129,8 @@ export const allPayments = async (req, res, next) => {
 
         // Check if Razorpay is properly configured
         if (process.env.RAZORPAY_KEY_ID === 'rzp_test_placeholder' || 
-            process.env.RAZORPAY_SECRET === 'placeholder_secret') {
+            process.env.RAZORPAY_SECRET === 'placeholder_secret' ||
+            !razorpay) {
             // Return mock data if Razorpay is not configured
             res.status(200).json({
                 success: true,
@@ -142,16 +143,30 @@ export const allPayments = async (req, res, next) => {
             return;
         }
 
-        const subscriptions = await razorpay.subscriptions.all({
-            count: count || 10,
-        });
+        try {
+            const subscriptions = await razorpay.subscriptions.all({
+                count: count || 10,
+            });
 
-        res.status(200).json({
-            success: true,
-            message: 'All Payments',
-            allPayments: subscriptions
-        });
+            res.status(200).json({
+                success: true,
+                message: 'All Payments',
+                allPayments: subscriptions
+            });
+        } catch (razorpayError) {
+            console.error('Razorpay error:', razorpayError);
+            // Return mock data if Razorpay fails
+            res.status(200).json({
+                success: true,
+                message: 'All Payments (Mock Data - Razorpay Error)',
+                allPayments: {
+                    count: 0,
+                    items: []
+                }
+            });
+        }
     } catch (e) {
-        return next(new AppError(e.message, 500));
+        console.error('Payment controller error:', e);
+        return next(new AppError('Failed to fetch payments', 500));
     }
 };

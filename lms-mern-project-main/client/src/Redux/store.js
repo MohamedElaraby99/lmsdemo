@@ -5,6 +5,8 @@ import RazorpaySliceReducer from "./Slices/RazorpaySlice"
 import LectureSliceReducer from "./Slices/LectureSlice"
 import StatSliceReducer from "./Slices/StatSlice"
 import BlogSliceReducer from "./Slices/BlogSlice"
+import QASliceReducer from "./Slices/QASlice"
+import SubjectSliceReducer from "./Slices/SubjectSlice"
 
  const store = configureStore({
     reducer: {
@@ -13,7 +15,9 @@ import BlogSliceReducer from "./Slices/BlogSlice"
         razorpay: RazorpaySliceReducer,
         lecture: LectureSliceReducer,
         stat: StatSliceReducer,
-        blog: BlogSliceReducer
+        blog: BlogSliceReducer,
+        qa: QASliceReducer,
+        subject: SubjectSliceReducer
     },
     devTools: true
 })

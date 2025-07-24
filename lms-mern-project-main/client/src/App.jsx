@@ -16,6 +16,14 @@ import CourseDescription from "./Pages/Course/CourseDescription";
 import BlogList from "./Pages/Blog/BlogList";
 import BlogDetail from "./Pages/Blog/BlogDetail";
 import BlogDashboard from "./Pages/Dashboard/BlogDashboard";
+import QAList from "./Pages/QA/QAList";
+import QADetail from "./Pages/QA/QADetail";
+import QADashboard from "./Pages/Dashboard/QADashboard";
+import QACreate from "./Pages/QA/QACreate";
+import QAEdit from "./Pages/QA/QAEdit";
+import QAPendingQuestions from "./Pages/QA/QAPendingQuestions";
+import SubjectList from "./Pages/Subjects/SubjectList";
+import SubjectDashboard from "./Pages/Dashboard/SubjectDashboard";
 
 import RequireAuth from "./Components/auth/RequireAuth";
 import CreateCourse from "./Pages/Course/CreateCourse";
@@ -51,12 +59,20 @@ function App() {
         <Route path="/courses/description" element={<CourseDescription />} />
         <Route path="/blogs" element={<BlogList />} />
         <Route path="/blog/:id" element={<BlogDetail />} />
+        <Route path="/qa" element={<QAList />} />
+        <Route path="/qa/create" element={<QACreate />} />
+        <Route path="/qa/edit/:id" element={<QAEdit />} />
+        <Route path="/qa/:id" element={<QADetail />} />
+        <Route path="/subjects" element={<SubjectList />} />
 
         <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
           <Route path="/course/create" element={<CreateCourse />} />
           <Route path="/course/addlecture" element={<AddLecture />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/blog-dashboard" element={<BlogDashboard />} />
+          <Route path="/admin/qa-dashboard" element={<QADashboard />} />
+          <Route path="/admin/qa-pending" element={<QAPendingQuestions />} />
+          <Route path="/admin/subject-dashboard" element={<SubjectDashboard />} />
         </Route>
 
         <Route element={<RequireAuth allowedRoles={["USER", "ADMIN"]} />}>

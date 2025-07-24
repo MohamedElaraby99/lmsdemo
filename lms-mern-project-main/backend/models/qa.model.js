@@ -9,7 +9,7 @@ const qaSchema = new Schema({
     },
     answer: {
         type: String,
-        required: [true, 'Answer is required'],
+        required: false,
         minLength: [10, 'Answer must be at least 10 characters'],
         maxLength: [2000, 'Answer should be less than 2000 characters']
     },
@@ -25,7 +25,7 @@ const qaSchema = new Schema({
     status: {
         type: String,
         enum: ['pending', 'answered', 'featured'],
-        default: 'answered'
+        default: 'pending'
     },
     upvotes: {
         type: Number,

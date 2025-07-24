@@ -7,7 +7,9 @@ import {
     deleteQA, 
     upvoteQA, 
     downvoteQA, 
-    getFeaturedQAs 
+    getFeaturedQAs,
+    answerQuestion,
+    getPendingQuestions
 } from '../controllers/qa.controller.js';
 import { isLoggedIn } from "../middleware/auth.middleware.js";
 
@@ -24,5 +26,7 @@ router.post('/qas/:id/downvote', downvoteQA);
 router.post('/qas', isLoggedIn, createQA);
 router.put('/qas/:id', isLoggedIn, updateQA);
 router.delete('/qas/:id', isLoggedIn, deleteQA);
+router.post('/qas/:id/answer', isLoggedIn, answerQuestion);
+router.get('/qas/pending', isLoggedIn, getPendingQuestions);
 
 export default router; 
