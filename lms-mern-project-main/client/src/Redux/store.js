@@ -10,6 +10,7 @@ import SubjectSliceReducer from "./Slices/SubjectSlice"
 import WalletSliceReducer from "./Slices/WalletSlice"
 import AdminRechargeCodeSliceReducer from "./Slices/AdminRechargeCodeSlice"
 import AdminUserSliceReducer from "./Slices/AdminUserSlice"
+import WhatsAppServiceSliceReducer from "./Slices/WhatsAppServiceSlice"
 
  const store = configureStore({
     reducer: {
@@ -23,7 +24,8 @@ import AdminUserSliceReducer from "./Slices/AdminUserSlice"
         subject: SubjectSliceReducer,
         wallet: WalletSliceReducer,
         adminRechargeCode: AdminRechargeCodeSliceReducer,
-        adminUser: AdminUserSliceReducer
+        adminUser: AdminUserSliceReducer,
+        whatsappService: WhatsAppServiceSliceReducer
     },
     devTools: true
 })

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../Redux/Slices/AuthSlice";
+import { getWalletBalance } from "../Redux/Slices/WalletSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { AiFillCloseCircle } from "react-icons/ai";
 import { FiMenu } from "react-icons/fi";
@@ -16,6 +17,7 @@ import {
   FaWallet,
   FaCreditCard,
   FaUsers,
+  FaWhatsapp,
 } from "react-icons/fa";
 
 export default function Sidebar({ hideBar = false }) {
@@ -24,6 +26,7 @@ export default function Sidebar({ hideBar = false }) {
   const [isLoading, setIsLoading] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const { isLoggedIn, role, data } = useSelector((state) => state.auth);
+  const { balance } = useSelector((state) => state.wallet);
 
   // Listen for window resize to force re-render
   useEffect(() => {
@@ -35,9 +38,26 @@ export default function Sidebar({ hideBar = false }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Fetch wallet balance when user is logged in
+  useEffect(() => {
+    if (isLoggedIn && role !== "ADMIN") {
+      dispatch(getWalletBalance());
+    }
+  }, [dispatch, isLoggedIn, role]);
+
   const onLogout = async function () {
     await dispatch(logout());
     navigate("/");
+  };
+
+  // Function to get user initials from full name
+  const getUserInitials = (fullName) => {
+    if (!fullName) return "U";
+    const names = fullName.split(" ");
+    if (names.length === 1) {
+      return names[0].charAt(0).toUpperCase();
+    }
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
   };
 
   function changeWidth() {
@@ -87,6 +107,23 @@ export default function Sidebar({ hideBar = false }) {
                 <AiFillCloseCircle size={28} />
               </button>
             </li>
+
+            {/* Wallet Balance Display */}
+            {isLoggedIn && role !== "ADMIN" && (
+              <li className="mb-3">
+                <div className="bg-gradient-to-r from-green-400 to-blue-400 rounded-lg p-3 text-white shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FaWallet className="text-white" size={14} />
+                      <span className="text-xs font-medium">Balance</span>
+                    </div>
+                  </div>
+                  <div className="text-lg font-bold mt-1">
+                    {balance ? `${balance.toFixed(2)} EGP` : "0.00 EGP"}
+                  </div>
+                </div>
+              </li>
+            )}
             <li>
               <Link to="/" className="flex gap-4 items-center">
                 <FaHome
@@ -201,6 +238,18 @@ export default function Sidebar({ hideBar = false }) {
               </li>
             )}
 
+            {role === "ADMIN" && (
+              <li>
+                <Link to="/admin/whatsapp-services" className="flex gap-4 items-center">
+                  <FaWhatsapp
+                    size={18}
+                    className="text-gray-500 dark:text-slate-100"
+                  />
+                  WhatsApp Management
+                </Link>
+              </li>
+            )}
+
             <li>
               <Link to="/courses" className="flex gap-4 items-center">
                 <FaList
@@ -208,6 +257,16 @@ export default function Sidebar({ hideBar = false }) {
                   className="text-gray-500 dark:text-slate-100"
                 />
                 All Courses
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/whatsapp-services" className="flex gap-4 items-center">
+                <FaWhatsapp
+                  size={18}
+                  className="text-gray-500 dark:text-slate-100"
+                />
+                WhatsApp Services
               </Link>
             </li>
 
@@ -233,16 +292,41 @@ export default function Sidebar({ hideBar = false }) {
 
             {isLoggedIn ? (
               <li className="absolute bottom-4 w-[90%]">
-                <div className="w-full flex md:flex-row flex-col gap-2 items-center justify-center">
-                  <button className="btn-primary px-3.5 py-2.5 font-semibold rounded-md w-full">
-                    <Link to="/user/profile">Profile</Link>
-                  </button>
+                <div className="w-full flex flex-col gap-3 items-center justify-center">
+                  {/* User Avatar Circle */}
+                  <Link 
+                    to="/user/profile" 
+                    className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
+                    onClick={hideDrawer}
+                  >
+                    {data?.avatar?.secure_url ? (
+                      <img 
+                        src={data.avatar.secure_url} 
+                        alt="Profile" 
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      getUserInitials(data?.fullName)
+                    )}
+                  </Link>
+                  
+                  {/* User Name */}
+                  <div className="text-center">
+                    <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                      {data?.fullName || "User"}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {role === "ADMIN" ? "Administrator" : "Student"}
+                    </div>
+                  </div>
+
+                  {/* Logout Button */}
                   <button
                     className="btn-secondary px-3.5 py-2.5 font-semibold rounded-md w-full"
                     onClick={onLogout}
                     disabled={isLoading}
                   >
-                    <Link>{isLoading ? "Logout..." : "Logout"}</Link>
+                    {isLoading ? "Logout..." : "Logout"}
                   </button>
                 </div>
               </li>

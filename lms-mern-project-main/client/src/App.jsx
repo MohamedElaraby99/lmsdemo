@@ -29,6 +29,8 @@ import PrivacyPolicy from "./Pages/PrivacyPolicy";
 import Wallet from "./Pages/Wallet/Wallet";
 import AdminRechargeCodeDashboard from "./Pages/Dashboard/AdminRechargeCodeDashboard";
 import AdminUserDashboard from "./Pages/Dashboard/AdminUserDashboard";
+import WhatsAppServiceDashboard from "./Pages/Dashboard/WhatsAppServiceDashboard";
+import WhatsAppServices from "./Pages/WhatsAppServices/WhatsAppServices";
 
 import RequireAuth from "./Components/auth/RequireAuth";
 import CreateCourse from "./Pages/Course/CreateCourse";
@@ -56,6 +58,8 @@ function App() {
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/admin/recharge-codes" element={<AdminRechargeCodeDashboard />} />
         <Route path="/admin/users" element={<AdminUserDashboard />} />
+        <Route path="/admin/whatsapp-services" element={<WhatsAppServiceDashboard />} />
+        <Route path="/whatsapp-services" element={<WhatsAppServices />} />
 
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />

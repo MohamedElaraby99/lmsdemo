@@ -385,8 +385,6 @@ export default function Signup() {
                     <option value="Secondary 1">Secondary 1</option>
                     <option value="Secondary 2">Secondary 2</option>
                     <option value="Secondary 3">Secondary 3</option>
-                    <option value="University">University</option>
-                    <option value="Other">Other</option>
                   </select>
                 </div>
               </div>

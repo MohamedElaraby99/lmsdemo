@@ -9,6 +9,7 @@ import {
     validateRechargeCode,
     clearWalletError 
 } from "../../Redux/Slices/WalletSlice";
+import { getPaymentServices } from "../../Redux/Slices/WhatsAppServiceSlice";
 import { 
     FaWallet, 
     FaCreditCard, 
@@ -22,12 +23,14 @@ import {
     FaCalendarAlt,
     FaMoneyBillWave,
     FaArrowUp,
-    FaArrowDown
+    FaArrowDown,
+    FaWhatsapp,
+    FaClock
 } from "react-icons/fa";
 
 export default function Wallet() {
     const dispatch = useDispatch();
-    const { user } = useSelector((state) => state.auth);
+    const { data: user } = useSelector((state) => state.auth);
     const { 
         balance, 
         transactions, 
@@ -37,6 +40,7 @@ export default function Wallet() {
         rechargeError,
         codeValidation 
     } = useSelector((state) => state.wallet);
+    const { services: whatsappServices } = useSelector((state) => state.whatsappService);
 
     const [rechargeForm, setRechargeForm] = useState({
         code: "",
@@ -49,6 +53,7 @@ export default function Wallet() {
         if (user) {
             dispatch(getWalletBalance());
             dispatch(getTransactionHistory());
+            dispatch(getPaymentServices());
         }
     }, [dispatch, user]);
 
@@ -222,6 +227,89 @@ export default function Wallet() {
                                     Recharge Your Wallet
                                 </h3>
                                 
+                                {/* How to recharge instructions */}
+                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                                    <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">
+                                        How to recharge:
+                                    </h4>
+                                    <ul className="space-y-2 text-blue-800 dark:text-blue-200">
+                                        <li className="flex items-start">
+                                            <span className="text-blue-600 dark:text-blue-400 mr-2">•</span>
+                                            Purchase a recharge code from authorized vendors
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="text-blue-600 dark:text-blue-400 mr-2">•</span>
+                                            Enter the code and amount in the form above
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="text-blue-600 dark:text-blue-400 mr-2">•</span>
+                                            Your wallet will be credited instantly
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="text-blue-600 dark:text-blue-400 mr-2">•</span>
+                                            Use your balance to purchase courses and services that you will contact us on WhatsApp
+                                        </li>
+                                    </ul>
+                                    
+                                    {/* WhatsApp Contact Information */}
+                                    {whatsappServices && whatsappServices.length > 0 && (
+                                        <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+                                            <h5 className="text-md font-semibold text-green-900 dark:text-green-100 mb-3 flex items-center gap-2">
+                                                <FaWhatsapp className="text-green-600 dark:text-green-400" />
+                                                Need Help? Contact Us on WhatsApp
+                                            </h5>
+                                            <div className="space-y-3">
+                                                {whatsappServices.map((service) => (
+                                                    <div key={service._id} className="space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-lg">{service.icon}</span>
+                                                            <h6 className="font-medium text-green-900 dark:text-green-100">
+                                                                {service.name}
+                                                            </h6>
+                                                        </div>
+                                                        <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                                                            {service.description}
+                                                        </p>
+                                                        {service.whatsappNumbers.map((number, index) => (
+                                                            <div key={number._id || index} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded border border-green-200 dark:border-green-600">
+                                                                <div>
+                                                                    <div className="font-medium text-gray-900 dark:text-white">
+                                                                        {number.name}
+                                                                    </div>
+                                                                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                                        {number.number}
+                                                                    </div>
+                                                                    {number.workingHours && (
+                                                                        <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                                            <FaClock />
+                                                                            {number.workingHours}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const message = `Hello! I'm interested in your ${service.name} service. ${service.instructions || 'Can you provide more information?'}`;
+                                                                        window.open(`https://wa.me/${number.number}?text=${encodeURIComponent(message)}`, '_blank');
+                                                                    }}
+                                                                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                                                >
+                                                                    <FaWhatsapp />
+                                                                    Contact
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded">
+                                                <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                                                    <strong>Working Hours:</strong> 24/7 Support Available
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                
                                 <form onSubmit={handleRecharge} className="space-y-6">
                                     {/* Code Input */}
                                     <div>
@@ -297,19 +385,6 @@ export default function Wallet() {
                                         )}
                                     </button>
                                 </form>
-
-                                {/* Info Section */}
-                                <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                    <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                                        How to recharge:
-                                    </h4>
-                                    <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                                        <li>• Purchase a recharge code from authorized vendors</li>
-                                        <li>• Enter the code and amount in the form above</li>
-                                        <li>• Your wallet will be credited instantly</li>
-                                        <li>• Use your balance to purchase courses and services</li>
-                                    </ul>
-                                </div>
                             </div>
                         )}
 

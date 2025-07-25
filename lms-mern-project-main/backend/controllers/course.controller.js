@@ -55,6 +55,39 @@ const getLecturesByCourseId = async (req, res, next) => {
     }
 }
 
+// get course structure (units and lessons)
+const getCourseStructure = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const course = await courseModel.findById(id).select('title description units directLessons numberOfLectures');
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        // Calculate total lessons from structure
+        const totalUnitLessons = course.units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
+        const totalDirectLessons = course.directLessons.length;
+        const totalLessons = totalUnitLessons + totalDirectLessons;
+
+        res.status(200).json({
+            success: true,
+            message: 'Course structure retrieved successfully',
+            course: {
+                _id: course._id,
+                title: course.title,
+                description: course.description,
+                units: course.units || [],
+                directLessons: course.directLessons || [],
+                totalLessons: totalLessons,
+                numberOfLectures: course.numberOfLectures
+            }
+        })
+    } catch (e) {
+        return next(new AppError(e.message, 500));
+    }
+}
+
 // create course
 const createCourse = async (req, res, next) => {
     try {
@@ -489,6 +522,140 @@ const updateCourseLecture = async (req, res, next) => {
 };
 
 
+// Update unit name and description
+const updateUnit = async (req, res, next) => {
+    try {
+        const { courseId, unitId } = req.params;
+        const { title, description } = req.body;
+
+        if (!title && !description) {
+            return next(new AppError('Title or description is required', 400));
+        }
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        // Find the unit and update it
+        const unitIndex = course.units.findIndex(unit => 
+            unit._id.toString() === unitId || unit.id === unitId
+        );
+
+        if (unitIndex === -1) {
+            return next(new AppError('Unit not found', 404));
+        }
+
+        // Update unit fields
+        if (title) course.units[unitIndex].title = title;
+        if (description) course.units[unitIndex].description = description;
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Unit updated successfully',
+            unit: course.units[unitIndex]
+        });
+
+    } catch (e) {
+        return next(new AppError(e.message, 500));
+    }
+};
+
+// Update lesson name and description
+const updateLesson = async (req, res, next) => {
+    try {
+        const { courseId, unitId, lessonId } = req.params;
+        const { title, description, duration } = req.body;
+
+        if (!title && !description && duration === undefined) {
+            return next(new AppError('At least one field is required', 400));
+        }
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        // Find the unit
+        const unitIndex = course.units.findIndex(unit => 
+            unit._id.toString() === unitId || unit.id === unitId
+        );
+
+        if (unitIndex === -1) {
+            return next(new AppError('Unit not found', 404));
+        }
+
+        // Find the lesson within the unit
+        const lessonIndex = course.units[unitIndex].lessons.findIndex(lesson => 
+            lesson._id.toString() === lessonId || lesson.id === lessonId
+        );
+
+        if (lessonIndex === -1) {
+            return next(new AppError('Lesson not found', 404));
+        }
+
+        // Update lesson fields
+        if (title) course.units[unitIndex].lessons[lessonIndex].title = title;
+        if (description) course.units[unitIndex].lessons[lessonIndex].description = description;
+        if (duration !== undefined) course.units[unitIndex].lessons[lessonIndex].duration = duration;
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Lesson updated successfully',
+            lesson: course.units[unitIndex].lessons[lessonIndex]
+        });
+
+    } catch (e) {
+        return next(new AppError(e.message, 500));
+    }
+};
+
+// Update direct lesson name and description
+const updateDirectLesson = async (req, res, next) => {
+    try {
+        const { courseId, lessonId } = req.params;
+        const { title, description, duration } = req.body;
+
+        if (!title && !description && duration === undefined) {
+            return next(new AppError('At least one field is required', 400));
+        }
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        // Find the direct lesson
+        const lessonIndex = course.directLessons.findIndex(lesson => 
+            lesson._id.toString() === lessonId || lesson.id === lessonId
+        );
+
+        if (lessonIndex === -1) {
+            return next(new AppError('Direct lesson not found', 404));
+        }
+
+        // Update lesson fields
+        if (title) course.directLessons[lessonIndex].title = title;
+        if (description) course.directLessons[lessonIndex].description = description;
+        if (duration !== undefined) course.directLessons[lessonIndex].duration = duration;
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Direct lesson updated successfully',
+            lesson: course.directLessons[lessonIndex]
+        });
+
+    } catch (e) {
+        return next(new AppError(e.message, 500));
+    }
+};
+
 // Simulate course sale for testing
 const simulateCourseSale = async (req, res, next) => {
     try {
@@ -530,11 +697,15 @@ const simulateCourseSale = async (req, res, next) => {
 export {
     getAllCourses,
     getLecturesByCourseId,
+    getCourseStructure,
     createCourse,
     updateCourse,
     removeCourse,
     addLectureToCourseById,
     deleteCourseLecture,
     updateCourseLecture,
+    updateUnit,
+    updateLesson,
+    updateDirectLesson,
     simulateCourseSale
 }

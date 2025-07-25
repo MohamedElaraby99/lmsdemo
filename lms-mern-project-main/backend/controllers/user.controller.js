@@ -189,6 +189,18 @@ const getProfile = async (req, res) => {
         const { id } = req.user;
         const user = await userModel.findById(id);
 
+        console.log('User profile data being sent:', {
+            id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            fatherPhoneNumber: user.fatherPhoneNumber,
+            governorate: user.governorate,
+            grade: user.grade,
+            age: user.age,
+            role: user.role
+        });
+
         res.status(200).json({
             success: true,
             message: 'User details',
@@ -312,10 +324,10 @@ const changePassword = async (req, res, next) => {
 // update profile
 const updateUser = async (req, res, next) => {
     try {
-        const { fullName } = req.body;
+        const { fullName, phoneNumber, fatherPhoneNumber, governorate, grade, age } = req.body;
         const { id } = req.user;
 
-        console.log(fullName);
+        console.log('Update user data:', { fullName, phoneNumber, fatherPhoneNumber, governorate, grade, age });
 
         const user = await userModel.findById(id);
 
@@ -323,8 +335,24 @@ const updateUser = async (req, res, next) => {
             return next(new AppError("user does not exist", 400));
         }
 
+        // Update user fields if provided
         if (fullName) {
-            user.fullName = fullName
+            user.fullName = fullName;
+        }
+        if (phoneNumber) {
+            user.phoneNumber = phoneNumber;
+        }
+        if (fatherPhoneNumber) {
+            user.fatherPhoneNumber = fatherPhoneNumber;
+        }
+        if (governorate) {
+            user.governorate = governorate;
+        }
+        if (grade) {
+            user.grade = grade;
+        }
+        if (age) {
+            user.age = parseInt(age);
         }
 
         if (req.file) {

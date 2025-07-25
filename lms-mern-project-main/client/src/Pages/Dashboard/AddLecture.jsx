@@ -65,13 +65,34 @@ export default function AddLecture() {
     setEditingUnit(newUnit.id);
   };
 
-  const updateUnit = (unitId, field, value) => {
-    setCourseData(prev => ({
-      ...prev,
-      units: prev.units.map(unit => 
-        unit.id === unitId ? { ...unit, [field]: value } : unit
-      )
-    }));
+  const updateUnit = async (unitId, field, value) => {
+    try {
+      // Update locally first for immediate UI feedback
+      setCourseData(prev => ({
+        ...prev,
+        units: prev.units.map(unit => 
+          unit.id === unitId ? { ...unit, [field]: value } : unit
+        )
+      }));
+
+      // Send update to backend
+      const response = await axiosInstance.put(`/courses/${courseData.id}/units/${unitId}`, {
+        [field]: value
+      });
+
+      if (response.data.success) {
+        console.log('Unit updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating unit:', error);
+      // Revert local changes if backend update fails
+      setCourseData(prev => ({
+        ...prev,
+        units: prev.units.map(unit => 
+          unit.id === unitId ? { ...unit, [field]: unit[field] } : unit
+        )
+      }));
+    }
   };
 
   const deleteUnit = (unitId) => {
@@ -122,20 +143,48 @@ export default function AddLecture() {
     setEditingLesson(newLesson.id);
   };
 
-  const updateLessonInUnit = (unitId, lessonId, field, value) => {
-    setCourseData(prev => ({
-      ...prev,
-      units: prev.units.map(unit => 
-        unit.id === unitId 
-          ? {
-              ...unit,
-              lessons: unit.lessons.map(lesson => 
-                lesson.id === lessonId ? { ...lesson, [field]: value } : lesson
-              )
-            }
-          : unit
-      )
-    }));
+  const updateLessonInUnit = async (unitId, lessonId, field, value) => {
+    try {
+      // Update locally first for immediate UI feedback
+      setCourseData(prev => ({
+        ...prev,
+        units: prev.units.map(unit => 
+          unit.id === unitId 
+            ? {
+                ...unit,
+                lessons: unit.lessons.map(lesson => 
+                  lesson.id === lessonId ? { ...lesson, [field]: value } : lesson
+                )
+              }
+            : unit
+        )
+      }));
+
+      // Send update to backend
+      const response = await axiosInstance.put(`/courses/${courseData.id}/units/${unitId}/lessons/${lessonId}`, {
+        [field]: value
+      });
+
+      if (response.data.success) {
+        console.log('Lesson updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating lesson:', error);
+      // Revert local changes if backend update fails
+      setCourseData(prev => ({
+        ...prev,
+        units: prev.units.map(unit => 
+          unit.id === unitId 
+            ? {
+                ...unit,
+                lessons: unit.lessons.map(lesson => 
+                  lesson.id === lessonId ? { ...lesson, [field]: lesson[field] } : lesson
+                )
+              }
+            : unit
+        )
+      }));
+    }
   };
 
   const deleteLessonFromUnit = (unitId, lessonId) => {
@@ -168,13 +217,34 @@ export default function AddLecture() {
     setEditingLesson(newLesson.id);
   };
 
-  const updateDirectLesson = (lessonId, field, value) => {
-    setCourseData(prev => ({
-      ...prev,
-      directLessons: prev.directLessons.map(lesson => 
-        lesson.id === lessonId ? { ...lesson, [field]: value } : lesson
-      )
-    }));
+  const updateDirectLesson = async (lessonId, field, value) => {
+    try {
+      // Update locally first for immediate UI feedback
+      setCourseData(prev => ({
+        ...prev,
+        directLessons: prev.directLessons.map(lesson => 
+          lesson.id === lessonId ? { ...lesson, [field]: value } : lesson
+        )
+      }));
+
+      // Send update to backend
+      const response = await axiosInstance.put(`/courses/${courseData.id}/direct-lessons/${lessonId}`, {
+        [field]: value
+      });
+
+      if (response.data.success) {
+        console.log('Direct lesson updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating direct lesson:', error);
+      // Revert local changes if backend update fails
+      setCourseData(prev => ({
+        ...prev,
+        directLessons: prev.directLessons.map(lesson => 
+          lesson.id === lessonId ? { ...lesson, [field]: lesson[field] } : lesson
+        )
+      }));
+    }
   };
 
   const deleteDirectLesson = (lessonId) => {
@@ -341,7 +411,7 @@ export default function AddLecture() {
                   ) : (
                     <div className="space-y-4">
                       {courseData.units.map((unit, unitIndex) => (
-                        <div key={unit.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                        <div key={unit.id || unit._id || unitIndex} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
                           <div className="p-4">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
@@ -439,7 +509,7 @@ export default function AddLecture() {
                                 ) : (
                                   <div className="space-y-2">
                                     {unit.lessons.map((lesson, lessonIndex) => (
-                                      <div key={lesson.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                      <div key={lesson.id || lesson._id || lessonIndex} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                         <FaGripVertical className="text-gray-400 cursor-move" />
                                         <FaPlay className="text-green-500" />
                                         <div className="flex-1">
@@ -548,7 +618,7 @@ export default function AddLecture() {
                   ) : (
                     <div className="space-y-4">
                       {courseData.directLessons.map((lesson, index) => (
-                        <div key={lesson.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4">
+                        <div key={lesson.id || lesson._id || index} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                           <div className="flex items-center gap-3">
                             <FaGripVertical className="text-gray-400 cursor-move" />
                             <FaPlay className="text-green-500" />

@@ -6,10 +6,19 @@ import AppError from "../utils/error.utils.js";
 const getWallet = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const user = await userModel.findById(userId).select('wallet');
+        const user = await userModel.findById(userId);
 
         if (!user) {
             return next(new AppError("User not found", 404));
+        }
+
+        // Initialize wallet if it doesn't exist
+        if (!user.wallet) {
+            user.wallet = {
+                balance: 0,
+                transactions: []
+            };
+            await user.save();
         }
 
         res.status(200).json({
