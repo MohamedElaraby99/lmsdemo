@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FaPlay, 
   FaPause, 
@@ -43,15 +43,44 @@ const VideoPlayer = ({
   const [showCaptions, setShowCaptions] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isYouTube, setIsYouTube] = useState(false);
+  const [player, setPlayer] = useState(null);
+  const [playerReady, setPlayerReady] = useState(false);
 
-  const iframeRef = React.useRef(null);
+  const iframeRef = useRef(null);
+  const playerRef = useRef(null);
+  const [playerId] = useState(`youtube-player-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+
+  // Load YouTube IFrame API
+  useEffect(() => {
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+  }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && video) {
       setIsLoading(true);
       setCurrentTime(0);
       setIsPlaying(false);
       setShowControls(true);
+      setPlayerReady(false);
+      
+      // Check if it's a YouTube video
+      const isYouTubeVideo = video?.lecture?.youtubeUrl;
+      setIsYouTube(!!isYouTubeVideo);
+      
+      if (isYouTubeVideo) {
+        // Small delay to ensure DOM element is ready
+        setTimeout(() => {
+          initializeYouTubePlayer();
+        }, 100);
+      } else {
+        setIsLoading(false);
+      }
       
       // Auto-hide controls after 3 seconds
       const timer = setTimeout(() => {
@@ -61,6 +90,148 @@ const VideoPlayer = ({
       return () => clearTimeout(timer);
     }
   }, [isOpen, video]);
+
+  // Cleanup effect to destroy YouTube player
+  useEffect(() => {
+    return () => {
+      if (player && typeof player.destroy === 'function') {
+        player.destroy();
+      }
+    };
+  }, [player]);
+
+  // Cleanup when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      // Destroy player when modal closes
+      if (player && typeof player.destroy === 'function') {
+        player.destroy();
+        setPlayer(null);
+      }
+      // Reset states
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setDuration(0);
+      setIsLoading(false);
+      setShowControls(false);
+      setPlayerReady(false);
+    }
+  }, [isOpen, player]);
+
+  const initializeYouTubePlayer = () => {
+    if (window.YT && window.YT.Player) {
+      const videoId = extractYouTubeVideoId(video.lecture.youtubeUrl);
+      if (videoId) {
+        console.log('Initializing YouTube player with video ID:', videoId);
+        
+        // Wait for YouTube API to be fully ready
+        if (window.YT.PlayerState) {
+          createPlayer();
+        } else {
+          console.log('YouTube API not fully ready, waiting...');
+          setTimeout(initializeYouTubePlayer, 100);
+        }
+      }
+    } else {
+      console.log('YouTube API not ready, retrying...');
+      setTimeout(initializeYouTubePlayer, 100);
+    }
+  };
+
+  const createPlayer = () => {
+    const videoId = extractYouTubeVideoId(video.lecture.youtubeUrl);
+    const newPlayer = new window.YT.Player(playerId, {
+      height: '100%',
+      width: '100%',
+      videoId: videoId,
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        modestbranding: 1,
+        rel: 0,
+        showinfo: 0,
+        iv_load_policy: 3,
+        cc_load_policy: 0,
+        fs: 0,
+        enablejsapi: 1,
+        origin: window.location.origin
+      },
+      events: {
+        onReady: onPlayerReady,
+        onStateChange: onPlayerStateChange,
+        onError: onPlayerError
+      }
+    });
+    setPlayer(newPlayer);
+  };
+
+  const extractYouTubeVideoId = (url) => {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+    return match ? match[1] : null;
+  };
+
+  const onPlayerReady = (event) => {
+    console.log('YouTube player ready!');
+    console.log('Player object:', event.target);
+    console.log('Available methods:', {
+      playVideo: typeof event.target.playVideo,
+      pauseVideo: typeof event.target.pauseVideo,
+      seekTo: typeof event.target.seekTo,
+      setVolume: typeof event.target.setVolume,
+      mute: typeof event.target.mute,
+      unMute: typeof event.target.unMute
+    });
+    
+    // Wait a bit more to ensure all methods are available
+    setTimeout(() => {
+      setIsLoading(false);
+      setPlayerReady(true);
+      setDuration(event.target.getDuration());
+      setVolume(event.target.getVolume() / 100);
+      setIsMuted(event.target.isMuted());
+      console.log('Player fully initialized and ready for controls');
+    }, 500);
+  };
+
+  const onPlayerStateChange = (event) => {
+    const state = event.data;
+    console.log('Player state changed:', state);
+    switch (state) {
+      case window.YT.PlayerState.PLAYING:
+        setIsPlaying(true);
+        break;
+      case window.YT.PlayerState.PAUSED:
+        setIsPlaying(false);
+        break;
+      case window.YT.PlayerState.ENDED:
+        setIsPlaying(false);
+        break;
+    }
+    
+    // Update current time
+    if (player) {
+      setCurrentTime(player.getCurrentTime());
+    }
+  };
+
+  const onPlayerError = (event) => {
+    console.error('YouTube player error:', event.data);
+    setIsLoading(false);
+    setPlayerReady(false);
+  };
+
+  // Update current time for YouTube videos
+  useEffect(() => {
+    let interval;
+    if (isYouTube && player && isPlaying) {
+      interval = setInterval(() => {
+        if (player.getCurrentTime) {
+          setCurrentTime(player.getCurrentTime());
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isYouTube, player, isPlaying]);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -103,24 +274,70 @@ const VideoPlayer = ({
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [isOpen, isPlaying, volume, isMuted]);
-
-  const getVideoUrl = (video) => {
-    if (video?.lecture?.youtubeUrl) {
-      // Extract video ID from YouTube URL and create embed URL
-      const videoId = video.lecture.youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/)?.[1];
-      return videoId ? `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}` : video.lecture.youtubeUrl;
-    }
-    return video?.lecture?.secure_url || '';
-  };
+  }, [isOpen, isPlaying, volume, isMuted, player]);
 
   const togglePlay = () => {
-    setIsPlaying(!isPlaying);
-    // YouTube iframe API would be used here for actual play/pause
+    if (isYouTube && player && playerReady) {
+      console.log('Toggling play/pause, current state:', isPlaying);
+      console.log('Player object:', player);
+      console.log('Player methods:', typeof player.playVideo, typeof player.pauseVideo);
+      
+      // Check if player methods are available
+      if (typeof player.playVideo === 'function' && typeof player.pauseVideo === 'function') {
+        if (isPlaying) {
+          player.pauseVideo();
+        } else {
+          player.playVideo();
+        }
+      } else {
+        console.error('Player methods not available yet, trying postMessage fallback');
+        // Fallback: try to access the iframe directly using postMessage
+        const iframe = document.getElementById(playerId);
+        if (iframe && iframe.contentWindow) {
+          try {
+            const command = isPlaying ? 'pauseVideo' : 'playVideo';
+            console.log('Sending postMessage command:', command);
+            iframe.contentWindow.postMessage(
+              JSON.stringify({
+                event: 'command',
+                func: command,
+                args: []
+              }),
+              '*'
+            );
+            // Update state manually since we can't rely on the API
+            setIsPlaying(!isPlaying);
+          } catch (error) {
+            console.error('Failed to control iframe via postMessage:', error);
+          }
+        } else {
+          console.error('Iframe not found for postMessage fallback');
+        }
+      }
+    } else {
+      console.log('Player not ready or not YouTube video');
+      console.log('isYouTube:', isYouTube, 'player:', !!player, 'playerReady:', playerReady);
+      setIsPlaying(!isPlaying);
+    }
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    if (isYouTube && player && playerReady) {
+      console.log('Toggling mute, current state:', isMuted);
+      if (typeof player.mute === 'function' && typeof player.unMute === 'function') {
+        if (isMuted) {
+          player.unMute();
+          setIsMuted(false);
+        } else {
+          player.mute();
+          setIsMuted(true);
+        }
+      } else {
+        console.error('Mute methods not available');
+      }
+    } else {
+      setIsMuted(!isMuted);
+    }
   };
 
   const toggleFullscreen = () => {
@@ -128,18 +345,43 @@ const VideoPlayer = ({
   };
 
   const seek = (seconds) => {
-    const newTime = Math.max(0, Math.min(duration, currentTime + seconds));
-    setCurrentTime(newTime);
-    // YouTube iframe API would be used here for actual seeking
+    if (isYouTube && player && playerReady) {
+      const newTime = Math.max(0, Math.min(duration, currentTime + seconds));
+      console.log('Seeking to:', newTime);
+      if (typeof player.seekTo === 'function') {
+        player.seekTo(newTime);
+      } else {
+        console.error('Seek method not available');
+      }
+    } else {
+      const newTime = Math.max(0, Math.min(duration, currentTime + seconds));
+      setCurrentTime(newTime);
+    }
   };
 
   const adjustVolume = (change) => {
-    const newVolume = Math.max(0, Math.min(1, volume + change));
-    setVolume(newVolume);
-    if (newVolume === 0) {
-      setIsMuted(true);
-    } else if (isMuted) {
-      setIsMuted(false);
+    if (isYouTube && player && playerReady) {
+      const newVolume = Math.max(0, Math.min(100, (volume * 100) + (change * 100)));
+      console.log('Setting volume to:', newVolume);
+      if (typeof player.setVolume === 'function') {
+        player.setVolume(newVolume);
+        setVolume(newVolume / 100);
+        if (newVolume === 0) {
+          setIsMuted(true);
+        } else if (isMuted) {
+          setIsMuted(false);
+        }
+      } else {
+        console.error('Volume method not available');
+      }
+    } else {
+      const newVolume = Math.max(0, Math.min(1, volume + change));
+      setVolume(newVolume);
+      if (newVolume === 0) {
+        setIsMuted(true);
+      } else if (isMuted) {
+        setIsMuted(false);
+      }
     }
   };
 
@@ -147,10 +389,6 @@ const VideoPlayer = ({
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleIframeLoad = () => {
-    setIsLoading(false);
   };
 
   const handleMouseMove = () => {
@@ -176,6 +414,15 @@ const VideoPlayer = ({
     }
   };
 
+  const getVideoUrl = (video) => {
+    if (video?.lecture?.youtubeUrl) {
+      // Extract video ID from YouTube URL and create embed URL
+      const videoId = extractYouTubeVideoId(video.lecture.youtubeUrl);
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : video.lecture.youtubeUrl;
+    }
+    return video?.lecture?.secure_url || '';
+  };
+
   if (!isOpen || !video) return null;
 
   return (
@@ -197,21 +444,38 @@ const VideoPlayer = ({
               <div className="text-center">
                 <FaSpinner className="animate-spin text-white text-4xl mx-auto mb-4" />
                 <p className="text-white">Loading video...</p>
+                {isYouTube && !playerReady && (
+                  <p className="text-white text-sm mt-2">Initializing YouTube player...</p>
+                )}
               </div>
+            </div>
+          )}
+
+          {/* Player Ready Indicator (for debugging) */}
+          {isYouTube && playerReady && !isLoading && (
+            <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs z-10">
+              Player Ready
             </div>
           )}
 
           {/* Video Player */}
           <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-            <iframe
-              ref={iframeRef}
-              src={getVideoUrl(video)}
-              title={video?.title || "Video Player"}
-              className="absolute top-0 left-0 w-full h-full"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-              onLoad={handleIframeLoad}
-            ></iframe>
+            {isYouTube ? (
+              <div
+                id={playerId}
+                className="absolute top-0 left-0 w-full h-full"
+              ></div>
+            ) : (
+              <iframe
+                ref={iframeRef}
+                src={getVideoUrl(video)}
+                title={video?.title || "Video Player"}
+                className="absolute top-0 left-0 w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                onLoad={() => setIsLoading(false)}
+              ></iframe>
+            )}
           </div>
 
           {/* Video Controls Overlay */}
@@ -332,8 +596,7 @@ const VideoPlayer = ({
                         step="0.1"
                         value={isMuted ? 0 : volume}
                         onChange={(e) => {
-                          setVolume(parseFloat(e.target.value));
-                          setIsMuted(false);
+                          adjustVolume(parseFloat(e.target.value) - volume);
                         }}
                         className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer"
                       />
@@ -370,6 +633,9 @@ const VideoPlayer = ({
                             <button
                               key={rate}
                               onClick={() => {
+                                if (isYouTube && player) {
+                                  player.setPlaybackRate(rate);
+                                }
                                 setPlaybackRate(rate);
                                 setShowSettings(false);
                               }}
