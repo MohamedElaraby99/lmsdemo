@@ -101,7 +101,8 @@ export default function AdminDashboard() {
 
   // Filter and sort courses
   const filteredAndSortedCourses = useMemo(() => {
-    let filtered = myCourses || [];
+    // Create a deep copy of the array and its objects
+    let filtered = (myCourses || []).map(course => ({ ...course }));
 
     // Search filter
     if (searchTerm) {
