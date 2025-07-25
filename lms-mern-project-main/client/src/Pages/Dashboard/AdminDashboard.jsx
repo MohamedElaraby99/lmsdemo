@@ -266,11 +266,11 @@ export default function AdminDashboard() {
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-4">
                 Admin Dashboard
-              </h1>
+        </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
                 Welcome back! Here's an overview of your learning platform's performance and key metrics.
               </p>
-            </div>
+              </div>
 
             {/* Statistics Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-12">
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
                   </p>
                 </div>
               ))}
-            </div>
+                </div>
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-12">
@@ -316,9 +316,9 @@ export default function AdminDashboard() {
                 <div className="h-48 sm:h-56 lg:h-64 w-full">
                   <Pie
                     data={courseCategoryData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
                       plugins: {
                         legend: {
                           position: 'bottom',
@@ -333,8 +333,8 @@ export default function AdminDashboard() {
                           }
                         }
                       }
-                    }}
-                  />
+                  }}
+                />
                 </div>
               </div>
 
@@ -392,9 +392,9 @@ export default function AdminDashboard() {
                       }
                     }}
                   />
-                </div>
               </div>
             </div>
+          </div>
 
             {/* Quick Actions */}
             <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl p-4 lg:p-6 mb-8 lg:mb-12">
@@ -599,17 +599,17 @@ export default function AdminDashboard() {
                           <FaEye className="w-3 h-3 lg:w-4 lg:h-4" />
                           <span className="font-medium">View</span>
                         </button>
-                        <button
+                          <button
                           onClick={() => navigate("/course/edit", { state: { ...course } })}
                           className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 text-xs lg:text-sm"
                         >
                           <FaEdit className="w-3 h-3 lg:w-4 lg:h-4" />
                           <span className="font-medium">Edit</span>
-                        </button>
-                        <button
-                          onClick={() => onCourseDelete(course?._id)}
+                          </button>
+                          <button
+                            onClick={() => onCourseDelete(course?._id)}
                           className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-2 px-3 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center justify-center gap-2 text-xs lg:text-sm"
-                        >
+                          >
                           <FaTrashAlt className="w-3 h-3 lg:w-4 lg:h-4" />
                           <span className="font-medium">Delete</span>
                         </button>
@@ -629,13 +629,13 @@ export default function AdminDashboard() {
                     className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg lg:rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm lg:text-base"
                   >
                     Create Your First Course
-                  </button>
+                          </button>
                 </div>
               )}
             </div>
           </div>
         </section>
-      </div>
+        </div>
     </Layout>
   );
 }

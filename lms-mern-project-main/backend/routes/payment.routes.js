@@ -20,4 +20,4 @@ router.get('/user/:userId', isLoggedIn, getUserPurchases);
 // Simulate course purchase (for testing - admin only)
 router.post('/simulate', isLoggedIn, authorisedRoles('ADMIN'), simulateCoursePurchase);
 
-export default router; 
+export default router;

@@ -725,89 +725,89 @@ export default function AddLecture() {
                     {/* Video Upload */}
                     <div className="border border-gray-300 h-[200px] flex justify-center cursor-pointer rounded-lg">
                       {lectureData.videoSrc && (
-                        <video
-                          muted
+                  <video
+                    muted
                           src={lectureData.videoSrc}
-                          controls
-                          controlsList="nodownload nofullscreen"
-                          disablePictureInPicture
+                    controls
+                    controlsList="nodownload nofullscreen"
+                    disablePictureInPicture
                           className="object-fill w-full rounded-lg"
-                          onClick={(e) => {
-                            e.preventDefault();
+                    onClick={(e) => {
+                      e.preventDefault();
                             document.getElementById('lecture').click();
-                          }}
-                        ></video>
-                      )}
+                    }}
+                  ></video>
+                )}
                       {!lectureData.videoSrc && (
-                        <label
+                  <label
                           className="font-[500] text-xl h-full w-full flex justify-center items-center cursor-pointer font-lato rounded-lg"
-                          htmlFor="lecture"
-                        >
-                          Choose Your Video
-                        </label>
-                      )}
-                      <input
-                        type="file"
-                        className="hidden"
-                        id="lecture"
-                        name="lecture"
-                        onChange={handleVideo}
-                        accept="video/mp4, video/x-mp4, video/*"
-                      />
-                    </div>
-                    
-                    {/* YouTube URL Input */}
-                    <div className="flex flex-col gap-2">
-                      <label className="font-semibold text-gray-700 dark:text-white">
-                        Or Enter YouTube URL
-                      </label>
-                      <input
-                        type="url"
-                        name="youtubeUrl"
-                        placeholder="https://www.youtube.com/watch?v=..."
+                    htmlFor="lecture"
+                  >
+                    Choose Your Video
+                  </label>
+                )}
+                <input
+                  type="file"
+                  className="hidden"
+                  id="lecture"
+                  name="lecture"
+                  onChange={handleVideo}
+                  accept="video/mp4, video/x-mp4, video/*"
+                />
+              </div>
+              
+              {/* YouTube URL Input */}
+              <div className="flex flex-col gap-2">
+                <label className="font-semibold text-gray-700 dark:text-white">
+                  Or Enter YouTube URL
+                </label>
+                <input
+                  type="url"
+                  name="youtubeUrl"
+                  placeholder="https://www.youtube.com/watch?v=..."
                         value={lectureData.youtubeUrl}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <p className="text-sm text-gray-500">
-                        Enter a YouTube video URL instead of uploading a file
-                      </p>
-                    </div>
-                  </div>
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-sm text-gray-500">
+                  Enter a YouTube video URL instead of uploading a file
+                </p>
+              </div>
+            </div>
                   <div className="space-y-4">
                     {/* Title */}
-                    <InputBox
+              <InputBox
                       label="Lecture Title"
                       name="title"
                       type="text"
                       placeholder="Enter Lecture Title"
-                      onChange={handleInputChange}
+                onChange={handleInputChange}
                       value={lectureData.title}
-                    />
+              />
                     {/* Description */}
-                    <TextArea
+              <TextArea
                       label="Lecture Description"
                       name="description"
-                      rows={5}
+                rows={5}
                       type="text"
                       placeholder="Enter Lecture Description"
-                      onChange={handleInputChange}
+                onChange={handleInputChange}
                       value={lectureData.description}
-                    />
-                  </div>
-                </div>
+              />
+            </div>
+          </div>
 
                 {/* Submit Button */}
                 <div className="flex justify-center">
-                  <button
-                    type="submit"
+          <button
+            type="submit"
                     disabled={isLoading || !selectedLesson}
                     className="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors disabled:opacity-50"
-                  >
+          >
                     {isLoading ? "Adding Lecture..." : "Add Lecture"}
-                  </button>
+          </button>
                 </div>
-              </form>
+        </form>
             </div>
           )}
         </div>

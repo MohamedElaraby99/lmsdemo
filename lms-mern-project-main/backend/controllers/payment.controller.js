@@ -208,7 +208,7 @@ const simulateCoursePurchase = async (req, res, next) => {
         await course.save();
 
         res.status(201).json({
-            success: true,
+                success: true,
             message: 'Course purchase simulated successfully',
             payment: {
                 id: payment._id,
@@ -218,8 +218,8 @@ const simulateCoursePurchase = async (req, res, next) => {
                 transactionId: payment.transactionId,
                 courseTitle: course.title,
                 userName: user.fullName
-            }
-        });
+                }
+            });
 
     } catch (error) {
         return next(new AppError(error.message, 500));

@@ -188,11 +188,11 @@ export default function CourseDescription() {
                     <img
                       className="w-full h-48 object-cover rounded-xl"
                       alt="Course preview"
-                      src={state?.thumbnail?.secure_url || placeholderImages.course}
-                      onError={(e) => {
-                        e.target.src = placeholderImages.course;
-                      }}
-                    />
+              src={state?.thumbnail?.secure_url || placeholderImages.course}
+              onError={(e) => {
+                e.target.src = placeholderImages.course;
+              }}
+            />
                     <div className="absolute inset-0 bg-black/20 rounded-xl flex items-center justify-center">
                       <div className="bg-white dark:bg-gray-800 rounded-full p-4 shadow-lg">
                         <FaPlay className="text-blue-600 dark:text-blue-400 text-xl" />
@@ -201,7 +201,7 @@ export default function CourseDescription() {
                   </div>
 
                   {/* Price and Action */}
-                  <div className="space-y-4">
+            <div className="space-y-4">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-gray-900 dark:text-white">
                         Free
@@ -211,23 +211,13 @@ export default function CourseDescription() {
                       </div>
                     </div>
 
-                    {role === "ADMIN" || data?.subscription?.status === "active" ? (
-                      <button
-                        onClick={() => navigate("/course/displaylectures", { state: { ...state } })}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2"
-                      >
-                        <FaPlay className="w-4 h-4" />
-                        Watch Lectures
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => navigate("/checkout")}
-                        className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2"
-                      >
-                        <FaGraduationCap className="w-4 h-4" />
-                        Enroll Now
-                      </button>
-                    )}
+                    <button
+                      onClick={() => navigate("/course/displaylectures", { state: { ...state } })}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2"
+                    >
+                      <FaPlay className="w-4 h-4" />
+                      Watch Lectures
+                    </button>
 
                     {/* Course Includes */}
                     <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -271,10 +261,10 @@ export default function CourseDescription() {
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">
                         Industry Expert
-                      </div>
-                    </div>
-                  </div>
-                  
+              </div>
+            </div>
+          </div>
+
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     Experienced professional with years of industry knowledge and a passion for teaching.
                   </p>
@@ -298,7 +288,7 @@ export default function CourseDescription() {
             </div>
           </div>
         </section>
-      </div>
+        </div>
     </Layout>
   );
 }

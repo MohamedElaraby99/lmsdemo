@@ -184,7 +184,7 @@ export default function CourseList() {
               <div className="mt-4 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>
                   Showing {filteredAndSortedCourses.length} of {coursesData?.length || 0} courses
-                </span>
+          </span>
                 {(searchTerm || selectedCategory !== "all") && (
                   <button
                     onClick={() => {
@@ -231,8 +231,8 @@ export default function CourseList() {
                 </button>
               </div>
             )}
-          </div>
-        </section>
+        </div>
+      </section>
       </div>
     </Layout>
   );

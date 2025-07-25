@@ -152,16 +152,16 @@ export default function Profile() {
 
   useEffect(() => {
     if (userData && Object.keys(userData).length > 0) {
-      setUserInput({
-        ...userInput,
+    setUserInput({
+      ...userInput,
         name: userData?.fullName || "",
         phoneNumber: userData?.phoneNumber || "",
         fatherPhoneNumber: userData?.fatherPhoneNumber || "",
         governorate: userData?.governorate || "",
         grade: userData?.grade || "",
         age: userData?.age || "",
-        userId: userData?._id,
-      });
+      userId: userData?._id,
+    });
     }
   }, [userData]);
 
@@ -283,7 +283,7 @@ export default function Profile() {
                 </label>
                 <input
                   type="email"
-                  value={userData?.email || ""}
+              value={userData?.email || ""}
                   disabled
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed"
                 />
@@ -477,11 +477,11 @@ export default function Profile() {
           <div className="w-full flex md:flex-row flex-col md:justify-between justify-center md:gap-0 gap-3">
             {isEditing ? (
               <>
-                <button
-                  type="submit"
+            <button
+              type="submit"
                   className="py-3.5 rounded-md bg-green-500 hover:bg-green-600 mt-3 text-white font-inter md:w-[48%] w-full flex items-center justify-center gap-2"
-                  disabled={!isChanged || isUpdating}
-                >
+              disabled={!isChanged || isUpdating}
+            >
                   {isUpdating ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -493,7 +493,7 @@ export default function Profile() {
                       Save Changes
                     </>
                   )}
-                </button>
+            </button>
 
                 <button
                   type="button"
@@ -508,13 +508,13 @@ export default function Profile() {
             ) : (
               /* show cancel subscription btn if Active */
               userData?.subscription?.status === "active" && (
-                <button
-                  type="button"
-                  onClick={handleCancelSubscription}
-                  className="py-3.5 rounded-md bg-[#f32e2e] mt-3 text-white font-inter md:w-[48%] w-full"
-                >
-                  Cancel Subscription
-                </button>
+              <button
+                type="button"
+                onClick={handleCancelSubscription}
+                className="py-3.5 rounded-md bg-[#f32e2e] mt-3 text-white font-inter md:w-[48%] w-full"
+              >
+                Cancel Subscription
+              </button>
               )
             )}
           </div>

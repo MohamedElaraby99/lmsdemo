@@ -31,8 +31,8 @@ function NotFound() {
 
               {/* Main Heading */}
               <h1 className="text-8xl lg:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-6 leading-none">
-                404
-              </h1>
+            404
+          </h1>
 
               {/* Subtitle */}
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 dark:text-white mb-4">
@@ -207,7 +207,7 @@ function NotFound() {
                   className="text-green-600 dark:text-green-400 hover:underline font-medium text-sm"
                 >
                   Ask Questions →
-                </button>
+          </button>
               </div>
             </div>
           </div>

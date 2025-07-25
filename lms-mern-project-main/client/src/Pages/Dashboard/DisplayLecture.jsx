@@ -33,6 +33,7 @@ import {
 } from "react-icons/fa";
 import { axiosInstance } from "../../Helpers/axiosInstance";
 import { toast } from "react-hot-toast";
+import VideoPlayer from "../../Components/VideoPlayer";
 
 export default function DisplayLecture() {
   const navigate = useNavigate();
@@ -54,6 +55,10 @@ export default function DisplayLecture() {
   });
   const [uploading, setUploading] = useState(false);
 
+  // Video modal state
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+
   // Use the course data passed from state instead of fetching
   useEffect(() => {
     if (!state) {
@@ -65,6 +70,24 @@ export default function DisplayLecture() {
     setCourseData(state);
     setLoading(false);
   }, [state, navigate]);
+
+  // Suppress browser extension errors
+  useEffect(() => {
+    const originalError = console.error;
+    console.error = (...args) => {
+      const message = args[0];
+      if (typeof message === 'string' && 
+          (message.includes('runtime.lastError') || 
+           message.includes('message channel closed'))) {
+        return;
+      }
+      originalError.apply(console, args);
+    };
+
+    return () => {
+      console.error = originalError;
+    };
+  }, []);
 
   const toggleUnitExpansion = (unitId) => {
     setExpandedUnits(prev => {
@@ -193,6 +216,16 @@ export default function DisplayLecture() {
     return lesson.lecture && (lesson.lecture.secure_url || lesson.lecture.youtubeUrl);
   };
 
+  const openVideoModal = (lesson) => {
+    setSelectedVideo(lesson);
+    setShowVideoModal(true);
+  };
+
+  const closeVideoModal = () => {
+    setShowVideoModal(false);
+    setSelectedVideo(null);
+  };
+
   if (loading) {
     return (
       <Layout hideFooter={true}>
@@ -246,7 +279,7 @@ export default function DisplayLecture() {
               </div>
               <h1 className="text-3xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-4">
                 {courseData.title || "Course Content"}
-              </h1>
+          </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-6">
                 {courseData.description || "Explore the course content and lectures"}
               </p>
@@ -421,7 +454,7 @@ export default function DisplayLecture() {
                                           <div className="flex items-center gap-2">
                                             {hasVideo(lesson) && (
                                               <button
-                                                onClick={() => window.open(lesson.lecture.secure_url || lesson.lecture.youtubeUrl, '_blank')}
+                                                onClick={() => openVideoModal(lesson)}
                                                 className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                                                 title="Watch Video"
                                               >
@@ -511,7 +544,7 @@ export default function DisplayLecture() {
                               <div className="flex items-center gap-2">
                                 {hasVideo(lesson) && (
                                   <button
-                                    onClick={() => window.open(lesson.lecture.secure_url || lesson.lecture.youtubeUrl, '_blank')}
+                                    onClick={() => openVideoModal(lesson)}
                                     className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
                                     title="Watch Video"
                                   >
@@ -549,16 +582,16 @@ export default function DisplayLecture() {
                       </h4>
                       <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                         This course doesn't have any units or lessons yet. Start building your course structure to help students learn effectively.
-                      </p>
-                      {role === "ADMIN" && (
-                        <button
+                        </p>
+                        {role === "ADMIN" && (
+                          <button
                           onClick={() => navigate("/course/edit", { state: { ...courseData } })}
                           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 mx-auto"
                         >
                           <FaPlus />
                           Create Course Structure
-                        </button>
-                      )}
+                          </button>
+                        )}
                     </div>
                   )}
 
@@ -731,6 +764,16 @@ export default function DisplayLecture() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Video Player Modal */}
+        {showVideoModal && selectedVideo && (
+          <VideoPlayer
+            video={selectedVideo}
+            isOpen={showVideoModal}
+            onClose={() => setShowVideoModal(false)}
+            courseTitle={courseData?.title || "Course"}
+          />
         )}
       </div>
     </Layout>

@@ -45,7 +45,7 @@ const paymentSchema = new Schema({
         userName: String
     }
 }, {
-    timestamps: true
+        timestamps: true
 });
 
 // Index for better query performance
