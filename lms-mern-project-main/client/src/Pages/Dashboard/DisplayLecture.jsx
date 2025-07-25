@@ -22,9 +22,17 @@ import {
   FaSpinner,
   FaExclamationTriangle,
   FaInfo,
-  FaTag
+  FaTag,
+  FaFolder,
+  FaYoutube,
+  FaUpload,
+  FaCheck,
+  FaTimes,
+  FaGraduationCap as FaSubject,
+  FaLayerGroup
 } from "react-icons/fa";
 import { axiosInstance } from "../../Helpers/axiosInstance";
+import { toast } from "react-hot-toast";
 
 export default function DisplayLecture() {
   const navigate = useNavigate();
@@ -35,6 +43,16 @@ export default function DisplayLecture() {
   const [courseData, setCourseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedUnits, setExpandedUnits] = useState(new Set());
+  const [showAddVideoModal, setShowAddVideoModal] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState(null);
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  const [videoForm, setVideoForm] = useState({
+    title: "",
+    description: "",
+    youtubeUrl: "",
+    videoFile: null
+  });
+  const [uploading, setUploading] = useState(false);
 
   // Use the course data passed from state instead of fetching
   useEffect(() => {
@@ -61,14 +79,118 @@ export default function DisplayLecture() {
   };
 
   const expandAllUnits = () => {
-    if (courseData?.lectures) {
-      const allUnitIds = courseData.lectures.map((_, index) => index);
+    if (courseData?.units) {
+      const allUnitIds = courseData.units.map(unit => unit._id || unit.id);
       setExpandedUnits(new Set(allUnitIds));
     }
   };
 
   const collapseAllUnits = () => {
     setExpandedUnits(new Set());
+  };
+
+  const openAddVideoModal = (lesson, unit = null) => {
+    setSelectedLesson(lesson);
+    setSelectedUnit(unit);
+    setVideoForm({
+      title: lesson?.title || "",
+      description: lesson?.description || "",
+      youtubeUrl: "",
+      videoFile: null
+    });
+    setShowAddVideoModal(true);
+  };
+
+  const closeAddVideoModal = () => {
+    setShowAddVideoModal(false);
+    setSelectedLesson(null);
+    setSelectedUnit(null);
+    setVideoForm({
+      title: "",
+      description: "",
+      youtubeUrl: "",
+      videoFile: null
+    });
+  };
+
+  const handleVideoFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 100 * 1024 * 1024) { // 100MB limit
+        toast.error("Video file size must be less than 100MB");
+        return;
+      }
+      setVideoForm(prev => ({ ...prev, videoFile: file }));
+    }
+  };
+
+  const handleAddVideo = async (e) => {
+    e.preventDefault();
+    
+    if (!videoForm.title || !videoForm.description) {
+      toast.error("Title and description are required");
+      return;
+    }
+
+    if (!videoForm.youtubeUrl && !videoForm.videoFile) {
+      toast.error("Please provide either a YouTube URL or upload a video file");
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("title", videoForm.title);
+      formData.append("description", videoForm.description);
+      
+      if (videoForm.youtubeUrl) {
+        formData.append("youtubeUrl", videoForm.youtubeUrl);
+      }
+      
+      if (videoForm.videoFile) {
+        formData.append("lecture", videoForm.videoFile);
+      }
+
+      if (selectedLesson) {
+        formData.append("lessonId", selectedLesson._id || selectedLesson.id);
+        if (selectedUnit) {
+          formData.append("unitId", selectedUnit._id || selectedUnit.id);
+        }
+      }
+
+      const response = await axiosInstance.post(`/courses/${courseData._id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.success) {
+        toast.success("Video added successfully!");
+        // Update the course data with the new video
+        setCourseData(prev => ({
+          ...prev,
+          ...response.data.course
+        }));
+        closeAddVideoModal();
+      }
+    } catch (error) {
+      console.error("Error adding video:", error);
+      toast.error(error.response?.data?.message || "Failed to add video");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const getTotalLessons = () => {
+    if (!courseData) return 0;
+    const unitLessons = courseData.units?.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0) || 0;
+    const directLessons = courseData.directLessons?.length || 0;
+    return unitLessons + directLessons;
+  };
+
+  const hasVideo = (lesson) => {
+    return lesson.lecture && (lesson.lecture.secure_url || lesson.lecture.youtubeUrl);
   };
 
   if (loading) {
@@ -114,7 +236,7 @@ export default function DisplayLecture() {
           <div className="absolute top-20 left-10 w-16 h-16 bg-blue-200 dark:bg-blue-800 rounded-full opacity-20 animate-bounce"></div>
           <div className="absolute top-40 right-20 w-12 h-12 bg-purple-200 dark:bg-purple-800 rounded-full opacity-20 animate-pulse"></div>
           
-          <div className="relative z-10 container mx-auto max-w-6xl">
+          <div className="relative z-10 container mx-auto max-w-7xl">
             {/* Header */}
             <div className="text-center mb-8 lg:mb-12">
               <div className="flex items-center justify-center gap-3 mb-4">
@@ -125,7 +247,7 @@ export default function DisplayLecture() {
               <h1 className="text-3xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-4">
                 {courseData.title || "Course Content"}
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-6">
+              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-6">
                 {courseData.description || "Explore the course content and lectures"}
               </p>
               
@@ -136,12 +258,20 @@ export default function DisplayLecture() {
                   <span>Category: {courseData.category || 'General'}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FaUsers className="text-green-500" />
+                  <FaSubject className="text-green-500" />
+                  <span>Subject: {courseData.subject?.name || 'General'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaLayerGroup className="text-purple-500" />
+                  <span>Stage: {courseData.stage || 'General'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaUsers className="text-orange-500" />
                   <span>Instructor: {courseData.createdBy || 'Admin'}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FaPlay className="text-purple-500" />
-                  <span>Lectures: {courseData.lectures?.length || courseData.numberOfLectures || 0}</span>
+                  <FaPlay className="text-red-500" />
+                  <span>Total Lessons: {getTotalLessons()}</span>
                 </div>
               </div>
             </div>
@@ -163,7 +293,7 @@ export default function DisplayLecture() {
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold text-gray-800 dark:text-white flex items-center gap-3">
                     <FaBook className="text-blue-500" />
-                    Course Content
+                    Course Structure
                   </h2>
                   <div className="flex gap-2">
                     <button
@@ -182,105 +312,251 @@ export default function DisplayLecture() {
                     </button>
                     {role === "ADMIN" && (
                       <button
-                        onClick={() => navigate("/course/addlecture", { state: { ...courseData } })}
+                        onClick={() => navigate("/course/edit", { state: { ...courseData } })}
                         className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors flex items-center gap-2"
                       >
-                        <FaPlus />
-                        Add Content
+                        <FaEdit />
+                        Edit Course
                       </button>
                     )}
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  {/* Lectures Section */}
-                  {courseData.lectures && courseData.lectures.length > 0 ? (
+                <div className="space-y-8">
+                  {/* Units Section */}
+                  {courseData.units && courseData.units.length > 0 && (
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 flex items-center gap-2">
-                        <FaVideo className="text-green-500" />
-                        Course Lectures ({courseData.lectures.length})
+                      <h3 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center gap-2">
+                        <FaFolder className="text-green-500" />
+                        Course Units ({courseData.units.length})
                       </h3>
-                      {courseData.lectures.map((lecture, index) => (
-                        <div key={lecture._id || index} className="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-all duration-200">
+                      {courseData.units.map((unit, unitIndex) => (
+                        <div key={unit._id || unit.id || unitIndex} className="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-all duration-200">
                           <div className="p-4 lg:p-6">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                  <FaPlay className="text-white text-lg" />
+                                <button
+                                  onClick={() => toggleUnitExpansion(unit._id || unit.id)}
+                                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                >
+                                  {expandedUnits.has(unit._id || unit.id) ? <FaChevronDown /> : <FaChevronRight />}
+                                </button>
+                                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <FaFolder className="text-white text-lg" />
                                 </div>
                                 <div className="flex-1">
                                   <h4 className="font-semibold text-gray-900 dark:text-white text-lg">
-                                    {lecture.title || `Lecture ${index + 1}`}
+                                    {unit.title || `Unit ${unitIndex + 1}`}
                                   </h4>
-                                  {lecture.description && (
+                                  {unit.description && (
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                      {lecture.description}
+                                      {unit.description}
                                     </p>
                                   )}
                                   <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                                     <span className="flex items-center gap-1">
-                                      <FaClock />
-                                      {lecture.duration || 'N/A'} min
+                                      <FaPlay />
+                                      {unit.lessons?.length || 0} lessons
                                     </span>
                                     <span className="flex items-center gap-1">
-                                      <FaCalendarAlt />
-                                      {new Date(lecture.createdAt || Date.now()).toLocaleDateString()}
+                                      <FaVideo />
+                                      {unit.lessons?.filter(lesson => hasVideo(lesson)).length || 0} with videos
                                     </span>
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                {lecture.lecture && (lecture.lecture.secure_url || lecture.lecture.youtubeUrl) && (
-                                  <span className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
-                                    Video Available
-                                  </span>
-                                )}
-                                {role === "ADMIN" && (
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      onClick={() => navigate("/course/editlecture", { state: { lecture, courseData } })}
-                                      className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                                      title="Edit Lecture"
-                                    >
-                                      <FaEdit className="text-sm" />
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        if (window.confirm("Are you sure you want to delete this lecture?")) {
-                                          // Handle lecture deletion
-                                          console.log("Delete lecture:", lecture._id);
-                                        }
-                                      }}
-                                      className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                      title="Delete Lecture"
-                                    >
-                                      <FaTrash className="text-sm" />
-                                    </button>
+                              {role === "ADMIN" && (
+                                <button
+                                  onClick={() => openAddVideoModal(null, unit)}
+                                  className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors flex items-center gap-1"
+                                >
+                                  <FaPlus />
+                                  Add Unit Video
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Unit Lessons */}
+                            {expandedUnits.has(unit._id || unit.id) && (
+                              <div className="mt-6 space-y-3">
+                                <h5 className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                  <FaPlay className="text-blue-500" />
+                                  Lessons in this unit
+                                </h5>
+                                
+                                {unit.lessons && unit.lessons.length > 0 ? (
+                                  <div className="space-y-3">
+                                    {unit.lessons.map((lesson, lessonIndex) => (
+                                      <div key={lesson._id || lesson.id || lessonIndex} className="bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                              <FaFileAlt className="text-white text-sm" />
+                                            </div>
+                                            <div className="flex-1">
+                                              <h6 className="font-medium text-gray-900 dark:text-white">
+                                                {lesson.title || `Lesson ${lessonIndex + 1}`}
+                                              </h6>
+                                              {lesson.description && (
+                                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                  {lesson.description}
+                                                </p>
+                                              )}
+                                              <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                                {lesson.duration && (
+                                                  <span className="flex items-center gap-1">
+                                                    <FaClock />
+                                                    {lesson.duration} min
+                                                  </span>
+                                                )}
+                                                {hasVideo(lesson) && (
+                                                  <span className="flex items-center gap-1 text-green-600">
+                                                    <FaVideo />
+                                                    Video Available
+                                                  </span>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            {hasVideo(lesson) && (
+                                              <button
+                                                onClick={() => window.open(lesson.lecture.secure_url || lesson.lecture.youtubeUrl, '_blank')}
+                                                className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                                title="Watch Video"
+                                              >
+                                                <FaPlay className="text-sm" />
+                                              </button>
+                                            )}
+                                            {role === "ADMIN" && (
+                                              <button
+                                                onClick={() => openAddVideoModal(lesson, unit)}
+                                                className={`p-2 rounded-lg transition-colors ${
+                                                  hasVideo(lesson) 
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                                                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                                                }`}
+                                                title={hasVideo(lesson) ? "Update Video" : "Add Video"}
+                                              >
+                                                {hasVideo(lesson) ? <FaEdit className="text-sm" /> : <FaPlus className="text-sm" />}
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-6 bg-gray-50 dark:bg-gray-600 rounded-lg">
+                                    <FaFileAlt className="text-3xl text-gray-400 mx-auto mb-3" />
+                                    <p className="text-gray-500 dark:text-gray-400">No lessons in this unit yet</p>
+                                    {role === "ADMIN" && (
+                                      <button
+                                        onClick={() => navigate("/course/edit", { state: { ...courseData } })}
+                                        className="mt-3 px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
+                                      >
+                                        Add Lessons
+                                      </button>
+                                    )}
                                   </div>
                                 )}
                               </div>
-                            </div>
+                            )}
                           </div>
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    /* No lectures message */
+                  )}
+
+                  {/* Direct Lessons Section */}
+                  {courseData.directLessons && courseData.directLessons.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center gap-2">
+                        <FaPlay className="text-blue-500" />
+                        Direct Lessons ({courseData.directLessons.length})
+                      </h3>
+                      <div className="space-y-3">
+                        {courseData.directLessons.map((lesson, index) => (
+                          <div key={lesson._id || lesson.id || index} className="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 p-4 lg:p-6 hover:shadow-lg transition-all duration-200">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <FaFileAlt className="text-white text-lg" />
+                                </div>
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-gray-900 dark:text-white text-lg">
+                                    {lesson.title || `Direct Lesson ${index + 1}`}
+                                  </h4>
+                                  {lesson.description && (
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                      {lesson.description}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                    {lesson.duration && (
+                                      <span className="flex items-center gap-1">
+                                        <FaClock />
+                                        {lesson.duration} min
+                                      </span>
+                                    )}
+                                    {hasVideo(lesson) && (
+                                      <span className="flex items-center gap-1 text-green-600">
+                                        <FaVideo />
+                                        Video Available
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {hasVideo(lesson) && (
+                                  <button
+                                    onClick={() => window.open(lesson.lecture.secure_url || lesson.lecture.youtubeUrl, '_blank')}
+                                    className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                                    title="Watch Video"
+                                  >
+                                    <FaPlay className="text-sm" />
+                                  </button>
+                                )}
+                                {role === "ADMIN" && (
+                                  <button
+                                    onClick={() => openAddVideoModal(lesson)}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                      hasVideo(lesson) 
+                                        ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                                        : 'bg-orange-500 text-white hover:bg-orange-600'
+                                    }`}
+                                    title={hasVideo(lesson) ? "Update Video" : "Add Video"}
+                                  >
+                                    {hasVideo(lesson) ? <FaEdit className="text-sm" /> : <FaPlus className="text-sm" />}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No Content Message */}
+                  {(!courseData.units || courseData.units.length === 0) && 
+                   (!courseData.directLessons || courseData.directLessons.length === 0) && (
                     <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-xl">
                       <FaBook className="text-6xl text-gray-400 mx-auto mb-6" />
                       <h4 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
-                        No lectures available yet
+                        No course content available yet
                       </h4>
                       <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                        This course doesn't have any lectures yet. Start building your course content to help students learn effectively.
+                        This course doesn't have any units or lessons yet. Start building your course structure to help students learn effectively.
                       </p>
                       {role === "ADMIN" && (
                         <button
-                          onClick={() => navigate("/course/addlecture", { state: { ...courseData } })}
+                          onClick={() => navigate("/course/edit", { state: { ...courseData } })}
                           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 mx-auto"
                         >
                           <FaPlus />
-                          Add First Lecture
+                          Create Course Structure
                         </button>
                       )}
                     </div>
@@ -304,17 +580,27 @@ export default function DisplayLecture() {
                         <span className="font-medium text-gray-900 dark:text-white">{courseData.category || 'General'}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <FaUsers className="text-purple-500" />
+                        <FaSubject className="text-purple-500" />
+                        <span className="text-gray-700 dark:text-gray-300">Subject:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{courseData.subject?.name || 'General'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaLayerGroup className="text-orange-500" />
+                        <span className="text-gray-700 dark:text-gray-300">Stage:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{courseData.stage || 'General'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaUsers className="text-red-500" />
                         <span className="text-gray-700 dark:text-gray-300">Instructor:</span>
                         <span className="font-medium text-gray-900 dark:text-white">{courseData.createdBy || 'Admin'}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <FaPlay className="text-orange-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Total Lectures:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{courseData.lectures?.length || courseData.numberOfLectures || 0}</span>
+                        <FaPlay className="text-yellow-500" />
+                        <span className="text-gray-700 dark:text-gray-300">Total Lessons:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{getTotalLessons()}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <FaCalendarAlt className="text-red-500" />
+                        <FaCalendarAlt className="text-indigo-500" />
                         <span className="text-gray-700 dark:text-gray-300">Created:</span>
                         <span className="font-medium text-gray-900 dark:text-white">
                           {new Date(courseData.createdAt || Date.now()).toLocaleDateString()}
@@ -323,7 +609,12 @@ export default function DisplayLecture() {
                       <div className="flex items-center gap-2">
                         <FaStar className="text-yellow-500" />
                         <span className="text-gray-700 dark:text-gray-300">Status:</span>
-                        <span className="font-medium text-green-600 dark:text-green-400">Active</span>
+                        <span className="font-medium text-green-600 dark:text-green-400">{courseData.status || 'Active'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaVideo className="text-blue-500" />
+                        <span className="text-gray-700 dark:text-gray-300">Structure:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{courseData.structureType || 'direct-lessons'}</span>
                       </div>
                     </div>
                   </div>
@@ -332,6 +623,115 @@ export default function DisplayLecture() {
             </div>
           </div>
         </section>
+
+        {/* Add Video Modal */}
+        {showAddVideoModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    <FaVideo className="text-blue-500" />
+                    {selectedLesson ? (hasVideo(selectedLesson) ? 'Update Video' : 'Add Video') : 'Add Unit Video'}
+                  </h3>
+                  <button
+                    onClick={closeAddVideoModal}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleAddVideo} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={videoForm.title}
+                      onChange={(e) => setVideoForm(prev => ({ ...prev, title: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="Video title"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Description
+                    </label>
+                    <textarea
+                      value={videoForm.description}
+                      onChange={(e) => setVideoForm(prev => ({ ...prev, description: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="Video description"
+                      rows={3}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <FaYoutube className="inline text-red-500 mr-2" />
+                        YouTube URL
+                      </label>
+                      <input
+                        type="url"
+                        value={videoForm.youtubeUrl}
+                        onChange={(e) => setVideoForm(prev => ({ ...prev, youtubeUrl: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        placeholder="https://www.youtube.com/watch?v=..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <FaUpload className="inline text-blue-500 mr-2" />
+                        Upload Video File
+                      </label>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={handleVideoFileChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Max size: 100MB</p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={closeAddVideoModal}
+                      className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={uploading}
+                      className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                    >
+                      {uploading ? (
+                        <>
+                          <FaSpinner className="animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <FaCheck />
+                          {selectedLesson ? (hasVideo(selectedLesson) ? 'Update Video' : 'Add Video') : 'Add Unit Video'}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

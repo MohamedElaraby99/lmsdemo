@@ -188,7 +188,7 @@ const createCourse = async (req, res, next) => {
 const updateCourse = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { title, description, category, subject, stage, createdBy } = req.body;
+        const { title, description, category, subject, stage, createdBy, numberOfLectures, courseStructure, structureType } = req.body;
 
         // Find the course first
         const course = await courseModel.findById(id);
@@ -204,6 +204,23 @@ const updateCourse = async (req, res, next) => {
         if (subject) course.subject = subject;
         if (stage) course.stage = stage;
         if (createdBy) course.createdBy = createdBy;
+        if (structureType) course.structureType = structureType;
+
+        // Parse and update course structure if provided
+        if (courseStructure) {
+            try {
+                const structure = JSON.parse(courseStructure);
+                course.units = structure.units || [];
+                course.directLessons = structure.directLessons || [];
+                
+                // Recalculate total lessons from structure
+                const totalUnitLessons = course.units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
+                const totalDirectLessons = course.directLessons.length;
+                course.numberOfLectures = totalUnitLessons + totalDirectLessons;
+            } catch (error) {
+                console.log('Error parsing course structure:', error);
+            }
+        }
 
         // Handle file upload
         if (req.file) {
