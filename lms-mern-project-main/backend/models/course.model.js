@@ -19,6 +19,18 @@ const courseSchema = new Schema({
         type: String,
         default: 'General',
     },
+    // New fields for subject and stage
+    subject: {
+        type: Schema.Types.ObjectId,
+        ref: 'Subject',
+        required: [true, 'Subject is required']
+    },
+    stage: {
+        type: String,
+        required: [true, 'Stage is required'],
+        enum: ['Primary', 'Secondary', 'High School', 'University', 'Professional', 'General'],
+        default: 'General'
+    },
     thumbnail: {
         public_id: {
             type: String
@@ -136,6 +148,18 @@ const courseSchema = new Schema({
     createdBy: {
         type: String,
         default: 'Admin',
+    },
+    // Course structure type
+    structureType: {
+        type: String,
+        enum: ['units', 'direct-lessons', 'mixed'],
+        default: 'direct-lessons'
+    },
+    // Course status
+    status: {
+        type: String,
+        enum: ['draft', 'published', 'archived'],
+        default: 'draft'
     }
 },
     {

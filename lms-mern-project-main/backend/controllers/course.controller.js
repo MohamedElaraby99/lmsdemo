@@ -91,10 +91,10 @@ const getCourseStructure = async (req, res, next) => {
 // create course
 const createCourse = async (req, res, next) => {
     try {
-        const { title, description, category, createdBy, numberOfLectures, courseStructure, price, currency, isPaid } = req.body;
+        const { title, description, category, subject, stage, createdBy, numberOfLectures, courseStructure, price, currency, isPaid, structureType } = req.body;
 
-        if (!title || !description) {
-            return next(new AppError('Title and description are mandatory', 400));
+        if (!title || !description || !subject || !stage) {
+            return next(new AppError('Title, description, subject, and stage are mandatory', 400));
         }
 
         // Parse course structure if provided
@@ -121,13 +121,17 @@ const createCourse = async (req, res, next) => {
             title,
             description,
             category: category || 'General',
+            subject,
+            stage,
             createdBy: createdBy || 'Admin',
             units: units,
             directLessons: directLessons,
             numberOfLectures: totalLessons,
             price: price || 0,
             currency: currency || 'EGP',
-            isPaid: isPaid || false
+            isPaid: isPaid || false,
+            structureType: structureType || 'direct-lessons',
+            status: 'draft'
         })
 
         if (!course) {
@@ -184,7 +188,7 @@ const createCourse = async (req, res, next) => {
 const updateCourse = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { title, description, category, createdBy } = req.body;
+        const { title, description, category, subject, stage, createdBy } = req.body;
 
         // Find the course first
         const course = await courseModel.findById(id);
@@ -197,6 +201,8 @@ const updateCourse = async (req, res, next) => {
         if (title) course.title = title;
         if (description) course.description = description;
         if (category) course.category = category;
+        if (subject) course.subject = subject;
+        if (stage) course.stage = stage;
         if (createdBy) course.createdBy = createdBy;
 
         // Handle file upload
