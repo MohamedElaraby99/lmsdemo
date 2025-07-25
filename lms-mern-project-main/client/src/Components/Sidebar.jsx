@@ -108,6 +108,18 @@ export default function Sidebar({ hideBar = false }) {
               </button>
             </li>
 
+            {/* Platform Name */}
+            <li className="mb-6">
+              <div className="text-center pb-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400">
+                  Learning Hub
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Your Gateway to Knowledge
+                </p>
+              </div>
+            </li>
+
             {/* Wallet Balance Display */}
             {isLoggedIn && role !== "ADMIN" && (
               <li className="mb-3">
@@ -292,11 +304,11 @@ export default function Sidebar({ hideBar = false }) {
 
             {isLoggedIn ? (
               <li className="absolute bottom-4 w-[90%]">
-                <div className="w-full flex flex-col gap-3 items-center justify-center">
+                <div className="w-full flex flex-col gap-4 items-center justify-center">
                   {/* User Avatar Circle */}
                   <Link 
                     to="/user/profile" 
-                    className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
+                    className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-white dark:border-gray-700"
                     onClick={hideDrawer}
                   >
                     {data?.avatar?.secure_url ? (
@@ -320,25 +332,70 @@ export default function Sidebar({ hideBar = false }) {
                     </div>
                   </div>
 
-                  {/* Logout Button */}
+                  {/* Modern Logout Button */}
                   <button
-                    className="btn-secondary px-3.5 py-2.5 font-semibold rounded-md w-full"
                     onClick={onLogout}
                     disabled={isLoading}
+                    className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-red-500 to-pink-500 p-0.5 hover:from-red-600 hover:to-pink-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? "Logout..." : "Logout"}
+                    <div className="relative flex items-center justify-center gap-2 rounded-[10px] bg-white dark:bg-gray-800 px-4 py-3 transition-all duration-300 group-hover:bg-transparent">
+                      <div className="relative z-10 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-red-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span className="font-semibold text-red-500 group-hover:text-white transition-colors duration-300">
+                          {isLoading ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin group-hover:border-white group-hover:border-t-transparent"></div>
+                              Logging out...
+                            </div>
+                          ) : (
+                            "Sign Out"
+                          )}
+                        </span>
+                      </div>
+                    </div>
                   </button>
                 </div>
               </li>
             ) : (
               <li className="absolute bottom-4 w-[90%]">
-                <div className="w-full flex items-center justify-center">
-                  <button className="btn-primary px-3.5 py-2.5 font-semibold rounded-md w-full">
-                    <Link to="/login">Login</Link>
-                  </button>
-                  <button className="btn-secondary px-3.5 py-2.5 font-semibold rounded-md w-full">
-                    <Link to="/signup">Signup</Link>
-                  </button>
+                <div className="w-full flex flex-col gap-3 items-center justify-center">
+                  {/* Modern Sign In Button */}
+                  <Link 
+                    to="/login" 
+                    onClick={hideDrawer}
+                    className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 p-0.5 hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
+                  >
+                    <div className="relative flex items-center justify-center gap-2 rounded-[10px] bg-white dark:bg-gray-800 px-4 py-3 transition-all duration-300 group-hover:bg-transparent">
+                      <div className="relative z-10 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-blue-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                        <span className="font-semibold text-blue-500 group-hover:text-white transition-colors duration-300">
+                          Sign In
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+
+                  {/* Modern Sign Up Button */}
+                  <Link 
+                    to="/signup" 
+                    onClick={hideDrawer}
+                    className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 p-0.5 hover:from-green-600 hover:to-emerald-600 transition-all duration-300"
+                  >
+                    <div className="relative flex items-center justify-center gap-2 rounded-[10px] bg-white dark:bg-gray-800 px-4 py-3 transition-all duration-300 group-hover:bg-transparent">
+                      <div className="relative z-10 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-green-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                        <span className="font-semibold text-green-500 group-hover:text-white transition-colors duration-300">
+                          Sign Up
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
                 </div>
               </li>
             )}
