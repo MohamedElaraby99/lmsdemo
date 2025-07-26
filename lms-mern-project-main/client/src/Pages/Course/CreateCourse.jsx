@@ -57,7 +57,7 @@ export default function CreateCourse() {
     description: "",
     category: "",
     subject: "",
-    stage: "General",
+    stage: "1 ابتدائي",
     createdBy: user?.fullName || "Admin",
     thumbnail: null,
     previewImage: "",
@@ -570,12 +570,22 @@ export default function CreateCourse() {
                               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                               required
                             >
-                              <option value="General">General</option>
-                              <option value="Primary">Primary</option>
-                              <option value="Secondary">Secondary</option>
-                              <option value="High School">High School</option>
-                              <option value="University">University</option>
-                              <option value="Professional">Professional</option>
+                                                      <option value="1 ابتدائي">1 ابتدائي</option>
+                        <option value="2 ابتدائي">2 ابتدائي</option>
+                        <option value="3 ابتدائي">3 ابتدائي</option>
+                        <option value="4 ابتدائي">4 ابتدائي</option>
+                        <option value="5 ابتدائي">5 ابتدائي</option>
+                        <option value="6 ابتدائي">6 ابتدائي</option>
+                        <option value="1 إعدادي">1 إعدادي</option>
+                        <option value="2 إعدادي">2 إعدادي</option>
+                        <option value="3 إعدادي">3 إعدادي</option>
+                        <option value="1 ثانوي">1 ثانوي</option>
+                        <option value="2 ثانوي">2 ثانوي</option>
+                        <option value="3 ثانوي">3 ثانوي</option>
+                        <option value="1 جامعة">1 جامعة</option>
+                        <option value="2 جامعة">2 جامعة</option>
+                        <option value="3 جامعة">3 جامعة</option>
+                        <option value="4 جامعة">4 جامعة</option>
                             </select>
                           </div>
                         </div>

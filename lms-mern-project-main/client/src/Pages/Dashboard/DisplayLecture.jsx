@@ -722,7 +722,7 @@ export default function DisplayLecture() {
                 </div>
                 <div className="flex items-center gap-2">
                   <FaLayerGroup className="text-purple-500" />
-                  <span>Stage: {courseData.stage || 'General'}</span>
+                  <span>Stage: {courseData.stage || '1 ابتدائي'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <FaUsers className="text-orange-500" />
@@ -1310,7 +1310,7 @@ export default function DisplayLecture() {
                       <div className="flex items-center gap-2">
                         <FaLayerGroup className="text-orange-500" />
                         <span className="text-gray-700 dark:text-gray-300">Stage:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{courseData.stage || 'General'}</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{courseData.stage || '1 ابتدائي'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <FaUsers className="text-red-500" />

@@ -395,19 +395,22 @@ export default function Profile() {
                   }`}
                 >
                   <option value="">Select Grade</option>
-                  <option value="Primary 1">Primary 1</option>
-                  <option value="Primary 2">Primary 2</option>
-                  <option value="Primary 3">Primary 3</option>
-                  <option value="Primary 4">Primary 4</option>
-                  <option value="Primary 5">Primary 5</option>
-                  <option value="Primary 6">Primary 6</option>
-                  <option value="Preparatory 1">Preparatory 1</option>
-                  <option value="Preparatory 2">Preparatory 2</option>
-                  <option value="Preparatory 3">Preparatory 3</option>
-                  <option value="Secondary 1">Secondary 1</option>
-                  <option value="Secondary 2">Secondary 2</option>
-                  <option value="Secondary 3">Secondary 3</option>
-                  <option value="University">University</option>
+                  <option value="1 ابتدائي">1 ابتدائي</option>
+                  <option value="2 ابتدائي">2 ابتدائي</option>
+                  <option value="3 ابتدائي">3 ابتدائي</option>
+                  <option value="4 ابتدائي">4 ابتدائي</option>
+                  <option value="5 ابتدائي">5 ابتدائي</option>
+                  <option value="6 ابتدائي">6 ابتدائي</option>
+                  <option value="1 إعدادي">1 إعدادي</option>
+                  <option value="2 إعدادي">2 إعدادي</option>
+                  <option value="3 إعدادي">3 إعدادي</option>
+                  <option value="1 ثانوي">1 ثانوي</option>
+                  <option value="2 ثانوي">2 ثانوي</option>
+                  <option value="3 ثانوي">3 ثانوي</option>
+                  <option value="1 جامعة">1 جامعة</option>
+                  <option value="2 جامعة">2 جامعة</option>
+                  <option value="3 جامعة">3 جامعة</option>
+                  <option value="4 جامعة">4 جامعة</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
