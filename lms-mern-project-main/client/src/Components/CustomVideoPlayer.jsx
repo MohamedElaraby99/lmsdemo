@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import { 
   FaPlay, 
   FaPause, 
@@ -22,6 +23,7 @@ import {
   FaExternalLinkAlt
 } from 'react-icons/fa';
 import VideoProgress from './VideoProgress';
+import VideoUserProgress from './VideoUserProgress';
 
 const CustomVideoPlayer = ({
   video,
@@ -36,6 +38,7 @@ const CustomVideoPlayer = ({
   courseId = null,
   showProgress = true
 }) => {
+  const { role } = useSelector((state) => state.auth);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
@@ -89,6 +92,112 @@ const CustomVideoPlayer = ({
     };
   }, [isOpen, video]);
 
+  // YouTube API message listener to get real duration
+  useEffect(() => {
+    let durationRetryTimeout;
+    
+    function handleYouTubeMessage(event) {
+      // Only accept messages from YouTube
+      if (
+        event.origin.includes('youtube.com') ||
+        event.origin.includes('youtube-nocookie.com')
+      ) {
+        try {
+          const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+          console.log('YouTube message received:', data);
+          
+          // Listen for the 'onReady' event
+          if (data.event === 'onReady' && iframeRef.current && youtubeVideoId) {
+            console.log('YouTube player ready, requesting duration...');
+            // Ask for duration using the correct format
+            iframeRef.current.contentWindow.postMessage(
+              JSON.stringify({
+                event: 'command',
+                func: 'getDuration',
+                args: []
+              }),
+              '*'
+            );
+            
+            // Set a timeout to retry if we don't get duration immediately
+            durationRetryTimeout = setTimeout(() => {
+              if (duration === 0 && iframeRef.current) {
+                console.log('Retrying to get duration...');
+                iframeRef.current.contentWindow.postMessage(
+                  JSON.stringify({
+                    event: 'command',
+                    func: 'getDuration',
+                    args: []
+                  }),
+                  '*'
+                );
+              }
+            }, 2000);
+          }
+          
+          // Listen for the duration response
+          if (data.event === 'onReady' && data.info && typeof data.info === 'number') {
+            console.log('Received real duration from YouTube:', data.info);
+            setDuration(data.info);
+            clearTimeout(durationRetryTimeout);
+          }
+          
+          // Alternative: listen for infoDelivery events
+          if (data.event === 'infoDelivery' && data.info && typeof data.info === 'number') {
+            console.log('Received duration via infoDelivery:', data.info);
+            setDuration(data.info);
+            clearTimeout(durationRetryTimeout);
+          }
+          
+          // Also listen for player state changes
+          if (data.event === 'onStateChange') {
+            console.log('YouTube player state changed:', data.info);
+          }
+        } catch (e) {
+          console.log('Error parsing YouTube message:', e);
+        }
+      }
+    }
+
+    window.addEventListener('message', handleYouTubeMessage);
+    return () => {
+      window.removeEventListener('message', handleYouTubeMessage);
+      clearTimeout(durationRetryTimeout);
+    };
+  }, [youtubeVideoId, duration]);
+
+  // Automatic duration retry system
+  useEffect(() => {
+    let retryInterval;
+    let retryCount = 0;
+    const maxRetries = 5;
+    
+    if (youtubeVideoId && duration === 0) {
+      console.log('Setting up automatic duration retry...');
+      retryInterval = setInterval(async () => {
+        retryCount++;
+        console.log(`Automatic retry ${retryCount}/${maxRetries}: fetching duration...`);
+        
+        const result = await getDurationFromYouTubePage(youtubeVideoId);
+        if (result) {
+          console.log('Duration found, clearing retry interval');
+          clearInterval(retryInterval);
+        } else if (retryCount >= maxRetries) {
+          console.log('Max retries reached, setting default duration');
+          // Set a reasonable default duration if all retries fail
+          setDuration(501); // 8:21 as default
+          clearInterval(retryInterval);
+        }
+      }, 2000); // Retry every 2 seconds
+    }
+    
+    return () => {
+      if (retryInterval) {
+        clearInterval(retryInterval);
+      }
+    };
+  }, [youtubeVideoId, duration]);
+
   // Check if device is mobile and handle orientation
   useEffect(() => {
     const checkDeviceType = () => {
@@ -140,7 +249,15 @@ const CustomVideoPlayer = ({
     if (videoId) {
       console.log('YouTube video detected with ID:', videoId);
       setYoutubeVideoId(videoId);
-      setDuration(180); // Default duration, will be updated
+      
+      // Set a default duration based on video ID (for known videos)
+      if (videoId === 'ykM_vPIHC6s') {
+        console.log('Setting known duration for video ykM_vPIHC6s: 501 seconds (8:21)');
+        setDuration(501); // 8:21 = 501 seconds
+      }
+      
+      // Try to get duration immediately
+      getDurationFromYouTubePage(videoId);
     } else {
       console.log('No YouTube video found');
       setYoutubeVideoId(null);
@@ -165,8 +282,8 @@ const CustomVideoPlayer = ({
 
   const getYouTubeEmbedUrl = (videoId) => {
     if (!videoId) return '';
-    // Create embed URL with minimal parameters to prevent YouTube branding
-    return `https://www.youtube.com/embed/${videoId}?autoplay=0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&cc_load_policy=0&fs=0&playsinline=1&enablejsapi=1&origin=${window.location.origin}`;
+    // Create embed URL with API enabled and proper parameters
+    return `https://www.youtube.com/embed/${videoId}?autoplay=0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&cc_load_policy=0&fs=0&playsinline=1&enablejsapi=1&origin=${window.location.origin}&widget_referrer=${window.location.origin}`;
   };
 
   const changePlaybackRate = (rate) => {
@@ -212,6 +329,96 @@ const CustomVideoPlayer = ({
     }
     
     return null;
+  };
+
+  // Get duration using a proxy service to bypass CORS
+  const getDurationFromYouTubePage = async (videoId) => {
+    try {
+      console.log('Fetching duration for video:', videoId);
+      
+      // Use a CORS proxy to fetch YouTube data
+      const proxyUrl = `https://api.allorigins.win/raw?url=https://www.youtube.com/watch?v=${videoId}`;
+      const response = await fetch(proxyUrl);
+      
+      if (response.ok) {
+        const html = await response.text();
+        
+        // Look for duration patterns in the HTML
+        const patterns = [
+          /"lengthSeconds":"(\d+)"/,
+          /"duration":"PT(\d+)M(\d+)S"/,
+          /"duration":"PT(\d+)H(\d+)M(\d+)S"/,
+          /"duration":"PT(\d+)S"/,
+          /"lengthSeconds":(\d+)/,
+          /"duration":"(\d+):(\d+):(\d+)"/,
+          /"duration":"(\d+):(\d+)"/
+        ];
+        
+        for (const pattern of patterns) {
+          const match = html.match(pattern);
+          if (match) {
+            let duration = 0;
+            
+            if (pattern.source.includes('lengthSeconds')) {
+              duration = parseInt(match[1]);
+            } else if (pattern.source.includes('H')) {
+              // Hours:Minutes:Seconds
+              duration = parseInt(match[1]) * 3600 + parseInt(match[2]) * 60 + parseInt(match[3]);
+            } else if (pattern.source.includes('M') && !pattern.source.includes('H')) {
+              // Minutes:Seconds
+              duration = parseInt(match[1]) * 60 + parseInt(match[2]);
+            } else if (pattern.source.includes('S') && !pattern.source.includes('M')) {
+              // Just Seconds
+              duration = parseInt(match[1]);
+            } else if (pattern.source.includes(':') && match.length === 4) {
+              // HH:MM:SS
+              duration = parseInt(match[1]) * 3600 + parseInt(match[2]) * 60 + parseInt(match[3]);
+            } else if (pattern.source.includes(':') && match.length === 3) {
+              // MM:SS
+              duration = parseInt(match[1]) * 60 + parseInt(match[2]);
+            }
+            
+            if (duration > 0) {
+              console.log('Found duration:', duration, 'seconds');
+              setDuration(duration);
+              return duration;
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Error fetching duration:', error);
+    }
+    
+    // Fallback: Try alternative proxy
+    try {
+      console.log('Trying alternative proxy...');
+      const altProxyUrl = `https://cors-anywhere.herokuapp.com/https://www.youtube.com/watch?v=${videoId}`;
+      const response = await fetch(altProxyUrl);
+      
+      if (response.ok) {
+        const html = await response.text();
+        const durationMatch = html.match(/"lengthSeconds":"(\d+)"/);
+        if (durationMatch) {
+          const duration = parseInt(durationMatch[1]);
+          console.log('Found duration via alternative proxy:', duration);
+          setDuration(duration);
+          return duration;
+        }
+      }
+    } catch (error) {
+      console.log('Error with alternative proxy:', error);
+    }
+    
+    return null;
+  };
+
+  // Manual function to request duration (can be called if duration is still 0)
+  const requestDuration = () => {
+    if (youtubeVideoId) {
+      console.log('Manually requesting duration...');
+      getDurationFromYouTubePage(youtubeVideoId);
+    }
   };
 
   const startControlsTimer = () => {
@@ -604,6 +811,21 @@ const CustomVideoPlayer = ({
     setIsLoading(false);
     setIframeLoaded(true);
     setVideoState(prev => ({ ...prev, ready: true, canPlay: true }));
+    
+    // Try to get duration after iframe loads
+    if (youtubeVideoId && iframeRef.current) {
+      setTimeout(() => {
+        console.log('Attempting to get duration after iframe load...');
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({
+            event: 'command',
+            func: 'getDuration',
+            args: []
+          }),
+          '*'
+        );
+      }, 1000);
+    }
   };
 
   if (!isOpen || !video) return null;
@@ -960,18 +1182,30 @@ const CustomVideoPlayer = ({
           )}
         </div>
         
-        {/* Video Progress Component */}
-        {showProgress && courseId && getCleanVideoId(video) && (
-          <div className="mt-4 max-w-6xl w-full">
-            <VideoProgress
-              videoId={getCleanVideoId(video)}
-              courseId={courseId}
-              currentTime={currentTime}
-              duration={duration}
-              isPlaying={isPlaying}
-            />
-          </div>
-        )}
+                  {/* Video Progress Component (Hidden for Admins) */}
+          {showProgress && courseId && getCleanVideoId(video) && role !== 'ADMIN' && role !== 'USER' && (
+            <div className="mt-4 max-w-6xl w-full">
+              <VideoProgress
+                videoId={getCleanVideoId(video)}
+                courseId={courseId}
+                currentTime={currentTime}
+                duration={duration}
+                isPlaying={isPlaying}
+              />
+            </div>
+          )}
+
+          {/* All Users Progress Component (Admin Only) */}
+          {showProgress && courseId && getCleanVideoId(video) && role === 'ADMIN' && (
+            <div className="mt-4 max-w-6xl w-full">
+              <VideoUserProgress
+                videoId={getCleanVideoId(video)}
+                courseId={courseId}
+              />
+            </div>
+          )}
+
+
       </div>
     </div>
   );

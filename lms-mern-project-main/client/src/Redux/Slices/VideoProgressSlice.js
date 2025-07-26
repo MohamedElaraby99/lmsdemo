@@ -52,7 +52,7 @@ export const getCourseProgress = createAsyncThunk(
 // Get all users progress for a video (admin only)
 export const getAllUsersProgress = createAsyncThunk(
   "videoProgress/getAllUsersProgress",
-  async (videoId) => {
+  async ({ videoId, courseId }) => {
     try {
       const response = await axiosInstance.get(`/video-progress/admin/video/${videoId}`);
       return response.data;

@@ -40,53 +40,77 @@ const getVideoProgress = async (req, res, next) => {
   }
 };
 
-// Update video progress
+// Update video progress with smart tracking
 const updateVideoProgress = async (req, res, next) => {
   try {
     const { videoId, courseId } = req.params;
-    const { currentTime, duration, watchTime, reachedPercentage } = req.body;
+    const { currentTime, duration, progress, watchTime, reachedPercentage } = req.body;
     const userId = req.user.id;
 
     // Find existing progress
-    let progress = await videoProgressModel.findOne({ userId, videoId });
+    let progressRecord = await videoProgressModel.findOne({ userId, videoId });
     
-    if (!progress) {
+    if (!progressRecord) {
       // Create new progress
-      progress = await videoProgressModel.create({
+      progressRecord = await videoProgressModel.create({
         userId,
         videoId,
         courseId,
-        currentTime,
-        duration,
-        progress: 0
+        currentTime: currentTime || 0,
+        duration: duration || 0,
+        progress: progress || 0,
+        totalWatchTime: 0
       });
     }
 
-    // Update progress
-    await progress.updateProgress(currentTime, duration);
+    // Update basic progress data
+    if (currentTime !== undefined) progressRecord.currentTime = currentTime;
+    if (duration !== undefined) progressRecord.duration = duration;
+    if (progress !== undefined) progressRecord.progress = progress;
     
-    // Add reached percentage if provided
+    // Update last watched timestamp
+    progressRecord.lastWatched = new Date();
+    
+    // Check if video is completed (watched 90% or more AND has significant watch time)
+    if (progress >= 90 && progressRecord.totalWatchTime >= 60) { // At least 1 minute watched
+      progressRecord.isCompleted = true;
+    } else if (progress < 90) {
+      // If progress drops below 90%, mark as not completed
+      progressRecord.isCompleted = false;
+    }
+    
+    // Add reached percentage if provided (smart checkpoint)
     if (reachedPercentage && typeof reachedPercentage === 'number') {
-      const percentageExists = progress.reachedPercentages.some(rp => rp.percentage === reachedPercentage);
-      if (!percentageExists) {
-        progress.reachedPercentages.push({
-          percentage: reachedPercentage,
-          time: currentTime,
-          reachedAt: new Date()
-        });
-        await progress.save();
+      // Validate that the reached percentage makes sense with current progress
+      const currentProgressPercent = Math.round((currentTime / duration) * 100);
+      
+      // Only allow checkpoint if current progress is close to or exceeds the checkpoint percentage
+      if (currentProgressPercent >= reachedPercentage - 5) { // Allow 5% tolerance
+        const percentageExists = progressRecord.reachedPercentages.some(rp => rp.percentage === reachedPercentage);
+        if (!percentageExists) {
+          progressRecord.reachedPercentages.push({
+            percentage: reachedPercentage,
+            time: currentTime,
+            reachedAt: new Date()
+          });
+        }
+      } else {
+        console.log(`Invalid checkpoint: ${reachedPercentage}% reached but current progress is only ${currentProgressPercent}%`);
       }
     }
     
-    // Add watch time if provided
+    // Add accurate watch time if provided
     if (watchTime && watchTime > 0) {
-      await progress.addWatchTime(watchTime);
+      // Always increment, never decrease
+      progressRecord.totalWatchTime = Math.max((progressRecord.totalWatchTime || 0) + watchTime, progressRecord.totalWatchTime || 0);
     }
+    
+    await progressRecord.save();
 
     res.status(200).json({
       success: true,
-      message: "Video progress updated",
-      data: progress
+      message: "Video progress updated with smart tracking",
+      data: progressRecord
     });
   } catch (error) {
     return next(new AppError(error.message, 500));
@@ -128,10 +152,33 @@ const getVideoProgressForAllUsers = async (req, res, next) => {
       .populate('userId', 'username fullName email')
       .sort({ lastWatched: -1 });
 
+    // Transform the data to include user information
+    const transformedProgress = progress.map(item => ({
+      _id: item._id,
+      userId: item.userId,
+      videoId: item.videoId,
+      courseId: item.courseId,
+      currentTime: item.currentTime,
+      duration: item.duration,
+      progress: item.progress,
+      reachedPercentages: item.reachedPercentages,
+      isCompleted: item.isCompleted,
+      totalWatchTime: item.totalWatchTime,
+      lastWatched: item.lastWatched,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      user: {
+        _id: item.userId._id,
+        username: item.userId.username,
+        fullName: item.userId.fullName,
+        email: item.userId.email
+      }
+    }));
+
     res.status(200).json({
       success: true,
       message: "Video progress for all users retrieved",
-      data: progress
+      data: transformedProgress
     });
   } catch (error) {
     return next(new AppError(error.message, 500));

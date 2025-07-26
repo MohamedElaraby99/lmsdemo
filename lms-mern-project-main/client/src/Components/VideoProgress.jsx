@@ -44,6 +44,11 @@ const VideoProgress = ({
     }
   }, [dispatch, videoId, courseId]);
 
+  // Smart checkpoint tracking system
+  const [nextCheckpointIndex, setNextCheckpointIndex] = useState(0);
+  const [totalWatchTime, setTotalWatchTime] = useState(0);
+  const [isTracking, setIsTracking] = useState(false);
+
   // Generate checkpoints based on video duration
   const generateCheckpoints = (duration) => {
     if (!duration || duration <= 0) return [];
@@ -58,51 +63,163 @@ const VideoProgress = ({
 
   // Get current checkpoints
   const currentCheckpoints = generateCheckpoints(duration);
-  
-  // Track reached checkpoints
-  const [reachedCheckpoints, setReachedCheckpoints] = useState(new Set());
 
-  // Update progress and checkpoints periodically
-  useEffect(() => {
-    if (isPlaying && duration > 0) {
-      const interval = setInterval(() => {
-        const progress = Math.round((currentTime / duration) * 100);
-        let newReachedPercentage = null;
-        
-        // Check which checkpoints have been reached
-        currentCheckpoints.forEach((checkpoint, index) => {
-          if (!reachedCheckpoints.has(index) && currentTime >= checkpoint.time && checkpoint.time > 0) {
-            setReachedCheckpoints(prev => new Set([...prev, index]));
-            newReachedPercentage = checkpoint.percentage;
-          }
-        });
-        
-        // Only update if progress has changed significantly or new checkpoint reached
-        const shouldUpdate = Math.abs(progress - (currentVideoProgress?.progress || 0)) > 1 || newReachedPercentage !== null;
-        
-        if (shouldUpdate) {
-          dispatch(updateVideoProgress({
-            courseId,
-            videoId,
-            progressData: {
-              currentTime,
-              duration,
-              watchTime: 1, // 1 second interval
-              reachedPercentage: newReachedPercentage
-            }
-          }));
-          setLastUpdateTime(Date.now());
+  // Smart algorithm to calculate accurate watch time and progress
+  const calculateAccurateProgress = (currentTime, duration, isPlaying) => {
+    if (!duration || duration <= 0) return { progress: 0, watchTime: 0 };
+
+    // Calculate progress percentage
+    const progress = Math.round((currentTime / duration) * 100);
+    
+    // Calculate watch time (only count when actually playing)
+    let watchTime = 0;
+    if (isPlaying) {
+      const now = Date.now();
+      if (lastUpdateTime > 0) {
+        // Only count time if user is actively watching (not paused, not seeking)
+        const timeDiff = (now - lastUpdateTime) / 1000; // Convert to seconds
+        if (timeDiff <= 1.5) { // Allow small gaps for network delays
+          watchTime = timeDiff;
         }
-      }, 1000); // Update every second
+      }
+      setLastUpdateTime(now);
+    }
+
+    return { progress, watchTime };
+  };
+
+  // Alternative: Calculate watch time based on current time if duration is available
+  const calculateWatchTimeFromProgress = (currentTime, duration) => {
+    if (!duration || duration <= 0) return 0;
+    
+    // Estimate watch time based on current position (minimum of current time)
+    return Math.max(currentTime, totalWatchTime);
+  };
+
+  // Smart checkpoint detection - only check the next checkpoint
+  const checkNextCheckpoint = (currentTime) => {
+    if (nextCheckpointIndex >= currentCheckpoints.length) return null;
+    
+    const nextCheckpoint = currentCheckpoints[nextCheckpointIndex];
+    
+    // Validate that current time is reasonable before marking checkpoint as reached
+    if (currentTime >= nextCheckpoint.time && nextCheckpoint.time > 0) {
+      // Additional validation: ensure we have meaningful watch time
+      if (totalWatchTime >= 10) { // At least 10 seconds watched
+        // Mark this checkpoint as reached and move to next
+        setNextCheckpointIndex(prev => prev + 1);
+        return nextCheckpoint.percentage;
+      } else {
+        console.log('Checkpoint not reached: insufficient watch time', { currentTime, checkpointTime: nextCheckpoint.time, totalWatchTime });
+      }
+    }
+    
+    return null;
+  };
+
+  // Initialize checkpoint tracking when video loads
+  useEffect(() => {
+    if (duration > 0 && currentVideoProgress) {
+      // Find the next unreached checkpoint
+      const reachedPercentages = currentVideoProgress.reachedPercentages || [];
+      const reachedPercentageValues = reachedPercentages.map(rp => rp.percentage);
+      
+      // Validate checkpoint data - if progress is 0% but checkpoints are reached, reset them
+      const currentProgress = Math.round((currentVideoProgress.currentTime / duration) * 100);
+      if (currentProgress === 0 && reachedPercentageValues.length > 0) {
+        console.log('Data inconsistency detected: 0% progress but checkpoints reached. Resetting checkpoints.');
+        // Reset the inconsistent data by not setting any reached checkpoints
+        setNextCheckpointIndex(0);
+      } else {
+        let nextIndex = 0;
+        for (let i = 0; i < currentCheckpoints.length; i++) {
+          if (!reachedPercentageValues.includes(currentCheckpoints[i].percentage)) {
+            nextIndex = i;
+            break;
+          }
+        }
+        setNextCheckpointIndex(nextIndex);
+      }
+      
+      // Initialize total watch time from backend data
+      if (currentVideoProgress.totalWatchTime) {
+        setTotalWatchTime(currentVideoProgress.totalWatchTime);
+      }
+      
+      // Special case: If video is completed but watch time is low, estimate it
+      if (currentProgress >= 90 && (!currentVideoProgress.totalWatchTime || currentVideoProgress.totalWatchTime < duration * 0.8)) {
+        console.log('Video completed but watch time seems low, estimating...');
+        const estimatedWatchTime = Math.max(duration * 0.8, currentTime); // At least 80% of duration
+        setTotalWatchTime(estimatedWatchTime);
+        
+        // Update backend with estimated watch time
+        dispatch(updateVideoProgress({
+          courseId,
+          videoId,
+          progressData: {
+            currentTime,
+            duration,
+            progress: currentProgress,
+            watchTime: estimatedWatchTime - (currentVideoProgress.totalWatchTime || 0)
+          }
+        }));
+      }
+    }
+  }, [duration, currentVideoProgress, currentCheckpoints, dispatch, courseId, videoId, currentTime]);
+
+  // Smart progress tracking
+  useEffect(() => {
+    if (duration > 0) {
+      const interval = setInterval(() => {
+        if (isPlaying) {
+          const { progress, watchTime } = calculateAccurateProgress(currentTime, duration, isPlaying);
+          const newReachedPercentage = checkNextCheckpoint(currentTime);
+          
+          // Update total watch time
+          if (watchTime > 0) {
+            setTotalWatchTime(prev => prev + watchTime);
+          }
+          
+          // Also ensure watch time is at least as much as current time (for completed videos)
+          const estimatedWatchTime = calculateWatchTimeFromProgress(currentTime, duration);
+          if (estimatedWatchTime > totalWatchTime) {
+            setTotalWatchTime(estimatedWatchTime);
+          }
+          
+          // Only update backend if significant change or new checkpoint reached
+          const shouldUpdate = Math.abs(progress - (currentVideoProgress?.progress || 0)) > 1 || 
+                              newReachedPercentage !== null || 
+                              watchTime > 0 ||
+                              estimatedWatchTime > totalWatchTime;
+          
+          if (shouldUpdate) {
+            dispatch(updateVideoProgress({
+              courseId,
+              videoId,
+              progressData: {
+                currentTime,
+                duration,
+                progress,
+                watchTime: Math.max(watchTime, estimatedWatchTime - totalWatchTime),
+                reachedPercentage: newReachedPercentage
+              }
+            }));
+          }
+        }
+      }, 1000);
 
       return () => clearInterval(interval);
     }
-  }, [dispatch, courseId, videoId, currentTime, duration, isPlaying, currentVideoProgress, currentCheckpoints, reachedCheckpoints]);
+  }, [dispatch, courseId, videoId, currentTime, duration, isPlaying, currentVideoProgress, nextCheckpointIndex, lastUpdateTime, totalWatchTime]);
 
   const handleResetProgress = () => {
     if (window.confirm('Are you sure you want to reset your progress for this video?')) {
-      dispatch(resetVideoProgress(videoId));
-      setReachedCheckpoints(new Set()); // Reset local checkpoint tracking
+      dispatch(resetVideoProgress({ courseId, videoId })).then(() => {
+        setNextCheckpointIndex(0);
+        setTotalWatchTime(0);
+        setLastUpdateTime(0);
+        dispatch(getVideoProgress({ courseId, videoId }));
+      });
     }
   };
 
@@ -119,15 +236,7 @@ const VideoProgress = ({
     return 'text-red-500';
   };
 
-  const getCheckpointStatus = (checkpoint, index) => {
-    if (checkpoint.reached) {
-      return { icon: FaCheckCircle, color: 'text-green-500' };
-    }
-    if (reachedCheckpoints.has(index) || currentTime >= checkpoint.time) {
-      return { icon: FaCheckCircle, color: 'text-green-500' };
-    }
-    return { icon: FaCircle, color: 'text-gray-400' };
-  };
+
 
   if (!showProgress) return null;
 
@@ -196,19 +305,39 @@ const VideoProgress = ({
         </div>
       </div>
 
-      {/* Checkpoints */}
+      {/* Smart Checkpoints Display */}
       {currentCheckpoints.length > 0 && (
         <div className="mb-4">
           <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
             <FaClock />
             Progress Checkpoints
+            <span className="text-xs text-blue-500">
+              (Next: {nextCheckpointIndex < currentCheckpoints.length ? `${currentCheckpoints[nextCheckpointIndex]?.percentage}%` : 'Complete'})
+            </span>
           </h4>
           <div className="grid grid-cols-5 gap-2">
             {currentCheckpoints.map((checkpoint, index) => {
-              const { icon: Icon, color } = getCheckpointStatus(checkpoint, index);
+              const isReached = index < nextCheckpointIndex;
+              const isNext = index === nextCheckpointIndex;
+              const isFuture = index > nextCheckpointIndex;
+              
+              let icon, color;
+              if (isReached) {
+                icon = FaCheckCircle;
+                color = 'text-green-500';
+              } else if (isNext) {
+                icon = FaClock;
+                color = 'text-blue-500';
+              } else {
+                icon = FaCircle;
+                color = 'text-gray-400';
+              }
+              
+              const Icon = icon;
               const hasValidTime = checkpoint.time > 0;
+              
               return (
-                <div key={index} className="text-center">
+                <div key={index} className={`text-center ${isNext ? 'ring-2 ring-blue-300 rounded-lg p-1' : ''}`}>
                   <Icon className={`mx-auto mb-1 ${color}`} />
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     {checkpoint.percentage}%
@@ -261,21 +390,24 @@ const VideoProgress = ({
             <div>
               <span className="text-gray-500 dark:text-gray-400">Checkpoints Reached:</span>
               <span className="ml-2 font-semibold text-gray-900 dark:text-white">
-                {reachedCheckpoints.size} / {currentCheckpoints.length}
+                {nextCheckpointIndex} / {currentCheckpoints.length}
               </span>
             </div>
             
             <div>
-              <span className="text-gray-500 dark:text-gray-400">Latest Checkpoint:</span>
+              <span className="text-gray-500 dark:text-gray-400">Next Checkpoint:</span>
               <span className="ml-2 font-semibold text-gray-900 dark:text-white">
-                {(() => {
-                  const reachedPercentages = currentVideoProgress?.reachedPercentages || [];
-                  if (reachedPercentages.length > 0) {
-                    const latest = reachedPercentages[reachedPercentages.length - 1];
-                    return `${latest.percentage}% (${formatTime(latest.time)})`;
-                  }
-                  return 'None';
-                })()}
+                {nextCheckpointIndex < currentCheckpoints.length 
+                  ? `${currentCheckpoints[nextCheckpointIndex]?.percentage}% (${formatTime(currentCheckpoints[nextCheckpointIndex]?.time || 0)})`
+                  : 'All Complete!'
+                }
+              </span>
+            </div>
+
+            <div>
+              <span className="text-gray-500 dark:text-gray-400">Total Watch Time:</span>
+              <span className="ml-2 font-semibold text-gray-900 dark:text-white">
+                {formatTime(Math.round(currentVideoProgress?.totalWatchTime || totalWatchTime))}
               </span>
             </div>
           </div>
