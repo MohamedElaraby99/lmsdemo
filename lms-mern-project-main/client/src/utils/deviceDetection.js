@@ -25,6 +25,14 @@ export const isMobile = () => {
 // Prevent mobile inspection on desktop
 export const preventMobileInspection = () => {
   if (isDesktop()) {
+    // TEMPORARY: Check if protection is disabled via localStorage
+    const protectionDisabled = localStorage.getItem('disableProtection') === 'true';
+    
+    if (protectionDisabled) {
+      console.log('Device protection is temporarily disabled');
+      return;
+    }
+    
     // Disable right-click context menu
     document.addEventListener('contextmenu', (e) => {
       e.preventDefault();
@@ -108,4 +116,23 @@ export const shouldShowMobileFeatures = () => {
 // Check if we should show desktop-specific features
 export const shouldShowDesktopFeatures = () => {
   return isDesktop();
+};
+
+// Temporarily disable protection for debugging
+export const disableProtection = () => {
+  localStorage.setItem('disableProtection', 'true');
+  console.log('🔓 Device protection DISABLED - You can now use F12 and inspect tools');
+  console.log('To re-enable protection, call enableProtection()');
+};
+
+// Re-enable protection
+export const enableProtection = () => {
+  localStorage.removeItem('disableProtection');
+  console.log('🔒 Device protection ENABLED');
+  // Note: Protection will be applied on next page load or component re-render
+};
+
+// Check if protection is currently disabled
+export const isProtectionDisabled = () => {
+  return localStorage.getItem('disableProtection') === 'true';
 }; 

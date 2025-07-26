@@ -1,9 +1,30 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BsFacebook, BsLinkedin } from "react-icons/bs";
+import { FaShieldAlt, FaUnlock } from "react-icons/fa";
+import { disableProtection, enableProtection, isProtectionDisabled } from "../utils/deviceDetection";
 
 export default function Footer() {
   const curDate = new Date();
   const year = curDate.getFullYear();
+  
+  const [protectionEnabled, setProtectionEnabled] = useState(true);
+  
+  useEffect(() => {
+    // Check initial protection status
+    setProtectionEnabled(!isProtectionDisabled());
+  }, []);
+  
+  const handleProtectionToggle = () => {
+    if (protectionEnabled) {
+      // Disable protection
+      disableProtection();
+      setProtectionEnabled(false);
+    } else {
+      // Enable protection
+      enableProtection();
+      setProtectionEnabled(true);
+    }
+  };
   return (
     <footer className="py-12 md:px-16 px-3 bg-slate-100 dark:bg-gray-900">
       <div className="flex md:flex-row flex-col md:justify-between justify-center items-center gap-4 mb-8">
@@ -11,6 +32,29 @@ export default function Footer() {
           Copyright {year} | All Right Reserved
         </span>
         <div className="flex gap-5 items-center">
+          {/* Protection Toggle Button */}
+          <button
+            onClick={handleProtectionToggle}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+              protectionEnabled
+                ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800'
+                : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800'
+            }`}
+            title={protectionEnabled ? "Click to disable protection" : "Click to enable protection"}
+          >
+            {protectionEnabled ? (
+              <>
+                <FaShieldAlt className="text-green-600 dark:text-green-400" />
+                <span className="hidden sm:inline">Protection ON</span>
+              </>
+            ) : (
+              <>
+                <FaUnlock className="text-red-600 dark:text-red-400" />
+                <span className="hidden sm:inline">Protection OFF</span>
+              </>
+            )}
+          </button>
+          
           <a
             href="https://www.facebook.com/people/Fikra-Software-%D9%81%D9%83%D8%B1%D8%A9/61572824761047/"
             target="_blank"
