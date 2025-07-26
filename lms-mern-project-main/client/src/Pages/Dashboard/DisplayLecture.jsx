@@ -682,13 +682,30 @@ export default function DisplayLecture() {
             {/* Header */}
             <div className="text-center mb-8 lg:mb-12">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full">
-                  <FaGraduationCap className="text-white text-2xl" />
-                </div>
+                {courseData.thumbnail?.secure_url ? (
+                  <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg">
+                    <img 
+                      src={courseData.thumbnail.secure_url} 
+                      alt={courseData.title || "Course"} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div className="w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center" style={{display: 'none'}}>
+                      <FaGraduationCap className="text-white text-2xl" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                    <FaGraduationCap className="text-white text-2xl" />
+                  </div>
+                )}
               </div>
               <h1 className="text-3xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-4">
                 {courseData.title || "Course Content"}
-          </h1>
+              </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-6">
                 {courseData.description || "Explore the course content and lectures"}
               </p>
