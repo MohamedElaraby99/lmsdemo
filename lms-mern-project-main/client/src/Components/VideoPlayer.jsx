@@ -46,9 +46,11 @@ const VideoPlayer = ({
   const [isYouTube, setIsYouTube] = useState(false);
   const [player, setPlayer] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const iframeRef = useRef(null);
   const playerRef = useRef(null);
+  const progressBarRef = useRef(null);
   const [playerId] = useState(`youtube-player-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
 
   // Load YouTube IFrame API
@@ -223,7 +225,7 @@ const VideoPlayer = ({
   // Update current time for YouTube videos
   useEffect(() => {
     let interval;
-    if (isYouTube && player && isPlaying) {
+    if (isYouTube && player && isPlaying && !isDragging) {
       interval = setInterval(() => {
         if (player.getCurrentTime) {
           setCurrentTime(player.getCurrentTime());
@@ -231,7 +233,7 @@ const VideoPlayer = ({
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isYouTube, player, isPlaying]);
+  }, [isYouTube, player, isPlaying, isDragging]);
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -350,11 +352,28 @@ const VideoPlayer = ({
       console.log('Seeking to:', newTime);
       if (typeof player.seekTo === 'function') {
         player.seekTo(newTime);
+        setCurrentTime(newTime);
       } else {
         console.error('Seek method not available');
       }
     } else {
       const newTime = Math.max(0, Math.min(duration, currentTime + seconds));
+      setCurrentTime(newTime);
+    }
+  };
+
+  const seekTo = (time) => {
+    if (isYouTube && player && playerReady) {
+      const newTime = Math.max(0, Math.min(duration, time));
+      console.log('Seeking to:', newTime);
+      if (typeof player.seekTo === 'function') {
+        player.seekTo(newTime);
+        setCurrentTime(newTime);
+      } else {
+        console.error('Seek method not available');
+      }
+    } else {
+      const newTime = Math.max(0, Math.min(duration, time));
       setCurrentTime(newTime);
     }
   };
@@ -383,6 +402,55 @@ const VideoPlayer = ({
         setIsMuted(false);
       }
     }
+  };
+
+  const handleVolumeChange = (newVolume) => {
+    if (isYouTube && player && playerReady) {
+      const volumePercent = newVolume * 100;
+      console.log('Setting volume to:', volumePercent);
+      if (typeof player.setVolume === 'function') {
+        player.setVolume(volumePercent);
+        setVolume(newVolume);
+        if (newVolume === 0) {
+          setIsMuted(true);
+        } else if (isMuted) {
+          setIsMuted(false);
+        }
+      } else {
+        console.error('Volume method not available');
+      }
+    } else {
+      setVolume(newVolume);
+      if (newVolume === 0) {
+        setIsMuted(true);
+      } else if (isMuted) {
+        setIsMuted(false);
+      }
+    }
+  };
+
+  const handleProgressClick = (e) => {
+    if (!progressBarRef.current) return;
+    
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const progressWidth = rect.width;
+    const clickPercent = clickX / progressWidth;
+    const newTime = clickPercent * duration;
+    
+    seekTo(newTime);
+  };
+
+  const handleProgressDrag = (e) => {
+    if (!progressBarRef.current) return;
+    
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const clickX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+    const progressWidth = rect.width;
+    const clickPercent = clickX / progressWidth;
+    const newTime = clickPercent * duration;
+    
+    setCurrentTime(newTime);
   };
 
   const formatTime = (seconds) => {
@@ -423,6 +491,15 @@ const VideoPlayer = ({
     return video?.lecture?.secure_url || '';
   };
 
+  const handleClose = () => {
+    // Ensure player is destroyed before closing
+    if (player && typeof player.destroy === 'function') {
+      player.destroy();
+      setPlayer(null);
+    }
+    onClose();
+  };
+
   if (!isOpen || !video) return null;
 
   return (
@@ -432,7 +509,7 @@ const VideoPlayer = ({
       onMouseLeave={() => setShowControls(false)}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black bg-opacity-90" onClick={onClose}></div>
+      <div className="absolute inset-0 bg-black bg-opacity-90" onClick={handleClose}></div>
       
       {/* Video Container */}
       <div className={`relative w-full h-full flex items-center justify-center p-4 ${isFullscreen ? 'p-0' : ''}`}>
@@ -486,7 +563,7 @@ const VideoPlayer = ({
               <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between pointer-events-auto">
                 <div className="flex items-center gap-4">
                   <button
-                    onClick={onClose}
+                    onClick={handleClose}
                     className="text-white hover:text-gray-300 transition-colors p-2 hover:bg-black/30 rounded-lg"
                   >
                     <FaTimes className="text-xl" />
@@ -564,10 +641,29 @@ const VideoPlayer = ({
               <div className="absolute bottom-0 left-0 right-0 p-4 pointer-events-auto">
                 {/* Progress Bar */}
                 <div className="mb-4">
-                  <div className="w-full bg-white/30 rounded-full h-1 cursor-pointer">
+                  <div 
+                    ref={progressBarRef}
+                    className="w-full bg-white/30 rounded-full h-1 cursor-pointer relative"
+                    onClick={handleProgressClick}
+                    onMouseDown={(e) => {
+                      setIsDragging(true);
+                      handleProgressDrag(e);
+                    }}
+                    onMouseMove={(e) => {
+                      if (isDragging) {
+                        handleProgressDrag(e);
+                      }
+                    }}
+                    onMouseUp={() => setIsDragging(false)}
+                    onMouseLeave={() => setIsDragging(false)}
+                  >
                     <div 
                       className="bg-blue-500 h-1 rounded-full transition-all duration-200"
                       style={{ width: `${(currentTime / duration) * 100}%` }}
+                    ></div>
+                    <div 
+                      className="absolute top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full shadow-lg"
+                      style={{ left: `${(currentTime / duration) * 100}%`, marginLeft: '-6px' }}
                     ></div>
                   </div>
                 </div>
@@ -596,9 +692,12 @@ const VideoPlayer = ({
                         step="0.1"
                         value={isMuted ? 0 : volume}
                         onChange={(e) => {
-                          adjustVolume(parseFloat(e.target.value) - volume);
+                          handleVolumeChange(parseFloat(e.target.value));
                         }}
                         className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer"
+                        style={{
+                          background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(isMuted ? 0 : volume) * 100}%, rgba(255,255,255,0.3) ${(isMuted ? 0 : volume) * 100}%, rgba(255,255,255,0.3) 100%)`
+                        }}
                       />
                     </div>
 

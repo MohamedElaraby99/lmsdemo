@@ -33,7 +33,7 @@ import {
 } from "react-icons/fa";
 import { axiosInstance } from "../../Helpers/axiosInstance";
 import { toast } from "react-hot-toast";
-import VideoPlayer from "../../Components/VideoPlayer";
+import CustomVideoPlayer from "../../Components/CustomVideoPlayer";
 
 export default function DisplayLecture() {
   const navigate = useNavigate();
@@ -766,9 +766,9 @@ export default function DisplayLecture() {
           </div>
         )}
 
-        {/* Video Player Modal */}
+        {/* Custom Video Player Modal */}
         {showVideoModal && selectedVideo && (
-          <VideoPlayer
+          <CustomVideoPlayer
             video={selectedVideo}
             isOpen={showVideoModal}
             onClose={() => setShowVideoModal(false)}
