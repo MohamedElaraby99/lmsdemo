@@ -9,7 +9,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "migrate:add-username": "node migrations/addUsernameField.js",
     "migrate:cleanup-video-progress": "node migrations/cleanupVideoProgress.js",
-    "migrate:fix-inconsistent-progress": "node migrations/fixInconsistentProgress.js"
+    "migrate:fix-inconsistent-progress": "node migrations/fixInconsistentProgress.js",
+    "migrate:fix-lecture-scheduling": "node migrations/fixLectureScheduling.js"
   },
   "keywords": [],
   "author": "",

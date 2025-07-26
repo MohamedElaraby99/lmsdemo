@@ -36,7 +36,8 @@ const CustomVideoPlayer = ({
   courseTitle = "Course Video",
   userName = "User",
   courseId = null,
-  showProgress = true
+  showProgress = true,
+  savedProgress = null
 }) => {
   const { role } = useSelector((state) => state.auth);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -61,6 +62,8 @@ const CustomVideoPlayer = ({
   const [isLandscape, setIsLandscape] = useState(false);
   const [watermarkPosition, setWatermarkPosition] = useState(0);
   const [displayUserName, setDisplayUserName] = useState('');
+  const [player, setPlayer] = useState(null);
+  const [playerReady, setPlayerReady] = useState(false);
 
   const iframeRef = useRef(null);
   const progressBarRef = useRef(null);
@@ -92,111 +95,115 @@ const CustomVideoPlayer = ({
     };
   }, [isOpen, video]);
 
-  // YouTube API message listener to get real duration
+  // YouTube IFrame API implementation
   useEffect(() => {
-    let durationRetryTimeout;
-    
-    function handleYouTubeMessage(event) {
-      // Only accept messages from YouTube
-      if (
-        event.origin.includes('youtube.com') ||
-        event.origin.includes('youtube-nocookie.com')
-      ) {
-        try {
-          const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-          console.log('YouTube message received:', data);
-          
-          // Listen for the 'onReady' event
-          if (data.event === 'onReady' && iframeRef.current && youtubeVideoId) {
-            console.log('YouTube player ready, requesting duration...');
-            // Ask for duration using the correct format
-            iframeRef.current.contentWindow.postMessage(
-              JSON.stringify({
-                event: 'command',
-                func: 'getDuration',
-                args: []
-              }),
-              '*'
-            );
-            
-            // Set a timeout to retry if we don't get duration immediately
-            durationRetryTimeout = setTimeout(() => {
-              if (duration === 0 && iframeRef.current) {
-                console.log('Retrying to get duration...');
-                iframeRef.current.contentWindow.postMessage(
-                  JSON.stringify({
-                    event: 'command',
-                    func: 'getDuration',
-                    args: []
-                  }),
-                  '*'
-                );
-              }
-            }, 2000);
-          }
-          
-          // Listen for the duration response
-          if (data.event === 'onReady' && data.info && typeof data.info === 'number') {
-            console.log('Received real duration from YouTube:', data.info);
-            setDuration(data.info);
-            clearTimeout(durationRetryTimeout);
-          }
-          
-          // Alternative: listen for infoDelivery events
-          if (data.event === 'infoDelivery' && data.info && typeof data.info === 'number') {
-            console.log('Received duration via infoDelivery:', data.info);
-            setDuration(data.info);
-            clearTimeout(durationRetryTimeout);
-          }
-          
-          // Also listen for player state changes
-          if (data.event === 'onStateChange') {
-            console.log('YouTube player state changed:', data.info);
-          }
-        } catch (e) {
-          console.log('Error parsing YouTube message:', e);
-        }
-      }
+    // Check if YouTube IFrame API is loaded
+    if (typeof YT === 'undefined' || !YT.Player) {
+      console.log('YouTube IFrame API not loaded yet');
+      return;
     }
 
-    window.addEventListener('message', handleYouTubeMessage);
-    return () => {
-      window.removeEventListener('message', handleYouTubeMessage);
-      clearTimeout(durationRetryTimeout);
-    };
-  }, [youtubeVideoId, duration]);
-
-  // Automatic duration retry system
-  useEffect(() => {
-    let retryInterval;
-    let retryCount = 0;
-    const maxRetries = 5;
-    
-    if (youtubeVideoId && duration === 0) {
-      console.log('Setting up automatic duration retry...');
-      retryInterval = setInterval(async () => {
-        retryCount++;
-        console.log(`Automatic retry ${retryCount}/${maxRetries}: fetching duration...`);
-        
-        const result = await getDurationFromYouTubePage(youtubeVideoId);
-        if (result) {
-          console.log('Duration found, clearing retry interval');
-          clearInterval(retryInterval);
-        } else if (retryCount >= maxRetries) {
-          console.log('Max retries reached, setting default duration');
-          // Set a reasonable default duration if all retries fail
-          setDuration(501); // 8:21 as default
-          clearInterval(retryInterval);
+    if (youtubeVideoId && !player) {
+      console.log('Creating YouTube player for video:', youtubeVideoId);
+      
+      const newPlayer = new YT.Player('youtube-player', {
+        height: '100%',
+        width: '100%',
+        videoId: youtubeVideoId,
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          modestbranding: 1,
+          rel: 0,
+          showinfo: 0,
+          iv_load_policy: 3,
+          cc_load_policy: 0,
+          fs: 0,
+          playsinline: 1,
+          enablejsapi: 1,
+          origin: window.location.origin
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange,
+          'onError': onPlayerError
         }
-      }, 2000); // Retry every 2 seconds
+      });
+      
+      setPlayer(newPlayer);
     }
-    
+
     return () => {
-      if (retryInterval) {
-        clearInterval(retryInterval);
+      if (player) {
+        console.log('Destroying YouTube player');
+        player.destroy();
+        setPlayer(null);
+        setPlayerReady(false);
       }
     };
-  }, [youtubeVideoId, duration]);
+  }, [youtubeVideoId]);
+
+  // YouTube player event handlers
+  const onPlayerReady = (event) => {
+    console.log('YouTube player ready');
+    setPlayerReady(true);
+    setIsLoading(false);
+    
+    // Get the real duration
+    const videoDuration = event.target.getDuration();
+    console.log('Real video duration:', videoDuration, 'seconds');
+    
+    if (videoDuration > 0 && videoDuration < 7200) {
+      setDuration(videoDuration);
+    } else {
+      console.log('Invalid duration received:', videoDuration);
+    }
+    
+    // Set initial volume
+    event.target.setVolume(volume * 100);
+    if (isMuted) {
+      event.target.mute();
+    }
+    
+    // Restore saved progress position if available
+    if (savedProgress && savedProgress.currentTime > 0) {
+      console.log('Restoring saved progress:', savedProgress.currentTime, 'seconds');
+      // Seek to saved position
+      event.target.seekTo(savedProgress.currentTime, true);
+      setCurrentTime(savedProgress.currentTime);
+      
+      // Show a notification to user
+      console.log(`Resumed from ${Math.floor(savedProgress.currentTime / 60)}:${(savedProgress.currentTime % 60).toString().padStart(2, '0')}`);
+    }
+  };
+
+  const onPlayerStateChange = (event) => {
+    console.log('YouTube player state changed:', event.data);
+    
+    switch (event.data) {
+      case YT.PlayerState.PLAYING:
+        setIsPlaying(true);
+        break;
+      case YT.PlayerState.PAUSED:
+        setIsPlaying(false);
+        break;
+      case YT.PlayerState.ENDED:
+        setIsPlaying(false);
+        setCurrentTime(duration);
+        break;
+      case YT.PlayerState.BUFFERING:
+        // Handle buffering if needed
+        break;
+    }
+  };
+
+  const onPlayerError = (event) => {
+    console.error('YouTube player error:', event.data);
+    setVideoState(prev => ({ ...prev, error: 'Failed to load video' }));
+    setIsLoading(false);
+  };
+
+
 
   // Check if device is mobile and handle orientation
   useEffect(() => {
@@ -240,7 +247,7 @@ const CustomVideoPlayer = ({
     setIsPlaying(false);
     setShowControls(true);
     setVideoState({ ready: false, canPlay: false, seeking: false, error: null });
-    setIframeLoaded(false);
+    setPlayerReady(false);
     
     // Extract YouTube video ID
     const videoUrl = getVideoUrl(video);
@@ -250,14 +257,8 @@ const CustomVideoPlayer = ({
       console.log('YouTube video detected with ID:', videoId);
       setYoutubeVideoId(videoId);
       
-      // Set a default duration based on video ID (for known videos)
-      if (videoId === 'ykM_vPIHC6s') {
-        console.log('Setting known duration for video ykM_vPIHC6s: 501 seconds (8:21)');
-        setDuration(501); // 8:21 = 501 seconds
-      }
-      
-      // Try to get duration immediately
-      getDurationFromYouTubePage(videoId);
+      // The YouTube IFrame API will handle player creation and duration fetching
+      console.log('Video ID detected, YouTube IFrame API will handle duration');
     } else {
       console.log('No YouTube video found');
       setYoutubeVideoId(null);
@@ -287,25 +288,14 @@ const CustomVideoPlayer = ({
   };
 
   const changePlaybackRate = (rate) => {
+    if (!playerReady || !player) return;
+    
     setPlaybackRate(rate);
     setShowSettings(false);
     
-    // Send playback rate command to iframe
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      try {
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({
-            event: 'command',
-            func: 'setPlaybackRate',
-            args: [rate]
-          }),
-          '*'
-        );
-        console.log(`Playback rate set to ${rate}x`);
-      } catch (error) {
-        console.log('PostMessage not available for playback rate');
-      }
-    }
+    // Send playback rate command to YouTube player
+    player.setPlaybackRate(rate);
+    console.log(`Playback rate set to ${rate}x`);
   };
 
   const getVideoTitle = (video) => {
@@ -331,93 +321,15 @@ const CustomVideoPlayer = ({
     return null;
   };
 
-  // Get duration using a proxy service to bypass CORS
-  const getDurationFromYouTubePage = async (videoId) => {
-    try {
-      console.log('Fetching duration for video:', videoId);
-      
-      // Use a CORS proxy to fetch YouTube data
-      const proxyUrl = `https://api.allorigins.win/raw?url=https://www.youtube.com/watch?v=${videoId}`;
-      const response = await fetch(proxyUrl);
-      
-      if (response.ok) {
-        const html = await response.text();
-        
-        // Look for duration patterns in the HTML
-        const patterns = [
-          /"lengthSeconds":"(\d+)"/,
-          /"duration":"PT(\d+)M(\d+)S"/,
-          /"duration":"PT(\d+)H(\d+)M(\d+)S"/,
-          /"duration":"PT(\d+)S"/,
-          /"lengthSeconds":(\d+)/,
-          /"duration":"(\d+):(\d+):(\d+)"/,
-          /"duration":"(\d+):(\d+)"/
-        ];
-        
-        for (const pattern of patterns) {
-          const match = html.match(pattern);
-          if (match) {
-            let duration = 0;
-            
-            if (pattern.source.includes('lengthSeconds')) {
-              duration = parseInt(match[1]);
-            } else if (pattern.source.includes('H')) {
-              // Hours:Minutes:Seconds
-              duration = parseInt(match[1]) * 3600 + parseInt(match[2]) * 60 + parseInt(match[3]);
-            } else if (pattern.source.includes('M') && !pattern.source.includes('H')) {
-              // Minutes:Seconds
-              duration = parseInt(match[1]) * 60 + parseInt(match[2]);
-            } else if (pattern.source.includes('S') && !pattern.source.includes('M')) {
-              // Just Seconds
-              duration = parseInt(match[1]);
-            } else if (pattern.source.includes(':') && match.length === 4) {
-              // HH:MM:SS
-              duration = parseInt(match[1]) * 3600 + parseInt(match[2]) * 60 + parseInt(match[3]);
-            } else if (pattern.source.includes(':') && match.length === 3) {
-              // MM:SS
-              duration = parseInt(match[1]) * 60 + parseInt(match[2]);
-            }
-            
-            if (duration > 0) {
-              console.log('Found duration:', duration, 'seconds');
-              setDuration(duration);
-              return duration;
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.log('Error fetching duration:', error);
-    }
-    
-    // Fallback: Try alternative proxy
-    try {
-      console.log('Trying alternative proxy...');
-      const altProxyUrl = `https://cors-anywhere.herokuapp.com/https://www.youtube.com/watch?v=${videoId}`;
-      const response = await fetch(altProxyUrl);
-      
-      if (response.ok) {
-        const html = await response.text();
-        const durationMatch = html.match(/"lengthSeconds":"(\d+)"/);
-        if (durationMatch) {
-          const duration = parseInt(durationMatch[1]);
-          console.log('Found duration via alternative proxy:', duration);
-          setDuration(duration);
-          return duration;
-        }
-      }
-    } catch (error) {
-      console.log('Error with alternative proxy:', error);
-    }
-    
-    return null;
-  };
-
   // Manual function to request duration (can be called if duration is still 0)
   const requestDuration = () => {
-    if (youtubeVideoId) {
-      console.log('Manually requesting duration...');
-      getDurationFromYouTubePage(youtubeVideoId);
+    if (youtubeVideoId && player) {
+      console.log('Manually requesting duration from YouTube player...');
+      const videoDuration = player.getDuration();
+      if (videoDuration > 0 && videoDuration < 7200) {
+        setDuration(videoDuration);
+        console.log('Manual duration request successful:', videoDuration);
+      }
     }
   };
 
@@ -442,25 +354,21 @@ const CustomVideoPlayer = ({
     }
   };
 
-  // Simulate time updates for custom progress bar
+  // Get real time updates from YouTube player
   useEffect(() => {
-    if (isPlaying && !isDragging && videoState.canPlay) {
+    if (isPlaying && !isDragging && playerReady && player) {
       timeUpdateIntervalRef.current = setInterval(() => {
-        setCurrentTime(prev => {
-          const newTime = prev + 1;
-          if (newTime >= duration) {
-            setIsPlaying(false);
-            return duration;
-          }
-          return newTime;
-        });
+        const currentTime = player.getCurrentTime();
+        if (currentTime !== undefined && currentTime >= 0) {
+          setCurrentTime(currentTime);
+        }
       }, 1000);
     } else {
       clearTimeUpdateInterval();
     }
 
     return () => clearTimeUpdateInterval();
-  }, [isPlaying, isDragging, videoState.canPlay, duration]);
+  }, [isPlaying, isDragging, playerReady, player]);
 
   // Simulate buffering
   useEffect(() => {
@@ -529,46 +437,30 @@ const CustomVideoPlayer = ({
   };
 
   const togglePlay = () => {
-    if (!videoState.canPlay) return;
+    if (!playerReady || !player) return;
     
-    setIsPlaying(!isPlaying);
-    
-    // Send play/pause command to iframe via postMessage
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      const command = isPlaying ? 'pauseVideo' : 'playVideo';
-      try {
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({
-            event: 'command',
-            func: command,
-            args: []
-          }),
-          '*'
-        );
-      } catch (error) {
-        console.log('PostMessage not available, using simulated controls');
-      }
+    if (isPlaying) {
+      // Pause video
+      player.pauseVideo();
+      console.log('Pause command sent to YouTube player');
+    } else {
+      // Play video
+      player.playVideo();
+      console.log('Play command sent to YouTube player');
     }
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    if (!playerReady || !player) return;
     
-    // Send mute/unmute command to iframe
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      const command = isMuted ? 'unMute' : 'mute';
-      try {
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({
-            event: 'command',
-            func: command,
-            args: []
-          }),
-          '*'
-        );
-      } catch (error) {
-        console.log('PostMessage not available, using simulated controls');
-      }
+    if (isMuted) {
+      player.unMute();
+      setIsMuted(false);
+      console.log('Unmute command sent to YouTube player');
+    } else {
+      player.mute();
+      setIsMuted(true);
+      console.log('Mute command sent to YouTube player');
     }
   };
 
@@ -606,25 +498,15 @@ const CustomVideoPlayer = ({
   };
 
   const seekTo = (time) => {
+    if (!playerReady || !player) return;
+    
     const newTime = Math.max(0, Math.min(duration, time));
     setCurrentTime(newTime);
     setVideoState(prev => ({ ...prev, seeking: true }));
     
-    // Send seek command to iframe
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      try {
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({
-            event: 'command',
-            func: 'seekTo',
-            args: [newTime, true]
-          }),
-          '*'
-        );
-      } catch (error) {
-        console.log('PostMessage not available, using simulated controls');
-      }
-    }
+    // Send seek command to YouTube player
+    player.seekTo(newTime, true);
+    console.log('Seek command sent to YouTube player:', newTime);
     
     setTimeout(() => {
       setVideoState(prev => ({ ...prev, seeking: false }));
@@ -632,6 +514,8 @@ const CustomVideoPlayer = ({
   };
 
   const adjustVolume = (change) => {
+    if (!playerReady || !player) return;
+    
     const newVolume = Math.max(0, Math.min(1, volume + change));
     setVolume(newVolume);
     if (newVolume === 0) {
@@ -640,24 +524,14 @@ const CustomVideoPlayer = ({
       setIsMuted(false);
     }
     
-    // Send volume command to iframe
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      try {
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({
-            event: 'command',
-            func: 'setVolume',
-            args: [newVolume * 100]
-          }),
-          '*'
-        );
-      } catch (error) {
-        console.log('PostMessage not available, using simulated controls');
-      }
-    }
+    // Send volume command to YouTube player
+    player.setVolume(newVolume * 100);
+    console.log('Volume command sent to YouTube player:', newVolume * 100);
   };
 
   const handleVolumeChange = (newVolume) => {
+    if (!playerReady || !player) return;
+    
     setVolume(newVolume);
     if (newVolume === 0) {
       setIsMuted(true);
@@ -665,21 +539,9 @@ const CustomVideoPlayer = ({
       setIsMuted(false);
     }
     
-    // Send volume command to iframe
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      try {
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({
-            event: 'command',
-            func: 'setVolume',
-            args: [newVolume * 100]
-          }),
-          '*'
-        );
-      } catch (error) {
-        console.log('PostMessage not available, using simulated controls');
-      }
-    }
+    // Send volume command to YouTube player
+    player.setVolume(newVolume * 100);
+    console.log('Volume command sent to YouTube player:', newVolume * 100);
   };
 
   const handleProgressClick = (e) => {
@@ -806,27 +668,7 @@ const CustomVideoPlayer = ({
     return positions[watermarkPosition];
   };
 
-  const handleIframeLoad = () => {
-    console.log('YouTube iframe loaded');
-    setIsLoading(false);
-    setIframeLoaded(true);
-    setVideoState(prev => ({ ...prev, ready: true, canPlay: true }));
-    
-    // Try to get duration after iframe loads
-    if (youtubeVideoId && iframeRef.current) {
-      setTimeout(() => {
-        console.log('Attempting to get duration after iframe load...');
-        iframeRef.current.contentWindow.postMessage(
-          JSON.stringify({
-            event: 'command',
-            func: 'getDuration',
-            args: []
-          }),
-          '*'
-        );
-      }, 1000);
-    }
-  };
+
 
   if (!isOpen || !video) return null;
 
@@ -878,26 +720,12 @@ const CustomVideoPlayer = ({
           <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
             {youtubeVideoId ? (
               <div className="absolute inset-0">
-                <iframe
-                  ref={iframeRef}
-                  src={getYouTubeEmbedUrl(youtubeVideoId)}
-                  title={getVideoTitle(video)}
-                  className="w-full h-full"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                  allowFullScreen
-                  onLoad={handleIframeLoad}
-                  onError={() => {
-                    console.error('YouTube iframe failed to load');
-                    setIsLoading(false);
-                    setVideoState(prev => ({ ...prev, error: 'Failed to load video' }));
-                  }}
-                />
-                {/* Custom overlay to prevent YouTube interaction */}
-                <div className="absolute inset-0 pointer-events-none z-20"></div>
+                <div id="youtube-player" className="w-full h-full"></div>
+                
+
                 
                 {/* Dynamic Watermark */}
-                {iframeLoaded && (
+                {playerReady && (
                   <div 
                     className="absolute pointer-events-none z-25 select-none"
                     style={{
@@ -940,8 +768,27 @@ const CustomVideoPlayer = ({
             </button>
           </div>
 
+          {/* Always Visible Play Button (Fallback) */}
+          {!showControls && playerReady && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-auto z-30">
+              <button
+                onClick={() => {
+                  console.log('Fallback play button clicked! Player ready:', playerReady, 'Is playing:', isPlaying);
+                  togglePlay();
+                }}
+                className="bg-white/20 backdrop-blur-sm rounded-full p-6 hover:bg-white/30 transition-colors"
+              >
+                {isPlaying ? (
+                  <FaPause className="text-white text-4xl" />
+                ) : (
+                  <FaPlay className="text-white text-4xl ml-2" />
+                )}
+              </button>
+            </div>
+          )}
+
           {/* Custom Video Controls Overlay */}
-          {showControls && iframeLoaded && (
+          {showControls && playerReady && (
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-30">
               
               {/* Top Controls */}
@@ -981,10 +828,13 @@ const CustomVideoPlayer = ({
               {/* Center Play Button */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
                 <button
-                  onClick={togglePlay}
-                  disabled={!videoState.canPlay}
+                  onClick={() => {
+                    console.log('Play button clicked! Player ready:', playerReady, 'Is playing:', isPlaying);
+                    togglePlay();
+                  }}
+                  disabled={!playerReady}
                   className={`bg-white/20 backdrop-blur-sm rounded-full p-6 hover:bg-white/30 transition-colors ${
-                    !videoState.canPlay ? 'opacity-50 cursor-not-allowed' : ''
+                    !playerReady ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
                   {isPlaying ? (
@@ -1060,10 +910,13 @@ const CustomVideoPlayer = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <button
-                      onClick={togglePlay}
-                      disabled={!videoState.canPlay}
+                      onClick={() => {
+                        console.log('Bottom play button clicked! Player ready:', playerReady, 'Is playing:', isPlaying);
+                        togglePlay();
+                      }}
+                      disabled={!playerReady}
                       className={`text-white hover:text-gray-300 transition-colors ${
-                        !videoState.canPlay ? 'opacity-50 cursor-not-allowed' : ''
+                        !playerReady ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                     >
                       {isPlaying ? <FaPause className="text-xl" /> : <FaPlay className="text-xl" />}
@@ -1071,9 +924,9 @@ const CustomVideoPlayer = ({
                     
                     <button
                       onClick={() => seek(-10)}
-                      disabled={!videoState.canPlay}
+                      disabled={!playerReady}
                       className={`text-white hover:text-gray-300 transition-colors ${
-                        !videoState.canPlay ? 'opacity-50 cursor-not-allowed' : ''
+                        !playerReady ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                     >
                       <FaStepBackward className="text-lg" />
@@ -1081,9 +934,9 @@ const CustomVideoPlayer = ({
                     
                     <button
                       onClick={() => seek(10)}
-                      disabled={!videoState.canPlay}
+                      disabled={!playerReady}
                       className={`text-white hover:text-gray-300 transition-colors ${
-                        !videoState.canPlay ? 'opacity-50 cursor-not-allowed' : ''
+                        !playerReady ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                     >
                       <FaStepForward className="text-lg" />
@@ -1130,6 +983,47 @@ const CustomVideoPlayer = ({
                     <div className="flex items-center gap-2 text-white text-sm">
                       <FaClock className="text-gray-400" />
                       <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+                      {duration === 0 && youtubeVideoId && (
+                        <button
+                          onClick={requestDuration}
+                          className="ml-2 px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                          title="Fetch Duration"
+                        >
+                          Get Duration
+                        </button>
+                      )}
+                      {(duration === 0 || duration > 3600) && youtubeVideoId && (
+                        <button
+                          onClick={() => {
+                            const manualDuration = prompt('Enter video duration (e.g., 3:45 or 225 for 3 minutes 45 seconds):');
+                            if (manualDuration) {
+                              let seconds = 0;
+                              if (manualDuration.includes(':')) {
+                                // Format: MM:SS or HH:MM:SS
+                                const parts = manualDuration.split(':');
+                                if (parts.length === 2) {
+                                  // MM:SS
+                                  seconds = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                                } else if (parts.length === 3) {
+                                  // HH:MM:SS
+                                  seconds = parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+                                }
+                              } else {
+                                // Just seconds
+                                seconds = parseInt(manualDuration);
+                              }
+                              if (seconds > 0) {
+                                setDuration(seconds);
+                                console.log('Manual duration set:', seconds, 'seconds');
+                              }
+                            }
+                          }}
+                          className="ml-1 px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+                          title="Manual Duration"
+                        >
+                          Fix Duration
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -1182,15 +1076,21 @@ const CustomVideoPlayer = ({
           )}
         </div>
         
-                  {/* Video Progress Component (Hidden for Admins) */}
-          {showProgress && courseId && getCleanVideoId(video) && role !== 'ADMIN' && role !== 'USER' && (
-            <div className="mt-4 max-w-6xl w-full">
+                  {/* Video Progress Component (Hidden for Users - Background Tracking Only) */}
+          {showProgress && courseId && getCleanVideoId(video) && role === 'USER' && (
+            <div className="hidden">
               <VideoProgress
                 videoId={getCleanVideoId(video)}
                 courseId={courseId}
                 currentTime={currentTime}
                 duration={duration}
                 isPlaying={isPlaying}
+                onSeek={(time) => {
+                  if (player && playerReady) {
+                    player.seekTo(time, true);
+                  }
+                }}
+                savedProgress={savedProgress}
               />
             </div>
           )}

@@ -70,6 +70,15 @@ const courseSchema = new Schema({
                         },
                         youtubeUrl: {
                             type: String
+                        },
+                        // Scheduling fields
+                        scheduledPublishDate: {
+                            type: Date,
+                            default: null
+                        },
+                        isScheduled: {
+                            type: Boolean,
+                            default: false
                         }
                     },
                     duration: {
@@ -108,6 +117,15 @@ const courseSchema = new Schema({
                 },
                 youtubeUrl: {
                     type: String
+                },
+                // Scheduling fields
+                scheduledPublishDate: {
+                    type: Date,
+                    default: null
+                },
+                isScheduled: {
+                    type: Boolean,
+                    default: false
                 }
             },
             duration: {

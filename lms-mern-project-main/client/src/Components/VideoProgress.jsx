@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   getVideoProgress, 
@@ -35,11 +35,15 @@ const VideoProgress = ({
   const [showDetails, setShowDetails] = useState(false);
   const [showCheckpointDetails, setShowCheckpointDetails] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(0);
+  const [progressRestored, setProgressRestored] = useState(false);
+  const progressRestoredRef = useRef(false);
 
   // Get video progress when component mounts
   useEffect(() => {
     if (videoId && courseId) {
       console.log('Getting video progress for:', { courseId, videoId });
+      // Reset progress restoration flag when video changes
+      progressRestoredRef.current = false;
       dispatch(getVideoProgress({ courseId, videoId }));
     }
   }, [dispatch, videoId, courseId]);
@@ -119,7 +123,12 @@ const VideoProgress = ({
 
   // Initialize checkpoint tracking when video loads
   useEffect(() => {
-    if (duration > 0 && currentVideoProgress) {
+    if (duration > 0 && currentVideoProgress && !progressRestoredRef.current) {
+      console.log('Initializing video progress from saved data:', currentVideoProgress);
+      
+      // Mark that we've restored progress to prevent infinite loop
+      progressRestoredRef.current = true;
+      
       // Find the next unreached checkpoint
       const reachedPercentages = currentVideoProgress.reachedPercentages || [];
       const reachedPercentageValues = reachedPercentages.map(rp => rp.percentage);
@@ -146,6 +155,22 @@ const VideoProgress = ({
         setTotalWatchTime(currentVideoProgress.totalWatchTime);
       }
       
+      // If user has existing progress, seek to that position
+      if (currentVideoProgress.currentTime > 0 && onSeek) {
+        console.log('Seeking to saved position:', currentVideoProgress.currentTime, 'seconds');
+        // Small delay to ensure player is ready
+        setTimeout(() => {
+          onSeek(currentVideoProgress.currentTime);
+          // Show notification to user
+          const minutes = Math.floor(currentVideoProgress.currentTime / 60);
+          const seconds = Math.floor(currentVideoProgress.currentTime % 60);
+          console.log(`✅ Progress restored! Resuming from ${minutes}:${seconds.toString().padStart(2, '0')}`);
+          setProgressRestored(true);
+          // Hide notification after 3 seconds
+          setTimeout(() => setProgressRestored(false), 3000);
+        }, 500);
+      }
+      
       // Special case: If video is completed but watch time is low, estimate it
       if (currentProgress >= 90 && (!currentVideoProgress.totalWatchTime || currentVideoProgress.totalWatchTime < duration * 0.8)) {
         console.log('Video completed but watch time seems low, estimating...');
@@ -167,7 +192,7 @@ const VideoProgress = ({
     }
   }, [duration, currentVideoProgress, currentCheckpoints, dispatch, courseId, videoId, currentTime]);
 
-  // Smart progress tracking
+  // Smart progress tracking - ensures continuous progress accumulation
   useEffect(() => {
     if (duration > 0) {
       const interval = setInterval(() => {
@@ -175,24 +200,39 @@ const VideoProgress = ({
           const { progress, watchTime } = calculateAccurateProgress(currentTime, duration, isPlaying);
           const newReachedPercentage = checkNextCheckpoint(currentTime);
           
-          // Update total watch time
+          // Always accumulate watch time (never reset)
           if (watchTime > 0) {
-            setTotalWatchTime(prev => prev + watchTime);
+            setTotalWatchTime(prev => {
+              const newTotal = prev + watchTime;
+              console.log('Accumulating watch time:', prev, '+', watchTime, '=', newTotal);
+              return newTotal;
+            });
           }
           
-          // Also ensure watch time is at least as much as current time (for completed videos)
+          // Ensure watch time is at least as much as current time (for completed videos)
           const estimatedWatchTime = calculateWatchTimeFromProgress(currentTime, duration);
           if (estimatedWatchTime > totalWatchTime) {
+            console.log('Updating watch time to match current progress:', totalWatchTime, '->', estimatedWatchTime);
             setTotalWatchTime(estimatedWatchTime);
           }
           
           // Only update backend if significant change or new checkpoint reached
-          const shouldUpdate = Math.abs(progress - (currentVideoProgress?.progress || 0)) > 1 || 
-                              newReachedPercentage !== null || 
-                              watchTime > 0 ||
-                              estimatedWatchTime > totalWatchTime;
+          const currentBackendProgress = currentVideoProgress?.progress || 0;
+          const progressChanged = Math.abs(progress - currentBackendProgress) > 1;
+          const checkpointReached = newReachedPercentage !== null;
+          const watchTimeIncreased = watchTime > 0;
+          const estimatedTimeIncreased = estimatedWatchTime > totalWatchTime;
+          
+          const shouldUpdate = progressChanged || checkpointReached || watchTimeIncreased || estimatedTimeIncreased;
           
           if (shouldUpdate) {
+            console.log('Updating backend progress:', {
+              progress: `${currentBackendProgress}% -> ${progress}%`,
+              watchTime: watchTime,
+              checkpoint: newReachedPercentage,
+              totalWatchTime: totalWatchTime
+            });
+            
             dispatch(updateVideoProgress({
               courseId,
               videoId,
@@ -242,18 +282,31 @@ const VideoProgress = ({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-4">
+      {/* Progress Restored Notification */}
+      {progressRestored && (
+        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center gap-2">
+          <FaCheckCircle className="text-green-500" />
+          <span className="text-sm font-medium">
+            ✅ Progress restored! Video will resume from where you left off.
+          </span>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <FaUser className="text-blue-500" />
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">
-              {userData?.username || userData?.fullName || 'User'}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Video Progress
-            </p>
-          </div>
+                  <div>
+          <h3 className="font-semibold text-gray-900 dark:text-white">
+            {userData?.username || userData?.fullName || 'User'}
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Video Progress
+            {currentVideoProgress?.isCompleted && (
+              <span className="ml-2 text-green-500 font-medium">✓ Completed</span>
+            )}
+          </p>
+        </div>
         </div>
         
         <div className="flex items-center gap-2">

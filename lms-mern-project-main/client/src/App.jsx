@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import useScrollToTop from "./Helpers/useScrollToTop";
+import { initializeDeviceProtection } from "./utils/deviceDetection";
+import DeviceProtection from "./Components/DeviceProtection";
+import "./utils/deviceProtection.css";
 import HomePage from "./Pages/HomePage";
 import AboutUs from "./Pages/About";
 import NotFound from "./Pages/NotFound";
@@ -46,8 +49,13 @@ function App() {
   // Auto scroll to top on route change
   useScrollToTop();
 
+  // Initialize device protection on app load
+  useEffect(() => {
+    initializeDeviceProtection();
+  }, []);
+
   return (
-    <>
+    <DeviceProtection>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutUs />} />
@@ -106,7 +114,7 @@ function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </>
+    </DeviceProtection>
   );
 }
 

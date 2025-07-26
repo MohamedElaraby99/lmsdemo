@@ -39,16 +39,63 @@ const getAllCourses = async (req, res, next) => {
 const getLecturesByCourseId = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const { role } = req.user || {}; // Get user role if available
 
         const course = await courseModel.findById(id)
         if (!course) {
             return next(new AppError('course not found', 500));
         }
 
+        // Helper function to filter scheduled videos
+        const filterScheduledVideos = (lessons, isAdmin = false) => {
+            return lessons.map(lesson => {
+                const lessonCopy = { ...lesson.toObject() };
+                
+                // Check if video is scheduled and not yet published
+                if (lesson.lecture?.isScheduled && lesson.lecture?.scheduledPublishDate) {
+                    const now = new Date();
+                    const publishDate = new Date(lesson.lecture.scheduledPublishDate);
+                    
+                    if (publishDate > now && !isAdmin) {
+                        // For non-admin users, hide the video URL but keep the lesson visible
+                        lessonCopy.lecture = {
+                            ...lessonCopy.lecture,
+                            youtubeUrl: null,
+                            public_id: null,
+                            secure_url: null
+                        };
+                        lessonCopy.isScheduled = true;
+                        lessonCopy.scheduledPublishDate = lesson.lecture.scheduledPublishDate;
+                    } else {
+                        lessonCopy.isScheduled = false;
+                    }
+                } else {
+                    lessonCopy.isScheduled = false;
+                }
+                
+                return lessonCopy;
+            });
+        };
+
+        // Filter scheduled videos based on user role
+        const isAdmin = role === 'ADMIN';
+        const filteredUnits = course.units.map(unit => ({
+            ...unit.toObject(),
+            lessons: filterScheduledVideos(unit.lessons || [], isAdmin)
+        }));
+        
+        const filteredDirectLessons = filterScheduledVideos(course.directLessons || [], isAdmin);
+
+        const filteredCourse = {
+            ...course.toObject(),
+            units: filteredUnits,
+            directLessons: filteredDirectLessons
+        };
+
         res.status(200).json({
             success: true,
             message: 'course',
-            course
+            course: filteredCourse
         })
     } catch (e) {
         return next(new AppError(e.message, 500));
@@ -59,15 +106,56 @@ const getLecturesByCourseId = async (req, res, next) => {
 const getCourseStructure = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const { role } = req.user || {}; // Get user role if available
 
         const course = await courseModel.findById(id).select('title description units directLessons numberOfLectures');
         if (!course) {
             return next(new AppError('Course not found', 404));
         }
 
-        // Calculate total lessons from structure
-        const totalUnitLessons = course.units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
-        const totalDirectLessons = course.directLessons.length;
+        // Helper function to filter scheduled videos
+        const filterScheduledVideos = (lessons, isAdmin = false) => {
+            return lessons.map(lesson => {
+                const lessonCopy = { ...lesson.toObject() };
+                
+                // Check if video is scheduled and not yet published
+                if (lesson.lecture?.isScheduled && lesson.lecture?.scheduledPublishDate) {
+                    const now = new Date();
+                    const publishDate = new Date(lesson.lecture.scheduledPublishDate);
+                    
+                    if (publishDate > now && !isAdmin) {
+                        // For non-admin users, hide the video URL but keep the lesson visible
+                        lessonCopy.lecture = {
+                            ...lessonCopy.lecture,
+                            youtubeUrl: null,
+                            public_id: null,
+                            secure_url: null
+                        };
+                        lessonCopy.isScheduled = true;
+                        lessonCopy.scheduledPublishDate = lesson.lecture.scheduledPublishDate;
+                    } else {
+                        lessonCopy.isScheduled = false;
+                    }
+                } else {
+                    lessonCopy.isScheduled = false;
+                }
+                
+                return lessonCopy;
+            });
+        };
+
+        // Filter scheduled videos based on user role
+        const isAdmin = role === 'ADMIN';
+        const filteredUnits = course.units.map(unit => ({
+            ...unit.toObject(),
+            lessons: filterScheduledVideos(unit.lessons || [], isAdmin)
+        }));
+        
+        const filteredDirectLessons = filterScheduledVideos(course.directLessons || [], isAdmin);
+
+        // Calculate total lessons from structure (including scheduled ones)
+        const totalUnitLessons = filteredUnits.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
+        const totalDirectLessons = filteredDirectLessons.length;
         const totalLessons = totalUnitLessons + totalDirectLessons;
 
         res.status(200).json({
@@ -77,8 +165,8 @@ const getCourseStructure = async (req, res, next) => {
                 _id: course._id,
                 title: course.title,
                 description: course.description,
-                units: course.units || [],
-                directLessons: course.directLessons || [],
+                units: filteredUnits,
+                directLessons: filteredDirectLessons,
                 totalLessons: totalLessons,
                 numberOfLectures: course.numberOfLectures
             }
@@ -307,7 +395,7 @@ const removeCourse = async (req, res, next) => {
 // add lecture to course by id
 const addLectureToCourseById = async (req, res, next) => {
     try {
-        const { title, description, youtubeUrl, lessonId, unitId } = req.body;
+        const { title, description, youtubeUrl, lessonId, unitId, isScheduled, scheduledPublishDate } = req.body;
         const { id } = req.params;
 
         if (!title || !description) {
@@ -323,7 +411,10 @@ const addLectureToCourseById = async (req, res, next) => {
         const lectureData = {
             title,
             description,
-            lecture: {}
+            lecture: {
+                isScheduled: isScheduled === 'true' || isScheduled === true,
+                scheduledPublishDate: (isScheduled === 'true' || isScheduled === true) && scheduledPublishDate ? new Date(scheduledPublishDate) : null
+            }
         }
 
         // Handle YouTube URL
@@ -392,8 +483,15 @@ const addLectureToCourseById = async (req, res, next) => {
                 }
             }
         } else {
-            // Fallback to old method - add to lectures array
-            course.lectures.push(lectureData);
+            // Fallback - create a new direct lesson with the video
+            const newDirectLesson = {
+                title: lectureData.title,
+                description: lectureData.description,
+                lecture: lectureData.lecture,
+                duration: 0,
+                order: course.directLessons.length
+            };
+            course.directLessons.push(newDirectLesson);
         }
 
         // Update lecture count
@@ -474,7 +572,9 @@ const updateCourseLecture = async (req, res, next) => {
             lecture: {
                 public_id: course.lectures[lectureIndex].lecture.public_id,
                 secure_url: course.lectures[lectureIndex].lecture.secure_url,
-                youtubeUrl: course.lectures[lectureIndex].lecture.youtubeUrl
+                youtubeUrl: course.lectures[lectureIndex].lecture.youtubeUrl,
+                isScheduled: course.lectures[lectureIndex].lecture.isScheduled || false,
+                scheduledPublishDate: course.lectures[lectureIndex].lecture.scheduledPublishDate || null
             }
         };
 
@@ -717,6 +817,79 @@ const simulateCourseSale = async (req, res, next) => {
     }
 };
 
+// Schedule video publish date
+const scheduleVideoPublish = async (req, res, next) => {
+    try {
+        const { courseId, lessonId, lessonType } = req.params; // lessonType: 'unit' or 'direct'
+        const { scheduledPublishDate, isScheduled } = req.body;
+
+        if (!scheduledPublishDate && isScheduled) {
+            return next(new AppError('Publish date is required when scheduling is enabled', 400));
+        }
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        let lessonIndex = -1;
+        let lesson = null;
+
+        if (lessonType === 'unit') {
+            // Find lesson in units
+            for (let unitIndex = 0; unitIndex < course.units.length; unitIndex++) {
+                const unit = course.units[unitIndex];
+                lessonIndex = unit.lessons.findIndex(lesson => 
+                    lesson._id.toString() === lessonId || lesson.id === lessonId
+                );
+                if (lessonIndex !== -1) {
+                    lesson = unit.lessons[lessonIndex];
+                    break;
+                }
+            }
+        } else if (lessonType === 'direct') {
+            // Find lesson in directLessons
+            lessonIndex = course.directLessons.findIndex(lesson => 
+                lesson._id.toString() === lessonId || lesson.id === lessonId
+            );
+            if (lessonIndex !== -1) {
+                lesson = course.directLessons[lessonIndex];
+            }
+        } else {
+            return next(new AppError('Invalid lesson type. Must be "unit" or "direct"', 400));
+        }
+
+        if (!lesson) {
+            return next(new AppError('Lesson not found', 404));
+        }
+
+        // Update scheduling fields
+        if (isScheduled) {
+            lesson.lecture.isScheduled = true;
+            lesson.lecture.scheduledPublishDate = new Date(scheduledPublishDate);
+        } else {
+            lesson.lecture.isScheduled = false;
+            lesson.lecture.scheduledPublishDate = null;
+        }
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: isScheduled ? 'Video scheduled successfully' : 'Video scheduling removed',
+            lesson: {
+                _id: lesson._id,
+                title: lesson.title,
+                isScheduled: lesson.lecture.isScheduled,
+                scheduledPublishDate: lesson.lecture.scheduledPublishDate
+            }
+        });
+
+    } catch (e) {
+        return next(new AppError(e.message, 500));
+    }
+};
+
 export {
     getAllCourses,
     getLecturesByCourseId,
@@ -730,5 +903,6 @@ export {
     updateUnit,
     updateLesson,
     updateDirectLesson,
-    simulateCourseSale
+    simulateCourseSale,
+    scheduleVideoPublish
 }

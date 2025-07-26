@@ -40,6 +40,9 @@ export default function DisplayLecture() {
   const dispatch = useDispatch();
   const { state } = useLocation();
   const { role, data: userData } = useSelector((state) => state.auth);
+  
+  // Debug: Log the role to see what's being detected
+  console.log('Current user role:', role);
 
   const [courseData, setCourseData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,7 +54,9 @@ export default function DisplayLecture() {
     title: "",
     description: "",
     youtubeUrl: "",
-    videoFile: null
+    videoFile: null,
+    isScheduled: false,
+    scheduledPublishDate: ""
   });
   const [uploading, setUploading] = useState(false);
 
@@ -119,7 +124,9 @@ export default function DisplayLecture() {
       title: lesson?.title || "",
       description: lesson?.description || "",
       youtubeUrl: "",
-      videoFile: null
+      videoFile: null,
+      isScheduled: false,
+      scheduledPublishDate: ""
     });
     setShowAddVideoModal(true);
   };
@@ -132,7 +139,9 @@ export default function DisplayLecture() {
       title: "",
       description: "",
       youtubeUrl: "",
-      videoFile: null
+      videoFile: null,
+      isScheduled: false,
+      scheduledPublishDate: ""
     });
   };
 
@@ -175,6 +184,12 @@ export default function DisplayLecture() {
         formData.append("lecture", videoForm.videoFile);
       }
 
+      // Add scheduling data
+      formData.append("isScheduled", videoForm.isScheduled);
+      if (videoForm.isScheduled && videoForm.scheduledPublishDate) {
+        formData.append("scheduledPublishDate", videoForm.scheduledPublishDate);
+      }
+
       if (selectedLesson) {
         formData.append("lessonId", selectedLesson._id || selectedLesson.id);
         if (selectedUnit) {
@@ -213,7 +228,30 @@ export default function DisplayLecture() {
   };
 
   const hasVideo = (lesson) => {
-    return lesson.lecture && (lesson.lecture.secure_url || lesson.lecture.youtubeUrl);
+    return lesson.lecture && (lesson.lecture.secure_url || lesson.lecture.youtubeUrl || lesson.isScheduled);
+  };
+
+  const isVideoScheduled = (lesson) => {
+    return lesson.lecture?.isScheduled && lesson.lecture?.scheduledPublishDate;
+  };
+
+  const isVideoPublished = (lesson) => {
+    if (!isVideoScheduled(lesson)) return true;
+    const now = new Date();
+    const publishDate = new Date(lesson.lecture.scheduledPublishDate);
+    return publishDate <= now;
+  };
+
+  const formatScheduledDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   const openVideoModal = (lesson) => {
@@ -344,13 +382,22 @@ export default function DisplayLecture() {
                       Collapse All
                     </button>
                     {role === "ADMIN" && (
-                      <button
-                        onClick={() => navigate("/course/edit", { state: { ...courseData } })}
-                        className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors flex items-center gap-2"
-                      >
-                        <FaEdit />
-                        Edit Course
-                      </button>
+                      <>
+                        <button
+                          onClick={() => navigate("/course/edit", { state: { ...courseData } })}
+                          className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors flex items-center gap-2"
+                        >
+                          <FaEdit />
+                          Edit Course
+                        </button>
+                        <button
+                          onClick={() => openAddVideoModal(null, null)}
+                          className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 transition-colors flex items-center gap-2"
+                        >
+                          <FaPlus />
+                          Test Add Video
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -448,11 +495,19 @@ export default function DisplayLecture() {
                                                     Video Available
                                                   </span>
                                                 )}
+                                                {isVideoScheduled(lesson) && (
+                                                  <span className={`flex items-center gap-1 ${
+                                                    isVideoPublished(lesson) ? 'text-green-600' : 'text-orange-600'
+                                                  }`}>
+                                                    <FaCalendarAlt />
+                                                    {isVideoPublished(lesson) ? 'Published' : 'Scheduled'}
+                                                  </span>
+                                                )}
                                               </div>
                                             </div>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            {hasVideo(lesson) && (
+                                            {hasVideo(lesson) && isVideoPublished(lesson) && (
                                               <button
                                                 onClick={() => openVideoModal(lesson)}
                                                 className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
@@ -460,6 +515,16 @@ export default function DisplayLecture() {
                                               >
                                                 <FaPlay className="text-sm" />
                                               </button>
+                                            )}
+                                            {hasVideo(lesson) && !isVideoPublished(lesson) && (
+                                              <div className="relative group">
+                                                <div className="p-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed" title="Video scheduled for later">
+                                                  <FaCalendarAlt className="text-sm" />
+                                                </div>
+                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                                                  Scheduled for {formatScheduledDate(lesson.lecture.scheduledPublishDate)}
+                                                </div>
+                                              </div>
                                             )}
                                             {role === "ADMIN" && (
                                               <button
@@ -538,11 +603,19 @@ export default function DisplayLecture() {
                                         Video Available
                                       </span>
                                     )}
+                                    {isVideoScheduled(lesson) && (
+                                      <span className={`flex items-center gap-1 ${
+                                        isVideoPublished(lesson) ? 'text-green-600' : 'text-orange-600'
+                                      }`}>
+                                        <FaCalendarAlt />
+                                        {isVideoPublished(lesson) ? 'Published' : 'Scheduled'}
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                {hasVideo(lesson) && (
+                                {hasVideo(lesson) && isVideoPublished(lesson) && (
                                   <button
                                     onClick={() => openVideoModal(lesson)}
                                     className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
@@ -550,6 +623,16 @@ export default function DisplayLecture() {
                                   >
                                     <FaPlay className="text-sm" />
                                   </button>
+                                )}
+                                {hasVideo(lesson) && !isVideoPublished(lesson) && (
+                                  <div className="relative group">
+                                    <div className="p-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed" title="Video scheduled for later">
+                                      <FaCalendarAlt className="text-sm" />
+                                    </div>
+                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                                      Scheduled for {formatScheduledDate(lesson.lecture.scheduledPublishDate)}
+                                    </div>
+                                  </div>
                                 )}
                                 {role === "ADMIN" && (
                                   <button
@@ -731,6 +814,49 @@ export default function DisplayLecture() {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       />
                       <p className="text-xs text-gray-500 mt-1">Max size: 100MB</p>
+                    </div>
+                  </div>
+
+                  {/* Video Scheduling Section */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <FaCalendarAlt className="text-blue-500" />
+                      <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+                        Video Scheduling
+                      </h4>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={videoForm.isScheduled}
+                          onChange={(e) => setVideoForm(prev => ({ ...prev, isScheduled: e.target.checked }))}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                          Schedule this video for later publication
+                        </span>
+                      </label>
+
+                      {videoForm.isScheduled && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Publish Date & Time
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={videoForm.scheduledPublishDate}
+                            onChange={(e) => setVideoForm(prev => ({ ...prev, scheduledPublishDate: e.target.value }))}
+                            min={new Date().toISOString().slice(0, 16)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            required={videoForm.isScheduled}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Select when this video should become available to students
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -1,6 +1,6 @@
 import { Router } from "express";
 const router = Router();
-import { getAllCourses, getLecturesByCourseId, getCourseStructure, createCourse, updateCourse, removeCourse, addLectureToCourseById, deleteCourseLecture, updateCourseLecture, updateUnit, updateLesson, updateDirectLesson, simulateCourseSale } from '../controllers/course.controller.js'
+import { getAllCourses, getLecturesByCourseId, getCourseStructure, createCourse, updateCourse, removeCourse, addLectureToCourseById, deleteCourseLecture, updateCourseLecture, updateUnit, updateLesson, updateDirectLesson, simulateCourseSale, scheduleVideoPublish } from '../controllers/course.controller.js'
 import { isLoggedIn, authorisedRoles, authorizeSubscriber } from "../middleware/auth.middleware.js";
 import upload from "../middleware/multer.middleware.js"; 
 
@@ -28,6 +28,10 @@ router.route('/:courseId/units/:unitId/lessons/:lessonId')
 
 router.route('/:courseId/direct-lessons/:lessonId')
     .put(isLoggedIn, authorisedRoles("ADMIN"), updateDirectLesson);
+
+// Video scheduling routes
+router.route('/:courseId/lessons/:lessonId/schedule/:lessonType')
+    .put(isLoggedIn, authorisedRoles("ADMIN"), scheduleVideoPublish);
 
 router.route('/:courseId/simulate-sale')
     .post(isLoggedIn, authorisedRoles("ADMIN"), simulateCourseSale);

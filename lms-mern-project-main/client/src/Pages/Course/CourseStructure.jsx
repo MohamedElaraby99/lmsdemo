@@ -12,12 +12,14 @@ import {
   FaChevronDown,
   FaChevronRight,
   FaFolder,
-  FaFileAlt
+  FaFileAlt,
+  FaClock
 } from "react-icons/fa";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Layout from "../../Layout/Layout";
 import InputBox from "../../Components/InputBox/InputBox";
 import TextArea from "../../Components/InputBox/TextArea";
+import VideoScheduler from "../../Components/VideoScheduler";
 
 export default function CourseStructure() {
   const dispatch = useDispatch();
@@ -103,7 +105,10 @@ export default function CourseStructure() {
       id: Date.now(),
       title: "",
       description: "",
-      lecture: {},
+      lecture: {
+        isScheduled: false,
+        scheduledPublishDate: null
+      },
       duration: 0,
       order: courseData.units.find(u => u.id === unitId)?.lessons.length || 0
     };
@@ -154,7 +159,10 @@ export default function CourseStructure() {
       id: Date.now(),
       title: "",
       description: "",
-      lecture: {},
+      lecture: {
+        isScheduled: false,
+        scheduledPublishDate: null
+      },
       duration: 0,
       order: courseData.directLessons.length
     };
@@ -590,6 +598,26 @@ export default function CourseStructure() {
                                                           <FaTrash />
                                                         </button>
                                                       </div>
+                                                      
+                                                      {/* Video Scheduler for Unit Lessons */}
+                                                      {lesson.lecture && (lesson.lecture.youtubeUrl || lesson.lecture.secure_url) && (
+                                                        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                                                          <VideoScheduler
+                                                            courseId={courseData._id || 'temp'}
+                                                            lessonId={lesson.id}
+                                                            lessonType="unit"
+                                                            isScheduled={lesson.lecture.isScheduled || false}
+                                                            scheduledPublishDate={lesson.lecture.scheduledPublishDate}
+                                                            onScheduleUpdate={(scheduleData) => {
+                                                              // Update local state when schedule changes
+                                                              updateLessonInUnit(unit.id, lesson.id, 'lecture', {
+                                                                ...lesson.lecture,
+                                                                ...scheduleData
+                                                              });
+                                                            }}
+                                                          />
+                                                        </div>
+                                                      )}
                                                     </div>
                                                   )}
                                                 </Draggable>
@@ -726,6 +754,26 @@ export default function CourseStructure() {
                                       <FaTrash />
                                     </button>
                                   </div>
+                                  
+                                  {/* Video Scheduler for Direct Lessons */}
+                                  {lesson.lecture && (lesson.lecture.youtubeUrl || lesson.lecture.secure_url) && (
+                                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                                      <VideoScheduler
+                                        courseId={courseData._id || 'temp'}
+                                        lessonId={lesson.id}
+                                        lessonType="direct"
+                                        isScheduled={lesson.lecture.isScheduled || false}
+                                        scheduledPublishDate={lesson.lecture.scheduledPublishDate}
+                                        onScheduleUpdate={(scheduleData) => {
+                                          // Update local state when schedule changes
+                                          updateDirectLesson(lesson.id, 'lecture', {
+                                            ...lesson.lecture,
+                                            ...scheduleData
+                                          });
+                                        }}
+                                      />
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             )}
