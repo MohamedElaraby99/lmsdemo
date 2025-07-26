@@ -1,6 +1,6 @@
 import { Router } from "express";
 const router = Router();
-import { getAllCourses, getLecturesByCourseId, getCourseStructure, createCourse, updateCourse, removeCourse, addLectureToCourseById, deleteCourseLecture, updateCourseLecture, updateUnit, updateLesson, updateDirectLesson, simulateCourseSale, scheduleVideoPublish } from '../controllers/course.controller.js'
+import { getAllCourses, getLecturesByCourseId, getCourseStructure, createCourse, updateCourse, removeCourse, addLectureToCourseById, deleteCourseLecture, updateCourseLecture, updateUnit, updateLesson, updateDirectLesson, simulateCourseSale, scheduleVideoPublish, updateCourseStructure, deleteUnit, deleteLesson, deleteDirectLesson, addLessonToUnit } from '../controllers/course.controller.js'
 import { isLoggedIn, authorisedRoles, authorizeSubscriber } from "../middleware/auth.middleware.js";
 import upload from "../middleware/multer.middleware.js"; 
 
@@ -19,15 +19,25 @@ router.route('/:id')
 router.route('/:id/structure')
     .get(getCourseStructure);
 
+// Complete course structure update route
+router.route('/:courseId/structure/update')
+    .put(isLoggedIn, authorisedRoles("ADMIN"), updateCourseStructure);
+
 // Unit and lesson update routes
 router.route('/:courseId/units/:unitId')
-    .put(isLoggedIn, authorisedRoles("ADMIN"), updateUnit);
+    .put(isLoggedIn, authorisedRoles("ADMIN"), updateUnit)
+    .delete(isLoggedIn, authorisedRoles("ADMIN"), deleteUnit);
+
+router.route('/:courseId/units/:unitId/lessons')
+    .post(isLoggedIn, authorisedRoles("ADMIN"), addLessonToUnit);
 
 router.route('/:courseId/units/:unitId/lessons/:lessonId')
-    .put(isLoggedIn, authorisedRoles("ADMIN"), updateLesson);
+    .put(isLoggedIn, authorisedRoles("ADMIN"), updateLesson)
+    .delete(isLoggedIn, authorisedRoles("ADMIN"), deleteLesson);
 
 router.route('/:courseId/direct-lessons/:lessonId')
-    .put(isLoggedIn, authorisedRoles("ADMIN"), updateDirectLesson);
+    .put(isLoggedIn, authorisedRoles("ADMIN"), updateDirectLesson)
+    .delete(isLoggedIn, authorisedRoles("ADMIN"), deleteDirectLesson);
 
 // Video scheduling routes
 router.route('/:courseId/lessons/:lessonId/schedule/:lessonType')

@@ -191,12 +191,20 @@ export default function CourseStructure() {
     }
   };
 
-  // Drag and Drop Handlers
+  // Enhanced Drag and Drop Handlers
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
     const { source, destination, type } = result;
+    console.log('Drag result:', { source, destination, type });
 
+    // Handle cross-dropping between different containers
+    if (source.droppableId !== destination.droppableId) {
+      handleCrossDrop(source, destination);
+      return;
+    }
+
+    // Handle same container reordering
     if (type === 'unit') {
       // Reorder units
       const reorderedUnits = Array.from(courseData.units);
@@ -239,6 +247,116 @@ export default function CourseStructure() {
     }
   };
 
+  // Handle cross-dropping between different containers
+  const handleCrossDrop = (source, destination) => {
+    const sourceType = source.droppableId;
+    const destType = destination.droppableId;
+    
+    console.log('Cross drop:', { sourceType, destType, source, destination });
+
+    // Find the lesson being moved
+    let lessonToMove = null;
+    let sourceContainer = null;
+
+    if (sourceType === 'directLessons') {
+      lessonToMove = courseData.directLessons[source.index];
+      sourceContainer = 'directLessons';
+    } else {
+      // It's from a unit
+      const unit = courseData.units.find(u => u.id.toString() === sourceType);
+      if (unit) {
+        lessonToMove = unit.lessons[source.index];
+        sourceContainer = 'unit';
+      }
+    }
+
+    if (!lessonToMove) return;
+
+    // Remove from source
+    setCourseData(prev => {
+      const newData = { ...prev };
+
+      if (sourceContainer === 'directLessons') {
+        newData.directLessons = prev.directLessons.filter((_, index) => index !== source.index);
+      } else {
+        newData.units = prev.units.map(unit => {
+          if (unit.id.toString() === sourceType) {
+            return {
+              ...unit,
+              lessons: unit.lessons.filter((_, index) => index !== source.index)
+            };
+          }
+          return unit;
+        });
+      }
+
+      // Add to destination
+      if (destType === 'directLessons') {
+        newData.directLessons = [
+          ...prev.directLessons.slice(0, destination.index),
+          lessonToMove,
+          ...prev.directLessons.slice(destination.index)
+        ];
+      } else {
+        // Add to unit
+        newData.units = prev.units.map(unit => {
+          if (unit.id.toString() === destType) {
+            const newLessons = [
+              ...unit.lessons.slice(0, destination.index),
+              lessonToMove,
+              ...unit.lessons.slice(destination.index)
+            ];
+            return {
+              ...unit,
+              lessons: newLessons
+            };
+          }
+          return unit;
+        });
+      }
+
+      // Update order numbers
+      newData.units = newData.units.map((unit, unitIndex) => ({
+        ...unit,
+        order: unitIndex,
+        lessons: unit.lessons.map((lesson, lessonIndex) => ({
+          ...lesson,
+          order: lessonIndex
+        }))
+      }));
+
+      newData.directLessons = newData.directLessons.map((lesson, index) => ({
+        ...lesson,
+        order: index
+      }));
+
+      return newData;
+    });
+  };
+
+  // Get unified structure combining units and direct lessons
+  const getUnifiedStructure = () => {
+    const unifiedItems = [];
+    
+    // Add units with their type
+    courseData.units.forEach(unit => {
+      unifiedItems.push({
+        ...unit,
+        type: 'unit'
+      });
+    });
+    
+    // Add direct lessons with their type
+    courseData.directLessons.forEach(lesson => {
+      unifiedItems.push({
+        ...lesson,
+        type: 'directLesson'
+      });
+    });
+    
+    return unifiedItems;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -247,38 +365,67 @@ export default function CourseStructure() {
       return;
     }
 
-    // Calculate total lessons
-    const totalUnitLessons = courseData.units.reduce((sum, unit) => sum + unit.lessons.length, 0);
-    const totalDirectLessons = courseData.directLessons.length;
-    const totalLessons = totalUnitLessons + totalDirectLessons;
+    try {
+      // Calculate total lessons
+      const totalUnitLessons = courseData.units.reduce((sum, unit) => sum + unit.lessons.length, 0);
+      const totalDirectLessons = courseData.directLessons.length;
+      const totalLessons = totalUnitLessons + totalDirectLessons;
 
-    const courseToSubmit = {
-      ...courseData,
-      numberOfLectures: totalLessons,
-      units: courseData.units.map(unit => ({
-        title: unit.title,
-        description: unit.description,
-        lessons: unit.lessons.map(lesson => ({
+      const courseToSubmit = {
+        title: courseData.title,
+        description: courseData.description,
+        category: courseData.category,
+        createdBy: courseData.createdBy,
+        units: courseData.units.map(unit => ({
+          title: unit.title,
+          description: unit.description,
+          lessons: unit.lessons.map(lesson => ({
+            title: lesson.title,
+            description: lesson.description,
+            lecture: lesson.lecture || {},
+            duration: lesson.duration || 0,
+            order: lesson.order || 0
+          })),
+          order: unit.order || 0
+        })),
+        directLessons: courseData.directLessons.map(lesson => ({
           title: lesson.title,
           description: lesson.description,
-          lecture: lesson.lecture,
-          duration: lesson.duration,
-          order: lesson.order
-        })),
-        order: unit.order
-      })),
-      directLessons: courseData.directLessons.map(lesson => ({
-        title: lesson.title,
-        description: lesson.description,
-        lecture: lesson.lecture,
-        duration: lesson.duration,
-        order: lesson.order
-      }))
-    };
+          lecture: lesson.lecture || {},
+          duration: lesson.duration || 0,
+          order: lesson.order || 0
+        }))
+      };
 
-    console.log("Course to submit:", courseToSubmit);
-    toast.success("Course structure saved!");
-    // Here you would dispatch the action to save the course
+      console.log("Course to submit:", courseToSubmit);
+      
+      // If we have a course ID, update existing course
+      if (courseData._id) {
+        const response = await fetch(`/api/v1/courses/${courseData._id}/structure/update`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(courseToSubmit)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          toast.success("Course structure updated successfully!");
+          console.log("Updated course:", result);
+        } else {
+          const error = await response.json();
+          toast.error(error.message || "Failed to update course structure");
+        }
+      } else {
+        // Create new course
+        toast.success("Course structure prepared! Use the create course functionality to save.");
+        console.log("New course structure:", courseToSubmit);
+      }
+    } catch (error) {
+      console.error("Error saving course structure:", error);
+      toast.error("Failed to save course structure");
+    }
   };
 
   return (
@@ -290,7 +437,7 @@ export default function CourseStructure() {
           </h1>
 
           {/* Navigation Tabs */}
-          <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+          <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 overflow-x-auto">
             <button
               onClick={() => setActiveTab("course-info")}
               className={`px-4 py-2 font-medium rounded-t-lg transition-colors ${
@@ -320,6 +467,16 @@ export default function CourseStructure() {
               }`}
             >
               Direct Lessons ({courseData.directLessons.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("unified-view")}
+              className={`px-4 py-2 font-medium rounded-t-lg transition-colors ${
+                activeTab === "unified-view"
+                  ? "bg-blue-500 text-white"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
+              }`}
+            >
+              Unified Structure ({courseData.units.length + courseData.directLessons.length} items)
             </button>
           </div>
 
@@ -768,6 +925,383 @@ export default function CourseStructure() {
                                           // Update local state when schedule changes
                                           updateDirectLesson(lesson.id, 'lecture', {
                                             ...lesson.lecture,
+                                            ...scheduleData
+                                          });
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              )}
+            </div>
+          )}
+
+          {/* Unified Structure View Tab */}
+          {activeTab === "unified-view" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+                    Unified Course Structure
+                  </h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Drag and drop to rearrange units and lessons. You can move lessons between units or convert them to direct lessons.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={addUnit}
+                    className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    <FaPlus /> Add Unit
+                  </button>
+                  <button
+                    onClick={addDirectLesson}
+                    className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                  >
+                    <FaPlus /> Add Direct Lesson
+                  </button>
+                </div>
+              </div>
+
+              {courseData.units.length === 0 && courseData.directLessons.length === 0 ? (
+                <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                  <FaBook className="text-4xl text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    No course structure created yet
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Start by adding units or direct lessons to organize your course content.
+                  </p>
+                </div>
+              ) : (
+                <DragDropContext onDragEnd={handleDragEnd}>
+                  <Droppable droppableId="unifiedStructure" type="unified">
+                    {(provided) => (
+                      <div 
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="space-y-4"
+                      >
+                        {/* Render all items in unified order */}
+                        {getUnifiedStructure().map((item, index) => (
+                          <Draggable key={item.id} draggableId={item.id.toString()} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 ${
+                                  snapshot.isDragging ? 'shadow-2xl rotate-2' : ''
+                                }`}
+                              >
+                                <div className="p-4">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <div
+                                        {...provided.dragHandleProps}
+                                        className="text-gray-400 hover:text-gray-600 cursor-move"
+                                      >
+                                        <FaGripVertical />
+                                      </div>
+                                      {item.type === 'unit' ? (
+                                        <>
+                                          <button
+                                            onClick={() => toggleUnitExpansion(item.id)}
+                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                          >
+                                            {expandedUnits.has(item.id) ? <FaChevronDown /> : <FaChevronRight />}
+                                          </button>
+                                          <FaFolder className="text-blue-500" />
+                                          <div className="flex-1">
+                                            {editingUnit === item.id ? (
+                                              <div className="space-y-2">
+                                                <input
+                                                  type="text"
+                                                  value={item.title}
+                                                  onChange={(e) => updateUnit(item.id, 'title', e.target.value)}
+                                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                  placeholder="Unit title"
+                                                />
+                                                <textarea
+                                                  value={item.description}
+                                                  onChange={(e) => updateUnit(item.id, 'description', e.target.value)}
+                                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                  placeholder="Unit description"
+                                                  rows={2}
+                                                />
+                                                <div className="flex gap-2">
+                                                  <button
+                                                    onClick={() => setEditingUnit(null)}
+                                                    className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                                                  >
+                                                    Save
+                                                  </button>
+                                                  <button
+                                                    onClick={() => setEditingUnit(null)}
+                                                    className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
+                                                  >
+                                                    Cancel
+                                                  </button>
+                                                </div>
+                                              </div>
+                                            ) : (
+                                              <div>
+                                                <h3 className="font-semibold text-gray-900 dark:text-white">
+                                                  {item.title || "Untitled Unit"}
+                                                </h3>
+                                                {item.description && (
+                                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                    {item.description}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <FaFileAlt className="text-green-500" />
+                                          <div className="flex-1">
+                                            {editingLesson === item.id ? (
+                                              <div className="space-y-2">
+                                                <input
+                                                  type="text"
+                                                  value={item.title}
+                                                  onChange={(e) => updateDirectLesson(item.id, 'title', e.target.value)}
+                                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                  placeholder="Lesson title"
+                                                />
+                                                <textarea
+                                                  value={item.description}
+                                                  onChange={(e) => updateDirectLesson(item.id, 'description', e.target.value)}
+                                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                  placeholder="Lesson description"
+                                                  rows={2}
+                                                />
+                                                <div className="flex gap-2">
+                                                  <button
+                                                    onClick={() => setEditingLesson(null)}
+                                                    className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                                                  >
+                                                    Save
+                                                  </button>
+                                                  <button
+                                                    onClick={() => setEditingLesson(null)}
+                                                    className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
+                                                  >
+                                                    Cancel
+                                                  </button>
+                                                </div>
+                                              </div>
+                                            ) : (
+                                              <div>
+                                                <h3 className="font-semibold text-gray-900 dark:text-white">
+                                                  {item.title || "Untitled Lesson"}
+                                                </h3>
+                                                {item.description && (
+                                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                    {item.description}
+                                                  </p>
+                                                )}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      {item.type === 'unit' ? (
+                                        <>
+                                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                                            {item.lessons.length} lessons
+                                          </span>
+                                          <button
+                                            onClick={() => setEditingUnit(item.id)}
+                                            className="text-blue-500 hover:text-blue-700"
+                                          >
+                                            <FaEdit />
+                                          </button>
+                                          <button
+                                            onClick={() => deleteUnit(item.id)}
+                                            className="text-red-500 hover:text-red-700"
+                                          >
+                                            <FaTrash />
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <button
+                                            onClick={() => setEditingLesson(item.id)}
+                                            className="text-blue-500 hover:text-blue-700"
+                                          >
+                                            <FaEdit />
+                                          </button>
+                                          <button
+                                            onClick={() => deleteDirectLesson(item.id)}
+                                            className="text-red-500 hover:text-red-700"
+                                          >
+                                            <FaTrash />
+                                          </button>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Unit Lessons in Unified View */}
+                                  {item.type === 'unit' && expandedUnits.has(item.id) && (
+                                    <div className="mt-4 space-y-3">
+                                      <div className="flex justify-between items-center">
+                                        <h4 className="font-medium text-gray-700 dark:text-gray-300">
+                                          Lessons in this unit
+                                        </h4>
+                                        <button
+                                          onClick={() => addLessonToUnit(item.id)}
+                                          className="flex items-center gap-1 text-sm bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                                        >
+                                          <FaPlus /> Add Lesson
+                                        </button>
+                                      </div>
+                                      
+                                      {item.lessons.length === 0 ? (
+                                        <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                                          No lessons in this unit yet
+                                        </div>
+                                      ) : (
+                                        <Droppable droppableId={item.id.toString()} type="lesson">
+                                          {(provided) => (
+                                            <div 
+                                              {...provided.droppableProps}
+                                              ref={provided.innerRef}
+                                              className="space-y-2"
+                                            >
+                                              {item.lessons.map((lesson, lessonIndex) => (
+                                                <Draggable key={lesson.id} draggableId={lesson.id.toString()} index={lessonIndex}>
+                                                  {(provided, snapshot) => (
+                                                    <div
+                                                      ref={provided.innerRef}
+                                                      {...provided.draggableProps}
+                                                      className={`flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg ${
+                                                        snapshot.isDragging ? 'shadow-lg rotate-1' : ''
+                                                      }`}
+                                                    >
+                                                      <div
+                                                        {...provided.dragHandleProps}
+                                                        className="text-gray-400 cursor-move"
+                                                      >
+                                                        <FaGripVertical />
+                                                      </div>
+                                                      <FaFileAlt className="text-green-500" />
+                                                      <div className="flex-1">
+                                                        {editingLesson === lesson.id ? (
+                                                          <div className="space-y-2">
+                                                            <input
+                                                              type="text"
+                                                              value={lesson.title}
+                                                              onChange={(e) => updateLessonInUnit(item.id, lesson.id, 'title', e.target.value)}
+                                                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
+                                                              placeholder="Lesson title"
+                                                            />
+                                                            <textarea
+                                                              value={lesson.description}
+                                                              onChange={(e) => updateLessonInUnit(item.id, lesson.id, 'description', e.target.value)}
+                                                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
+                                                              placeholder="Lesson description"
+                                                              rows={2}
+                                                            />
+                                                            <div className="flex gap-2">
+                                                              <button
+                                                                onClick={() => setEditingLesson(null)}
+                                                                className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                                                              >
+                                                                Save
+                                                              </button>
+                                                              <button
+                                                                onClick={() => setEditingLesson(null)}
+                                                                className="px-2 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
+                                                              >
+                                                                Cancel
+                                                              </button>
+                                                            </div>
+                                                          </div>
+                                                        ) : (
+                                                          <div>
+                                                            <div className="font-medium text-gray-900 dark:text-white">
+                                                              {lesson.title || "Untitled Lesson"}
+                                                            </div>
+                                                            {lesson.description && (
+                                                              <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                                {lesson.description}
+                                                              </div>
+                                                            )}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                      <div className="flex items-center gap-1">
+                                                        <button
+                                                          onClick={() => setEditingLesson(lesson.id)}
+                                                          className="text-blue-500 hover:text-blue-700 text-sm"
+                                                        >
+                                                          <FaEdit />
+                                                        </button>
+                                                        <button
+                                                          onClick={() => deleteLessonFromUnit(item.id, lesson.id)}
+                                                          className="text-red-500 hover:text-red-700 text-sm"
+                                                        >
+                                                          <FaTrash />
+                                                        </button>
+                                                      </div>
+                                                      
+                                                      {/* Video Scheduler for Unit Lessons */}
+                                                      {lesson.lecture && (lesson.lecture.youtubeUrl || lesson.lecture.secure_url) && (
+                                                        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                                                          <VideoScheduler
+                                                            courseId={courseData._id || 'temp'}
+                                                            lessonId={lesson.id}
+                                                            lessonType="unit"
+                                                            isScheduled={lesson.lecture.isScheduled || false}
+                                                            scheduledPublishDate={lesson.lecture.scheduledPublishDate}
+                                                            onScheduleUpdate={(scheduleData) => {
+                                                              updateLessonInUnit(item.id, lesson.id, 'lecture', {
+                                                                ...lesson.lecture,
+                                                                ...scheduleData
+                                                              });
+                                                            }}
+                                                          />
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  )}
+                                                </Draggable>
+                                              ))}
+                                              {provided.placeholder}
+                                            </div>
+                                          )}
+                                        </Droppable>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {/* Video Scheduler for Direct Lessons */}
+                                  {item.type === 'directLesson' && item.lecture && (item.lecture.youtubeUrl || item.lecture.secure_url) && (
+                                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                                      <VideoScheduler
+                                        courseId={courseData._id || 'temp'}
+                                        lessonId={item.id}
+                                        lessonType="direct"
+                                        isScheduled={item.lecture.isScheduled || false}
+                                        scheduledPublishDate={item.lecture.scheduledPublishDate}
+                                        onScheduleUpdate={(scheduleData) => {
+                                          updateDirectLesson(item.id, 'lecture', {
+                                            ...item.lecture,
                                             ...scheduleData
                                           });
                                         }}

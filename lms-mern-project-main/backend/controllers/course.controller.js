@@ -690,9 +690,9 @@ const updateUnit = async (req, res, next) => {
 const updateLesson = async (req, res, next) => {
     try {
         const { courseId, unitId, lessonId } = req.params;
-        const { title, description, duration } = req.body;
+        const { title, description, duration, lecture } = req.body;
 
-        if (!title && !description && duration === undefined) {
+        if (!title && !description && duration === undefined && !lecture) {
             return next(new AppError('At least one field is required', 400));
         }
 
@@ -723,6 +723,12 @@ const updateLesson = async (req, res, next) => {
         if (title) course.units[unitIndex].lessons[lessonIndex].title = title;
         if (description) course.units[unitIndex].lessons[lessonIndex].description = description;
         if (duration !== undefined) course.units[unitIndex].lessons[lessonIndex].duration = duration;
+        if (lecture) {
+            course.units[unitIndex].lessons[lessonIndex].lecture = {
+                ...course.units[unitIndex].lessons[lessonIndex].lecture,
+                ...lecture
+            };
+        }
 
         await course.save();
 
@@ -741,9 +747,9 @@ const updateLesson = async (req, res, next) => {
 const updateDirectLesson = async (req, res, next) => {
     try {
         const { courseId, lessonId } = req.params;
-        const { title, description, duration } = req.body;
+        const { title, description, duration, lecture } = req.body;
 
-        if (!title && !description && duration === undefined) {
+        if (!title && !description && duration === undefined && !lecture) {
             return next(new AppError('At least one field is required', 400));
         }
 
@@ -765,6 +771,12 @@ const updateDirectLesson = async (req, res, next) => {
         if (title) course.directLessons[lessonIndex].title = title;
         if (description) course.directLessons[lessonIndex].description = description;
         if (duration !== undefined) course.directLessons[lessonIndex].duration = duration;
+        if (lecture) {
+            course.directLessons[lessonIndex].lecture = {
+                ...course.directLessons[lessonIndex].lecture,
+                ...lecture
+            };
+        }
 
         await course.save();
 
@@ -890,6 +902,234 @@ const scheduleVideoPublish = async (req, res, next) => {
     }
 };
 
+// Update complete course structure
+const updateCourseStructure = async (req, res, next) => {
+    try {
+        const { courseId } = req.params;
+        const { units, directLessons, title, description, category, createdBy } = req.body;
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        // Calculate total lessons
+        const totalUnitLessons = units.reduce((sum, unit) => sum + unit.lessons.length, 0);
+        const totalDirectLessons = directLessons.length;
+        const totalLessons = totalUnitLessons + totalDirectLessons;
+
+        // Update course structure
+        const updatedCourse = await courseModel.findByIdAndUpdate(
+            courseId,
+            {
+                title: title || course.title,
+                description: description || course.description,
+                category: category || course.category,
+                createdBy: createdBy || course.createdBy,
+                units: units.map(unit => ({
+                    title: unit.title,
+                    description: unit.description,
+                    lessons: unit.lessons.map(lesson => ({
+                        title: lesson.title,
+                        description: lesson.description,
+                        lecture: lesson.lecture || {},
+                        duration: lesson.duration || 0,
+                        order: lesson.order || 0
+                    })),
+                    order: unit.order || 0
+                })),
+                directLessons: directLessons.map(lesson => ({
+                    title: lesson.title,
+                    description: lesson.description,
+                    lecture: lesson.lecture || {},
+                    duration: lesson.duration || 0,
+                    order: lesson.order || 0
+                })),
+                numberOfLectures: totalLessons,
+                structureType: units.length > 0 && directLessons.length > 0 ? 'mixed' : 
+                              units.length > 0 ? 'units' : 'direct-lessons'
+            },
+            { new: true }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Course structure updated successfully',
+            course: updatedCourse
+        });
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Delete unit
+const deleteUnit = async (req, res, next) => {
+    try {
+        const { courseId, unitId } = req.params;
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        // Find the unit index
+        const unitIndex = course.units.findIndex(unit => 
+            unit._id.toString() === unitId || unit.id === unitId
+        );
+
+        if (unitIndex === -1) {
+            return next(new AppError('Unit not found', 404));
+        }
+
+        // Remove the unit
+        course.units.splice(unitIndex, 1);
+
+        // Update the course
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Unit deleted successfully'
+        });
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Delete lesson from unit
+const deleteLesson = async (req, res, next) => {
+    try {
+        const { courseId, unitId, lessonId } = req.params;
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        // Find the unit
+        const unit = course.units.find(unit => 
+            unit._id.toString() === unitId || unit.id === unitId
+        );
+
+        if (!unit) {
+            return next(new AppError('Unit not found', 404));
+        }
+
+        // Find the lesson index
+        const lessonIndex = unit.lessons.findIndex(lesson => 
+            lesson._id.toString() === lessonId || lesson.id === lessonId
+        );
+
+        if (lessonIndex === -1) {
+            return next(new AppError('Lesson not found', 404));
+        }
+
+        // Remove the lesson
+        unit.lessons.splice(lessonIndex, 1);
+
+        // Update the course
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Lesson deleted successfully'
+        });
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Add lesson to unit
+const addLessonToUnit = async (req, res, next) => {
+    try {
+        const { courseId, unitId } = req.params;
+        const { title, description, lecture } = req.body;
+
+        if (!title) {
+            return next(new AppError('Lesson title is required', 400));
+        }
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        // Find the unit
+        const unit = course.units.find(unit => 
+            unit._id.toString() === unitId || unit.id === unitId
+        );
+
+        if (!unit) {
+            return next(new AppError('Unit not found', 404));
+        }
+
+        // Create new lesson
+        const newLesson = {
+            title,
+            description: description || '',
+            lecture: lecture || {},
+            duration: 0,
+            order: unit.lessons.length + 1
+        };
+
+        // Add lesson to unit
+        unit.lessons.push(newLesson);
+
+        // Update the course
+        await course.save();
+
+        // Get the newly created lesson (it will have an _id now)
+        const createdLesson = unit.lessons[unit.lessons.length - 1];
+
+        res.status(201).json({
+            success: true,
+            message: 'Lesson added successfully',
+            lesson: createdLesson
+        });
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Delete direct lesson
+const deleteDirectLesson = async (req, res, next) => {
+    try {
+        const { courseId, lessonId } = req.params;
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        // Find the lesson index
+        const lessonIndex = course.directLessons.findIndex(lesson => 
+            lesson._id.toString() === lessonId || lesson.id === lessonId
+        );
+
+        if (lessonIndex === -1) {
+            return next(new AppError('Lesson not found', 404));
+        }
+
+        // Remove the lesson
+        course.directLessons.splice(lessonIndex, 1);
+
+        // Update the course
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Direct lesson deleted successfully'
+        });
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
 export {
     getAllCourses,
     getLecturesByCourseId,
@@ -904,5 +1144,10 @@ export {
     updateLesson,
     updateDirectLesson,
     simulateCourseSale,
-    scheduleVideoPublish
+    scheduleVideoPublish,
+    updateCourseStructure,
+    deleteUnit,
+    deleteLesson,
+    deleteDirectLesson,
+    addLessonToUnit
 }
