@@ -18,7 +18,7 @@ const cookieOptions = {
 // Register  
 const register = async (req, res, next) => {
     try {
-        const { fullName, email, password, phoneNumber, fatherPhoneNumber, governorate, grade, age, adminCode } = req.body;
+        const { fullName, username, email, password, phoneNumber, fatherPhoneNumber, governorate, grade, age, adminCode } = req.body;
 
         // Determine user role based on admin code
         let userRole = 'USER';
@@ -27,8 +27,8 @@ const register = async (req, res, next) => {
         }
 
         // Check required fields based on role
-        if (!fullName || !email || !password) {
-            return next(new AppError("Name, email, and password are required", 400));
+        if (!fullName || !username || !email || !password) {
+            return next(new AppError("Name, username, email, and password are required", 400));
         }
 
         // For regular users, check all required fields
@@ -39,14 +39,22 @@ const register = async (req, res, next) => {
         }
 
         // Check if the user already exists
-        const userExist = await userModel.findOne({ email });
+        const userExist = await userModel.findOne({ 
+            $or: [{ email }, { username }] 
+        });
         if (userExist) {
-            return next(new AppError("Email already exists, please login", 400));
+            if (userExist.email === email) {
+                return next(new AppError("Email already exists, please login", 400));
+            }
+            if (userExist.username === username) {
+                return next(new AppError("Username already exists, please choose another", 400));
+            }
         }
 
         // Prepare user data based on role
         const userData = {
             fullName,
+            username,
             email,
             password,
             role: userRole,
@@ -324,10 +332,10 @@ const changePassword = async (req, res, next) => {
 // update profile
 const updateUser = async (req, res, next) => {
     try {
-        const { fullName, phoneNumber, fatherPhoneNumber, governorate, grade, age } = req.body;
+        const { fullName, username, phoneNumber, fatherPhoneNumber, governorate, grade, age } = req.body;
         const { id } = req.user;
 
-        console.log('Update user data:', { fullName, phoneNumber, fatherPhoneNumber, governorate, grade, age });
+        console.log('Update user data:', { fullName, username, phoneNumber, fatherPhoneNumber, governorate, grade, age });
 
         const user = await userModel.findById(id);
 
@@ -338,6 +346,17 @@ const updateUser = async (req, res, next) => {
         // Update user fields if provided
         if (fullName) {
             user.fullName = fullName;
+        }
+        if (username) {
+            // Check if username is already taken by another user
+            const existingUser = await userModel.findOne({ 
+                username: username, 
+                _id: { $ne: id } 
+            });
+            if (existingUser) {
+                return next(new AppError("Username already exists, please choose another", 400));
+            }
+            user.username = username;
         }
         if (phoneNumber) {
             user.phoneNumber = phoneNumber;

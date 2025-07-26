@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate:add-username": "node migrations/addUsernameField.js"
   },
   "keywords": [],
   "author": "",

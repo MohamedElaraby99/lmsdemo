@@ -17,6 +17,7 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [userInput, setUserInput] = useState({
     name: userData?.fullName || "",
+    username: userData?.username || "",
     phoneNumber: userData?.phoneNumber || "",
     fatherPhoneNumber: userData?.fatherPhoneNumber || "",
     governorate: userData?.governorate || "",
@@ -52,6 +53,7 @@ export default function Profile() {
 
     const formData = new FormData();
     formData.append("fullName", userInput.name);
+    formData.append("username", userInput.username);
     formData.append("phoneNumber", userInput.phoneNumber);
     formData.append("fatherPhoneNumber", userInput.fatherPhoneNumber);
     formData.append("governorate", userInput.governorate);
@@ -82,6 +84,7 @@ export default function Profile() {
     // Reset form to current user data
     setUserInput({
       name: userData?.fullName || "",
+      username: userData?.username || "",
       phoneNumber: userData?.phoneNumber || "",
       fatherPhoneNumber: userData?.fatherPhoneNumber || "",
       governorate: userData?.governorate || "",
@@ -107,6 +110,7 @@ export default function Profile() {
     // Reset to original values
     setUserInput({
       name: userData?.fullName || "",
+      username: userData?.username || "",
       phoneNumber: userData?.phoneNumber || "",
       fatherPhoneNumber: userData?.fatherPhoneNumber || "",
       governorate: userData?.governorate || "",
@@ -122,6 +126,7 @@ export default function Profile() {
     if (isEditing) {
       setIschanged(
         userInput.name !== userData?.fullName || 
+        userInput.username !== userData?.username ||
         userInput.phoneNumber !== userData?.phoneNumber ||
         userInput.fatherPhoneNumber !== userData?.fatherPhoneNumber ||
         userInput.governorate !== userData?.governorate ||
@@ -155,6 +160,7 @@ export default function Profile() {
     setUserInput({
       ...userInput,
         name: userData?.fullName || "",
+        username: userData?.username || "",
         phoneNumber: userData?.phoneNumber || "",
         fatherPhoneNumber: userData?.fatherPhoneNumber || "",
         governorate: userData?.governorate || "",
@@ -272,6 +278,26 @@ export default function Profile() {
                       : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   }`}
                   placeholder="Enter your full name"
+                />
+              </div>
+
+              {/* Username */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <FaUser className="text-purple-500" />
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={isEditing ? userInput.username : (userData?.username || "")}
+                  onChange={(e) => setUserInput({ ...userInput, username: e.target.value })}
+                  disabled={!isEditing}
+                  className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    !isEditing 
+                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
+                      : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                  }`}
+                  placeholder="Enter your username"
                 />
               </div>
 

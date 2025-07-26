@@ -30,7 +30,8 @@ const CustomVideoPlayer = ({
   onPrevious,
   hasNext,
   hasPrevious,
-  courseTitle = "Course Video"
+  courseTitle = "Course Video",
+  userName = "User"
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -50,12 +51,17 @@ const CustomVideoPlayer = ({
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [youtubeVideoId, setYoutubeVideoId] = useState(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+  const [watermarkPosition, setWatermarkPosition] = useState(0);
+  const [displayUserName, setDisplayUserName] = useState('');
 
   const iframeRef = useRef(null);
   const progressBarRef = useRef(null);
   const volumeSliderRef = useRef(null);
   const controlsTimerRef = useRef(null);
   const timeUpdateIntervalRef = useRef(null);
+  const watermarkTimerRef = useRef(null);
 
   // Simulated video state for custom controls
   const [videoState, setVideoState] = useState({
@@ -69,13 +75,52 @@ const CustomVideoPlayer = ({
     if (isOpen && video) {
       initializeVideo();
       startControlsTimer();
+      checkDeviceType();
+      startWatermarkTimer();
     }
     
     return () => {
       clearControlsTimer();
       clearTimeUpdateInterval();
+      clearWatermarkTimer();
     };
   }, [isOpen, video]);
+
+  // Check if device is mobile and handle orientation
+  useEffect(() => {
+    const checkDeviceType = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(isMobileDevice);
+      
+      if (isMobileDevice) {
+        // Request fullscreen and landscape on mobile
+        requestFullscreenAndLandscape();
+      }
+    };
+
+    const handleOrientationChange = () => {
+      setIsLandscape(window.orientation === 90 || window.orientation === -90);
+    };
+
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    checkDeviceType();
+    window.addEventListener('orientationchange', handleOrientationChange);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    
+    return () => {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
 
   const initializeVideo = () => {
     setIsLoading(true);
@@ -119,6 +164,28 @@ const CustomVideoPlayer = ({
     if (!videoId) return '';
     // Create embed URL with minimal parameters to prevent YouTube branding
     return `https://www.youtube.com/embed/${videoId}?autoplay=0&controls=0&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3&cc_load_policy=0&fs=0&playsinline=1&enablejsapi=1&origin=${window.location.origin}`;
+  };
+
+  const changePlaybackRate = (rate) => {
+    setPlaybackRate(rate);
+    setShowSettings(false);
+    
+    // Send playback rate command to iframe
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      try {
+        iframeRef.current.contentWindow.postMessage(
+          JSON.stringify({
+            event: 'command',
+            func: 'setPlaybackRate',
+            args: [rate]
+          }),
+          '*'
+        );
+        console.log(`Playback rate set to ${rate}x`);
+      } catch (error) {
+        console.log('PostMessage not available for playback rate');
+      }
+    }
   };
 
   const getVideoTitle = (video) => {
@@ -280,8 +347,32 @@ const CustomVideoPlayer = ({
     }
   };
 
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        // Enter fullscreen
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          await document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) {
+          await document.documentElement.msRequestFullscreen();
+        }
+        setIsFullscreen(true);
+      } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          await document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          await document.msExitFullscreen();
+        }
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.log('Fullscreen toggle failed:', error);
+    }
   };
 
   const seek = (seconds) => {
@@ -411,7 +502,83 @@ const CustomVideoPlayer = ({
 
   const handleClose = () => {
     setIsPlaying(false);
+    // Exit fullscreen if in fullscreen mode
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
     onClose();
+  };
+
+  const checkDeviceType = () => {
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    setIsMobile(isMobileDevice);
+    
+    if (isMobileDevice) {
+      // Request fullscreen and landscape on mobile
+      requestFullscreenAndLandscape();
+    }
+  };
+
+  const requestFullscreenAndLandscape = async () => {
+    try {
+      // Request fullscreen
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        await document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) {
+        await document.documentElement.msRequestFullscreen();
+      }
+      
+      // Try to lock orientation to landscape (works on some mobile browsers)
+      if (screen.orientation && screen.orientation.lock) {
+        try {
+          await screen.orientation.lock('landscape');
+        } catch (error) {
+          console.log('Orientation lock not supported');
+        }
+      }
+    } catch (error) {
+      console.log('Fullscreen request failed:', error);
+    }
+  };
+
+  // Watermark system for video protection
+  const startWatermarkTimer = () => {
+    clearWatermarkTimer();
+    setDisplayUserName(userName);
+    
+    // Change watermark position every 5 seconds
+    watermarkTimerRef.current = setInterval(() => {
+      setWatermarkPosition(prev => (prev + 1) % 8); // 8 different positions
+    }, 5000);
+    
+    // Cleanup timestamp interval when component unmounts
+    return () => {
+      clearInterval(watermarkTimerRef.current);
+    };
+  };
+
+  const clearWatermarkTimer = () => {
+    if (watermarkTimerRef.current) {
+      clearInterval(watermarkTimerRef.current);
+      watermarkTimerRef.current = null;
+    }
+  };
+
+  const getWatermarkStyle = () => {
+    const positions = [
+      { top: '10%', left: '10%' },
+      { top: '10%', right: '10%' },
+      { bottom: '10%', left: '10%' },
+      { bottom: '10%', right: '10%' },
+      { top: '50%', left: '10%', transform: 'translateY(-50%)' },
+      { top: '50%', right: '10%', transform: 'translateY(-50%)' },
+      { left: '50%', top: '10%', transform: 'translateX(-50%)' },
+      { left: '50%', bottom: '10%', transform: 'translateX(-50%)' }
+    ];
+    
+    return positions[watermarkPosition];
   };
 
   const handleIframeLoad = () => {
@@ -443,6 +610,26 @@ const CustomVideoPlayer = ({
                 <FaSpinner className="animate-spin text-white text-4xl mx-auto mb-4" />
                 <p className="text-white">Loading video...</p>
                 <p className="text-white text-sm mt-2">Initializing player...</p>
+                {isMobile && (
+                  <p className="text-white text-sm mt-2">Rotate device for better viewing</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Mobile Rotation Indicator */}
+          {isMobile && !isLandscape && !isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 z-20">
+              <div className="text-center">
+                <FaVideo className="text-white text-4xl mx-auto mb-4" />
+                <p className="text-white text-lg font-semibold mb-2">Rotate Device</p>
+                <p className="text-white text-sm">Please rotate your device to landscape mode for the best viewing experience</p>
+                <button
+                  onClick={requestFullscreenAndLandscape}
+                  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Enter Fullscreen
+                </button>
               </div>
             </div>
           )}
@@ -468,6 +655,29 @@ const CustomVideoPlayer = ({
                 />
                 {/* Custom overlay to prevent YouTube interaction */}
                 <div className="absolute inset-0 pointer-events-none z-20"></div>
+                
+                {/* Dynamic Watermark */}
+                {iframeLoaded && (
+                  <div 
+                    className="absolute pointer-events-none z-25 select-none"
+                    style={{
+                      ...getWatermarkStyle(),
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)',
+                      fontFamily: 'Arial, sans-serif',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
+                      MozUserSelect: 'none',
+                      msUserSelect: 'none'
+                    }}
+                  >
+                    <div className="bg-black bg-opacity-60 px-3 py-1 rounded">
+                      {displayUserName}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
@@ -480,6 +690,16 @@ const CustomVideoPlayer = ({
             )}
           </div>
 
+          {/* Always Visible Close Button */}
+          <div className="absolute top-4 left-4 z-40 pointer-events-auto">
+            <button
+              onClick={handleClose}
+              className="text-white hover:text-gray-300 transition-colors p-2 hover:bg-black/50 rounded-lg bg-black/30 backdrop-blur-sm"
+            >
+              <FaTimes className="text-xl" />
+            </button>
+          </div>
+
           {/* Custom Video Controls Overlay */}
           {showControls && iframeLoaded && (
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-30">
@@ -487,12 +707,6 @@ const CustomVideoPlayer = ({
               {/* Top Controls */}
               <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between pointer-events-auto">
                 <div className="flex items-center gap-4">
-                  <button
-                    onClick={handleClose}
-                    className="text-white hover:text-gray-300 transition-colors p-2 hover:bg-black/30 rounded-lg"
-                  >
-                    <FaTimes className="text-xl" />
-                  </button>
                   <div className="text-white">
                     <h3 className="font-semibold text-lg">Video Player</h3>
                   </div>
@@ -703,11 +917,7 @@ const CustomVideoPlayer = ({
                           {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
                             <button
                               key={rate}
-                              onClick={() => {
-                                setPlaybackRate(rate);
-                                setShowSettings(false);
-                                console.log(`Playback rate set to ${rate}x`);
-                              }}
+                              onClick={() => changePlaybackRate(rate)}
                               className={`block w-full text-left px-2 py-1 rounded text-sm ${
                                 playbackRate === rate ? 'bg-blue-500' : 'hover:bg-white/20'
                               }`}

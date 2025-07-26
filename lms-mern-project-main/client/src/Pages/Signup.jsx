@@ -17,6 +17,7 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [signupData, setSignupData] = useState({
     fullName: "",
+    username: "",
     email: "",
     password: "",
     phoneNumber: "",
@@ -61,8 +62,8 @@ export default function Signup() {
     const isAdminRegistration = signupData.adminCode === 'ADMIN123';
     
     // Basic required fields for all users
-    if (!signupData.email || !signupData.password || !signupData.fullName) {
-      toast.error("Name, email, and password are required");
+    if (!signupData.email || !signupData.password || !signupData.fullName || !signupData.username) {
+      toast.error("Name, username, email, and password are required");
       return;
     }
     
@@ -77,6 +78,16 @@ export default function Signup() {
     // checking name field length
     if (signupData.fullName.length < 3) {
       toast.error("Name should be at least 3 characters");
+      return;
+    }
+    // checking username field length
+    if (signupData.username.length < 3) {
+      toast.error("Username should be at least 3 characters");
+      return;
+    }
+    // checking username format
+    if (!signupData.username.match(/^[a-zA-Z0-9_]+$/)) {
+      toast.error("Username can only contain letters, numbers, and underscores");
       return;
     }
     // checking valid email
@@ -105,6 +116,7 @@ export default function Signup() {
 
     const formData = new FormData();
     formData.append("fullName", signupData.fullName);
+    formData.append("username", signupData.username);
     formData.append("email", signupData.email);
     formData.append("password", signupData.password);
     formData.append("adminCode", signupData.adminCode);
@@ -125,6 +137,7 @@ export default function Signup() {
     if (response?.payload?.success) {
       setSignupData({
         fullName: "",
+        username: "",
         email: "",
         password: "",
         phoneNumber: "",
@@ -181,6 +194,31 @@ export default function Signup() {
                     onChange={handleUserInput}
                   />
                 </div>
+              </div>
+
+              {/* Username Field */}
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Username
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaUser className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    required
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Enter your username"
+                    value={signupData.username}
+                    onChange={handleUserInput}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Only letters, numbers, and underscores allowed
+                </p>
               </div>
 
               {/* Email Field */}

@@ -39,7 +39,7 @@ export default function DisplayLecture() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { state } = useLocation();
-  const { role } = useSelector((state) => state.auth);
+  const { role, data: userData } = useSelector((state) => state.auth);
 
   const [courseData, setCourseData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -773,6 +773,7 @@ export default function DisplayLecture() {
             isOpen={showVideoModal}
             onClose={() => setShowVideoModal(false)}
             courseTitle={courseData?.title || "Course"}
+            userName={userData?.username || userData?.fullName || "User"}
           />
         )}
       </div>
