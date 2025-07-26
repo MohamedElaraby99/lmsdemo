@@ -21,6 +21,7 @@ import {
   FaVideo,
   FaExternalLinkAlt
 } from 'react-icons/fa';
+import VideoProgress from './VideoProgress';
 
 const CustomVideoPlayer = ({
   video,
@@ -31,7 +32,9 @@ const CustomVideoPlayer = ({
   hasNext,
   hasPrevious,
   courseTitle = "Course Video",
-  userName = "User"
+  userName = "User",
+  courseId = null,
+  showProgress = true
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -194,6 +197,21 @@ const CustomVideoPlayer = ({
 
   const getVideoDescription = (video) => {
     return video?.description || video?.lecture?.description || "";
+  };
+
+  const getCleanVideoId = (video) => {
+    // First try to get the extracted YouTube video ID
+    if (youtubeVideoId) {
+      return youtubeVideoId;
+    }
+    
+    // Fallback: extract from YouTube URL
+    const videoUrl = getVideoUrl(video);
+    if (videoUrl) {
+      return extractYouTubeVideoId(videoUrl);
+    }
+    
+    return null;
   };
 
   const startControlsTimer = () => {
@@ -941,6 +959,19 @@ const CustomVideoPlayer = ({
             </div>
           )}
         </div>
+        
+        {/* Video Progress Component */}
+        {showProgress && courseId && getCleanVideoId(video) && (
+          <div className="mt-4 max-w-6xl w-full">
+            <VideoProgress
+              videoId={getCleanVideoId(video)}
+              courseId={courseId}
+              currentTime={currentTime}
+              duration={duration}
+              isPlaying={isPlaying}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

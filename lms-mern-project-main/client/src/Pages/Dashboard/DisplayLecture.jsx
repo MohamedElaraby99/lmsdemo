@@ -62,14 +62,14 @@ export default function DisplayLecture() {
   // Use the course data passed from state instead of fetching
   useEffect(() => {
     if (!state) {
-      navigate("/admin/dashboard");
+      navigate(role === 'USER' ? "/courses" : "/admin/dashboard");
       return;
     }
 
     // Set the course data from state
     setCourseData(state);
     setLoading(false);
-  }, [state, navigate]);
+  }, [state, navigate, role]);
 
   // Suppress browser extension errors
   useEffect(() => {
@@ -247,10 +247,10 @@ export default function DisplayLecture() {
             <FaExclamationTriangle className="text-4xl text-red-500 mx-auto mb-4" />
             <p className="text-gray-600 dark:text-gray-400 mb-4">Course not found</p>
             <button 
-              onClick={() => navigate("/admin/dashboard")}
+              onClick={() => navigate(role === 'USER' ? "/courses" : "/admin/dashboard")}
               className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
             >
-              Back to Dashboard
+              Back to {role === 'USER' ? 'Courses' : 'Dashboard'}
             </button>
           </div>
         </div>
@@ -312,11 +312,11 @@ export default function DisplayLecture() {
             {/* Back Button */}
             <div className="mb-6">
               <button
-                onClick={() => navigate("/admin/dashboard")}
+                onClick={() => navigate(role === 'USER' ? "/courses" : "/admin/dashboard")}
                 className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 font-medium"
               >
                 <FaArrowLeft className="text-sm" />
-                Back to Dashboard
+                Back to {role === 'USER' ? 'Courses' : 'Dashboard'}
               </button>
             </div>
 
@@ -774,6 +774,8 @@ export default function DisplayLecture() {
             onClose={() => setShowVideoModal(false)}
             courseTitle={courseData?.title || "Course"}
             userName={userData?.username || userData?.fullName || "User"}
+            courseId={courseData?._id}
+            showProgress={true}
           />
         )}
       </div>

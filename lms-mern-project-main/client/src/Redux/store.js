@@ -11,6 +11,7 @@ import WalletSliceReducer from "./Slices/WalletSlice"
 import AdminRechargeCodeSliceReducer from "./Slices/AdminRechargeCodeSlice"
 import AdminUserSliceReducer from "./Slices/AdminUserSlice"
 import WhatsAppServiceSliceReducer from "./Slices/WhatsAppServiceSlice"
+import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
 
  const store = configureStore({
     reducer: {
@@ -25,7 +26,8 @@ import WhatsAppServiceSliceReducer from "./Slices/WhatsAppServiceSlice"
         wallet: WalletSliceReducer,
         adminRechargeCode: AdminRechargeCodeSliceReducer,
         adminUser: AdminUserSliceReducer,
-        whatsappService: WhatsAppServiceSliceReducer
+        whatsappService: WhatsAppServiceSliceReducer,
+        videoProgress: VideoProgressSliceReducer
     },
     devTools: true
 })
