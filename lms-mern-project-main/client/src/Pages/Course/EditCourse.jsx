@@ -33,7 +33,8 @@ import {
   FaFileAlt,
   FaVideo,
   FaClock,
-  FaCalendarAlt
+  FaCalendarAlt,
+  FaExchangeAlt
 } from "react-icons/fa";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { axiosInstance } from "../../Helpers/axiosInstance";
@@ -51,6 +52,24 @@ export default function EditCourse() {
   const [expandedUnits, setExpandedUnits] = useState(new Set());
   const [editingUnit, setEditingUnit] = useState(null);
   const [editingLesson, setEditingLesson] = useState(null);
+  const [sectionOrder, setSectionOrder] = useState(['units', 'direct-lessons']);
+
+  const swapSectionOrder = () => {
+    setSectionOrder(prev => prev[0] === 'units' ? ['direct-lessons', 'units'] : ['units', 'direct-lessons']);
+  };
+
+  const toggleAllUnits = () => {
+    const allUnitIds = courseStructure.units.map(unit => unit.id || unit._id);
+    const allExpanded = allUnitIds.every(id => expandedUnits.has(id));
+    
+    if (allExpanded) {
+      // If all are expanded, collapse all
+      setExpandedUnits(new Set());
+    } else {
+      // If any are collapsed, expand all
+      setExpandedUnits(new Set(allUnitIds));
+    }
+  };
   const [userInput, setUserInput] = useState({
     title: courseData?.title || "",
     category: courseData?.category || "",
@@ -150,7 +169,7 @@ export default function EditCourse() {
   }
 
   // Course Structure Management Functions
-  const addUnit = () => {
+  const addUnit = (insertAfterIndex = -1) => {
     const newUnit = {
       id: Date.now(),
       title: "",
@@ -158,11 +177,27 @@ export default function EditCourse() {
       lessons: [],
       order: courseStructure.units.length
     };
-    setCourseStructure(prev => ({
-      ...prev,
-      units: [...prev.units, newUnit]
-    }));
+    
+    setCourseStructure(prev => {
+      const newUnits = [...prev.units];
+      if (insertAfterIndex >= 0 && insertAfterIndex < newUnits.length) {
+        // Insert after specific unit
+        newUnits.splice(insertAfterIndex + 1, 0, newUnit);
+      } else {
+        // Add at the end
+        newUnits.push(newUnit);
+      }
+      return {
+        ...prev,
+        units: newUnits
+      };
+    });
     setEditingUnit(newUnit.id);
+  };
+
+  const addUnitAfter = (unitId) => {
+    const unitIndex = courseStructure.units.findIndex(unit => (unit.id || unit._id) === unitId);
+    addUnit(unitIndex);
   };
 
   const updateUnit = (unitId, field, value) => {
@@ -203,7 +238,7 @@ export default function EditCourse() {
     });
   };
 
-  const addLessonToUnit = (unitId) => {
+  const addLessonToUnit = (unitId, insertAfterIndex = -1) => {
     if (!unitId) return;
     const newLesson = {
       id: Date.now() + Math.random(),
@@ -211,6 +246,7 @@ export default function EditCourse() {
       description: "",
       lecture: {},
       duration: 0,
+      price: 10,
       order: courseStructure.units.find(u => (u.id || u._id) === unitId)?.lessons.length || 0
     };
     
@@ -218,11 +254,31 @@ export default function EditCourse() {
       ...prev,
       units: prev.units.map(unit => 
         (unit.id || unit._id) === unitId 
-          ? { ...unit, lessons: [...unit.lessons, newLesson] }
+          ? {
+              ...unit,
+              lessons: (() => {
+                const lessons = [...unit.lessons];
+                if (insertAfterIndex >= 0 && insertAfterIndex < lessons.length) {
+                  // Insert after specific lesson
+                  lessons.splice(insertAfterIndex + 1, 0, newLesson);
+                } else {
+                  // Add at the end
+                  lessons.push(newLesson);
+                }
+                return lessons;
+              })()
+            }
           : unit
       )
     }));
     setEditingLesson(newLesson.id);
+  };
+
+  const addLessonAfter = (unitId, lessonId) => {
+    const unit = courseStructure.units.find(u => (u.id || u._id) === unitId);
+    if (!unit) return;
+    const lessonIndex = unit.lessons.findIndex(lesson => (lesson.id || lesson._id) === lessonId);
+    addLessonToUnit(unitId, lessonIndex);
   };
 
   const updateLessonInUnit = (unitId, lessonId, field, value) => {
@@ -256,20 +312,37 @@ export default function EditCourse() {
     }
   };
 
-  const addDirectLesson = () => {
+  const addDirectLesson = (insertAfterIndex = -1) => {
     const newLesson = {
       id: Date.now(),
       title: "",
       description: "",
       lecture: {},
       duration: 0,
+      price: 10,
       order: courseStructure.directLessons.length
     };
-    setCourseStructure(prev => ({
-      ...prev,
-      directLessons: [...prev.directLessons, newLesson]
-    }));
+    
+    setCourseStructure(prev => {
+      const newDirectLessons = [...prev.directLessons];
+      if (insertAfterIndex >= 0 && insertAfterIndex < newDirectLessons.length) {
+        // Insert after specific lesson
+        newDirectLessons.splice(insertAfterIndex + 1, 0, newLesson);
+      } else {
+        // Add at the end
+        newDirectLessons.push(newLesson);
+      }
+      return {
+        ...prev,
+        directLessons: newDirectLessons
+      };
+    });
     setEditingLesson(newLesson.id);
+  };
+
+  const addDirectLessonAfter = (lessonId) => {
+    const lessonIndex = courseStructure.directLessons.findIndex(lesson => (lesson.id || lesson._id) === lessonId);
+    addDirectLesson(lessonIndex);
   };
 
   const updateDirectLesson = (lessonId, field, value) => {
@@ -297,7 +370,12 @@ export default function EditCourse() {
 
     const { source, destination, type } = result;
 
-    if (type === 'unit') {
+    if (type === 'section') {
+      const reorderedSections = Array.from(sectionOrder);
+      const [removed] = reorderedSections.splice(source.index, 1);
+      reorderedSections.splice(destination.index, 0, removed);
+      setSectionOrder(reorderedSections);
+    } else if (type === 'unit') {
       const reorderedUnits = Array.from(courseStructure.units);
       const [removed] = reorderedUnits.splice(source.index, 1);
       reorderedUnits.splice(destination.index, 0, removed);
@@ -370,7 +448,8 @@ export default function EditCourse() {
           description: lesson.description,
           lecture: lesson.lecture,
           duration: lesson.duration,
-          order: lesson.order
+          order: lesson.order,
+          price: lesson.price || 10
         })),
         order: unit.order
       })),
@@ -379,7 +458,8 @@ export default function EditCourse() {
         description: lesson.description,
         lecture: lesson.lecture,
         duration: lesson.duration,
-        order: lesson.order
+        order: lesson.order,
+        price: lesson.price || 10
       }))
     };
     formData.append("courseStructure", JSON.stringify(structureData));
@@ -803,10 +883,21 @@ export default function EditCourse() {
 
                   {/* Structure Type Selection */}
                   <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                      <FaFolder className="text-blue-500" />
-                      Choose Course Structure
-                    </h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <FaFolder className="text-blue-500" />
+                        Choose Course Structure
+                      </h3>
+                      {(courseStructure.structureType === 'mixed') && (
+                        <button
+                          onClick={swapSectionOrder}
+                          className="flex items-center gap-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                          title="Swap section order"
+                        >
+                          <FaExchangeAlt /> Swap Section Order
+                        </button>
+                      )}
+                    </div>
                     <div className="grid md:grid-cols-3 gap-4">
                       <button
                         onClick={() => setCourseStructure(prev => ({ ...prev, structureType: 'direct-lessons' }))}
@@ -855,21 +946,34 @@ export default function EditCourse() {
                     </div>
                   </div>
 
-                  {/* Units Section */}
-                  {(courseStructure.structureType === 'units' || courseStructure.structureType === 'mixed') && (
-                    <div className="space-y-6 mb-8">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                          <FaFolder className="text-green-500" />
-                          Course Units ({courseStructure.units.length})
-                        </h3>
-                        <button
-                          onClick={addUnit}
-                          className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-                        >
-                          <FaPlus /> Add Unit
-                        </button>
-                      </div>
+                  {/* Course Sections - Ordered */}
+                  {sectionOrder.map((sectionType, index) => {
+                    if (sectionType === 'units' && (courseStructure.structureType === 'units' || courseStructure.structureType === 'mixed')) {
+                      return (
+                        <div key="units-section" className="space-y-6 mb-8">
+                                              <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <FaFolder className="text-green-500" />
+                            Course Units ({courseStructure.units.length})
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            {courseStructure.units.length > 0 && (
+                              <button
+                                onClick={toggleAllUnits}
+                                className="flex items-center gap-2 bg-purple-500 text-white px-3 py-2 rounded-lg hover:bg-purple-600 transition-colors text-sm"
+                                title="Toggle all units"
+                              >
+                                <FaExchangeAlt /> Toggle All
+                              </button>
+                            )}
+                            <button
+                              onClick={addUnit}
+                              className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                            >
+                              <FaPlus /> Add Unit
+                            </button>
+                          </div>
+                        </div>
 
                       {courseStructure.units.length === 0 ? (
                         <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-xl">
@@ -890,8 +994,10 @@ export default function EditCourse() {
                                 ref={provided.innerRef}
                                 className="space-y-4"
                               >
-                                                                 {courseStructure.units.map((unit, unitIndex) => (
-                                   <Draggable key={unit.id || unit._id || unitIndex} draggableId={(unit.id || unit._id || unitIndex).toString()} index={unitIndex}>
+                                                                 {courseStructure.units.map((unit, unitIndex) => {
+                                   const unitId = unit.id || unit._id || `unit-${unitIndex}`;
+                                   return (
+                                   <Draggable key={unitId} draggableId={unitId.toString()} index={unitIndex}>
                                     {(provided, snapshot) => (
                                       <div
                                         ref={provided.innerRef}
@@ -967,6 +1073,13 @@ export default function EditCourse() {
                                                 {unit.lessons.length} lessons
                                               </span>
                                               <button
+                                                onClick={() => addUnitAfter(unit.id || unit._id)}
+                                                className="text-green-500 hover:text-green-700"
+                                                title="Add Unit After This"
+                                              >
+                                                <FaPlus />
+                                              </button>
+                                              <button
                                                 onClick={() => setEditingUnit(unit.id || unit._id)}
                                                 className="text-blue-500 hover:text-blue-700"
                                               >
@@ -1008,86 +1121,111 @@ export default function EditCourse() {
                                                       ref={provided.innerRef}
                                                       className="space-y-2"
                                                     >
-                                                      {unit.lessons.map((lesson, lessonIndex) => (
-                                                        <Draggable key={lesson.id || lesson._id || lessonIndex} draggableId={(lesson.id || lesson._id || lessonIndex).toString()} index={lessonIndex}>
-                                                          {(provided, snapshot) => (
-                                                            <div
-                                                              ref={provided.innerRef}
-                                                              {...provided.draggableProps}
-                                                              className={`flex items-center gap-3 p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 ${
-                                                                snapshot.isDragging ? 'shadow-lg rotate-1' : ''
-                                                              }`}
-                                                            >
+                                                      {unit.lessons.map((lesson, lessonIndex) => {
+                                                        const lessonId = lesson.id || lesson._id || `lesson-${unitId}-${lessonIndex}`;
+                                                        return (
+                                                          <Draggable key={lessonId} draggableId={lessonId.toString()} index={lessonIndex}>
+                                                            {(provided, snapshot) => (
                                                               <div
-                                                                {...provided.dragHandleProps}
-                                                                className="text-gray-400 cursor-move"
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                className={`flex items-center gap-3 p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 ${
+                                                                  snapshot.isDragging ? 'shadow-lg rotate-1' : ''
+                                                                }`}
                                                               >
-                                                                <FaGripVertical />
-                                                              </div>
-                                                              <FaFileAlt className="text-green-500" />
-                                                              <div className="flex-1">
-                                                                {editingLesson === (lesson.id || lesson._id) ? (
-                                                                  <div className="space-y-2">
-                                                                    <input
-                                                                      type="text"
-                                                                      value={lesson.title}
-                                                                      onChange={(e) => updateLessonInUnit(unit.id || unit._id, lesson.id || lesson._id, 'title', e.target.value)}
-                                                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                                                      placeholder="Lesson title"
-                                                                    />
-                                                                    <textarea
-                                                                      value={lesson.description}
-                                                                      onChange={(e) => updateLessonInUnit(unit.id || unit._id, lesson.id || lesson._id, 'description', e.target.value)}
-                                                                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                                                      placeholder="Lesson description"
-                                                                      rows={2}
-                                                                    />
-                                                                    <div className="flex gap-2">
-                                                                      <button
-                                                                        onClick={() => setEditingLesson(null)}
-                                                                        className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-                                                                      >
-                                                                        Save
-                                                                      </button>
-                                                                      <button
-                                                                        onClick={() => setEditingLesson(null)}
-                                                                        className="px-2 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
-                                                                      >
-                                                                        Cancel
-                                                                      </button>
-                                                                    </div>
-                                                                  </div>
-                                                                ) : (
-                                                                  <div>
-                                                                    <div className="font-medium text-gray-900 dark:text-white">
-                                                                      {lesson.title || "Untitled Lesson"}
-                                                                    </div>
-                                                                    {lesson.description && (
-                                                                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                                        {lesson.description}
+                                                                <div
+                                                                  {...provided.dragHandleProps}
+                                                                  className="text-gray-400 cursor-move"
+                                                                >
+                                                                  <FaGripVertical />
+                                                                </div>
+                                                                <FaFileAlt className="text-green-500" />
+                                                                <div className="flex-1">
+                                                                  {editingLesson === (lesson.id || lesson._id) ? (
+                                                                    <div className="space-y-2">
+                                                                      <input
+                                                                        type="text"
+                                                                        value={lesson.title}
+                                                                        onChange={(e) => updateLessonInUnit(unit.id || unit._id, lesson.id || lesson._id, 'title', e.target.value)}
+                                                                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
+                                                                        placeholder="Lesson title"
+                                                                      />
+                                                                      <textarea
+                                                                        value={lesson.description}
+                                                                        onChange={(e) => updateLessonInUnit(unit.id || unit._id, lesson.id || lesson._id, 'description', e.target.value)}
+                                                                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
+                                                                        placeholder="Lesson description"
+                                                                        rows={2}
+                                                                      />
+                                                                      <div className="flex gap-2">
+                                                                        <input
+                                                                          type="number"
+                                                                          value={lesson.price || 10}
+                                                                          onChange={(e) => updateLessonInUnit(unit.id || unit._id, lesson.id || lesson._id, 'price', parseFloat(e.target.value) || 0)}
+                                                                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
+                                                                          placeholder="Lesson price (EGP)"
+                                                                          min="0"
+                                                                          step="0.01"
+                                                                        />
+                                                                        <span className="text-xs text-gray-500 self-center">EGP</span>
                                                                       </div>
-                                                                    )}
-                                                                  </div>
-                                                                )}
+                                                                      <div className="flex gap-2">
+                                                                        <button
+                                                                          onClick={() => setEditingLesson(null)}
+                                                                          className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                                                                        >
+                                                                          Save
+                                                                        </button>
+                                                                        <button
+                                                                          onClick={() => setEditingLesson(null)}
+                                                                          className="px-2 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
+                                                                        >
+                                                                          Cancel
+                                                                        </button>
+                                                                      </div>
+                                                                    </div>
+                                                                  ) : (
+                                                                    <div>
+                                                                      <div className="font-medium text-gray-900 dark:text-white">
+                                                                        {lesson.title || "Untitled Lesson"}
+                                                                      </div>
+                                                                      {lesson.description && (
+                                                                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                                                                          {lesson.description}
+                                                                        </div>
+                                                                      )}
+                                                                      <div className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                                                        Price: {lesson.price || 10} EGP
+                                                                      </div>
+                                                                    </div>
+                                                                  )}
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                  <button
+                                                                    onClick={() => addLessonAfter(unit.id || unit._id, lesson.id || lesson._id)}
+                                                                    className="text-green-500 hover:text-green-700 text-sm"
+                                                                    title="Add Lesson After This"
+                                                                  >
+                                                                    <FaPlus />
+                                                                  </button>
+                                                                  <button
+                                                                    onClick={() => setEditingLesson(lesson.id || lesson._id)}
+                                                                    className="text-blue-500 hover:text-blue-700 text-sm"
+                                                                  >
+                                                                    <FaEdit />
+                                                                  </button>
+                                                                  <button
+                                                                    onClick={() => deleteLessonFromUnit(unit.id || unit._id, lesson.id || lesson._id)}
+                                                                    className="text-red-500 hover:text-red-700 text-sm"
+                                                                  >
+                                                                    <FaTrash />
+                                                                  </button>
+                                                                </div>
                                                               </div>
-                                                              <div className="flex items-center gap-1">
-                                                                <button
-                                                                  onClick={() => setEditingLesson(lesson.id || lesson._id)}
-                                                                  className="text-blue-500 hover:text-blue-700 text-sm"
-                                                                >
-                                                                  <FaEdit />
-                                                                </button>
-                                                                <button
-                                                                  onClick={() => deleteLessonFromUnit(unit.id || unit._id, lesson.id || lesson._id)}
-                                                                  className="text-red-500 hover:text-red-700 text-sm"
-                                                                >
-                                                                  <FaTrash />
-                                                                </button>
-                                                              </div>
-                                                            </div>
-                                                          )}
-                                                        </Draggable>
-                                                      ))}
+                                                            )}
+                                                          </Draggable>
+                                                        );
+                                                      })}
                                                       {provided.placeholder}
                                                     </div>
                                                   )}
@@ -1099,19 +1237,19 @@ export default function EditCourse() {
                                       </div>
                                     )}
                                   </Draggable>
-                                ))}
+                                );
+                              })}
                                 {provided.placeholder}
                               </div>
                             )}
                           </Droppable>
                         </DragDropContext>
                       )}
-                    </div>
-                  )}
-
-                  {/* Direct Lessons Section */}
-                  {(courseStructure.structureType === 'direct-lessons' || courseStructure.structureType === 'mixed') && (
-                    <div className="space-y-6 mb-8">
+                        </div>
+                      );
+                    } else if (sectionType === 'direct-lessons' && (courseStructure.structureType === 'direct-lessons' || courseStructure.structureType === 'mixed')) {
+                      return (
+                        <div key="direct-lessons-section" className="space-y-6 mb-8">
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                           <FaPlay className="text-blue-500" />
@@ -1144,8 +1282,10 @@ export default function EditCourse() {
                                 ref={provided.innerRef}
                                 className="space-y-4"
                               >
-                                                                 {courseStructure.directLessons.map((lesson, index) => (
-                                   <Draggable key={lesson.id || lesson._id || index} draggableId={(lesson.id || lesson._id || index).toString()} index={index}>
+                                                                 {courseStructure.directLessons.map((lesson, index) => {
+                                   const directLessonId = lesson.id || lesson._id || `direct-lesson-${index}`;
+                                   return (
+                                   <Draggable key={directLessonId} draggableId={directLessonId.toString()} index={index}>
                                     {(provided, snapshot) => (
                                       <div
                                         ref={provided.innerRef}
@@ -1180,6 +1320,18 @@ export default function EditCourse() {
                                                   rows={2}
                                                 />
                                                 <div className="flex gap-2">
+                                                  <input
+                                                    type="number"
+                                                    value={lesson.price || 10}
+                                                    onChange={(e) => updateDirectLesson(lesson.id || lesson._id, 'price', parseFloat(e.target.value) || 0)}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                    placeholder="Lesson price (EGP)"
+                                                    min="0"
+                                                    step="0.01"
+                                                  />
+                                                  <span className="text-xs text-gray-500 self-center">EGP</span>
+                                                </div>
+                                                <div className="flex gap-2">
                                                   <button
                                                     onClick={() => setEditingLesson(null)}
                                                     className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
@@ -1204,10 +1356,20 @@ export default function EditCourse() {
                                                     {lesson.description}
                                                   </p>
                                                 )}
+                                                <div className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">
+                                                  Price: {lesson.price || 10} EGP
+                                                </div>
                                               </div>
                                             )}
                                           </div>
                                           <div className="flex items-center gap-2">
+                                            <button
+                                              onClick={() => addDirectLessonAfter(lesson.id || lesson._id)}
+                                              className="text-green-500 hover:text-green-700"
+                                              title="Add Lesson After This"
+                                            >
+                                              <FaPlus />
+                                            </button>
                                             <button
                                               onClick={() => setEditingLesson(lesson.id || lesson._id)}
                                               className="text-blue-500 hover:text-blue-700"
@@ -1225,15 +1387,19 @@ export default function EditCourse() {
                                       </div>
                                     )}
                                   </Draggable>
-                                ))}
+                                );
+                              })}
                                 {provided.placeholder}
                               </div>
                             )}
                           </Droppable>
                         </DragDropContext>
                       )}
-                    </div>
-                  )}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
 
                   {/* Course Summary */}
                   <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 mb-8">

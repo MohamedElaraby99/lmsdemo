@@ -12,6 +12,7 @@ import AdminRechargeCodeSliceReducer from "./Slices/AdminRechargeCodeSlice"
 import AdminUserSliceReducer from "./Slices/AdminUserSlice"
 import WhatsAppServiceSliceReducer from "./Slices/WhatsAppServiceSlice"
 import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
+import LessonPurchaseSliceReducer from "./Slices/LessonPurchaseSlice"
 
  const store = configureStore({
     reducer: {
@@ -27,7 +28,8 @@ import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
         adminRechargeCode: AdminRechargeCodeSliceReducer,
         adminUser: AdminUserSliceReducer,
         whatsappService: WhatsAppServiceSliceReducer,
-        videoProgress: VideoProgressSliceReducer
+        videoProgress: VideoProgressSliceReducer,
+        lessonPurchase: LessonPurchaseSliceReducer
     },
     devTools: true
 })

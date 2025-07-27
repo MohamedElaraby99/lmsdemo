@@ -81,6 +81,87 @@ const courseSchema = new Schema({
                             default: false
                         }
                     },
+                    // PDF Material
+                    pdf: {
+                        public_id: {
+                            type: String
+                        },
+                        secure_url: {
+                            type: String
+                        },
+                        title: {
+                            type: String,
+                            default: "Study Material"
+                        }
+                    },
+                    // Training Exam
+                    trainingExam: {
+                        questions: [
+                            {
+                                question: {
+                                    type: String,
+                                    required: true
+                                },
+                                options: [{
+                                    type: String,
+                                    required: true
+                                }],
+                                correctAnswer: {
+                                    type: Number,
+                                    required: true,
+                                    min: 0
+                                },
+                                explanation: {
+                                    type: String,
+                                    default: ""
+                                }
+                            }
+                        ],
+                        passingScore: {
+                            type: Number,
+                            default: 70,
+                            min: 0,
+                            max: 100
+                        },
+                        timeLimit: {
+                            type: Number, // in minutes
+                            default: 30
+                        }
+                    },
+                    // Final Exam
+                    finalExam: {
+                        questions: [
+                            {
+                                question: {
+                                    type: String,
+                                    required: true
+                                },
+                                options: [{
+                                    type: String,
+                                    required: true
+                                }],
+                                correctAnswer: {
+                                    type: Number,
+                                    required: true,
+                                    min: 0
+                                },
+                                explanation: {
+                                    type: String,
+                                    default: ""
+                                }
+                            }
+                        ],
+                        passingScore: {
+                            type: Number,
+                            default: 80,
+                            min: 0,
+                            max: 100
+                        },
+                        timeLimit: {
+                            type: Number, // in minutes
+                            default: 45
+                        }
+                    },
                     duration: {
                         type: Number, // in minutes
                         default: 0
@@ -88,12 +169,22 @@ const courseSchema = new Schema({
                     order: {
                         type: Number,
                         default: 0
+                    },
+                    price: {
+                        type: Number,
+                        default: 10, // Default price for individual lessons
+                        min: 0
                     }
                 }
             ],
             order: {
                 type: Number,
                 default: 0
+            },
+            price: {
+                type: Number,
+                default: 10, // Default price for individual lessons
+                min: 0
             }
         }
     ],
@@ -126,6 +217,87 @@ const courseSchema = new Schema({
                 isScheduled: {
                     type: Boolean,
                     default: false
+                }
+            },
+            // PDF Material
+            pdf: {
+                public_id: {
+                    type: String
+                },
+                secure_url: {
+                    type: String
+                },
+                title: {
+                    type: String,
+                    default: "Study Material"
+                }
+            },
+            // Training Exam
+            trainingExam: {
+                questions: [
+                    {
+                        question: {
+                            type: String,
+                            required: true
+                        },
+                        options: [{
+                            type: String,
+                            required: true
+                        }],
+                        correctAnswer: {
+                            type: Number,
+                            required: true,
+                            min: 0
+                        },
+                        explanation: {
+                            type: String,
+                            default: ""
+                        }
+                    }
+                ],
+                passingScore: {
+                    type: Number,
+                    default: 70,
+                    min: 0,
+                    max: 100
+                },
+                timeLimit: {
+                    type: Number, // in minutes
+                    default: 30
+                }
+            },
+            // Final Exam
+            finalExam: {
+                questions: [
+                    {
+                        question: {
+                            type: String,
+                            required: true
+                        },
+                        options: [{
+                            type: String,
+                            required: true
+                        }],
+                        correctAnswer: {
+                            type: Number,
+                            required: true,
+                            min: 0
+                        },
+                        explanation: {
+                            type: String,
+                            default: ""
+                        }
+                    }
+                ],
+                passingScore: {
+                    type: Number,
+                    default: 80,
+                    min: 0,
+                    max: 100
+                },
+                timeLimit: {
+                    type: Number, // in minutes
+                    default: 45
                 }
             },
             duration: {

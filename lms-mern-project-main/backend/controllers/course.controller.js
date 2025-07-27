@@ -1130,6 +1130,347 @@ const deleteDirectLesson = async (req, res, next) => {
     }
 };
 
+// Add PDF to lesson
+const addPdfToLesson = async (req, res, next) => {
+    try {
+        const { courseId, lessonId, unitId } = req.params;
+        const { title } = req.body;
+
+        if (!req.file) {
+            return next(new AppError('PDF file is required', 400));
+        }
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        // Upload PDF to cloudinary
+        const result = await cloudinary.v2.uploader.upload(req.file.path, {
+            resource_type: 'raw',
+            folder: 'course-pdfs',
+            format: 'pdf'
+        });
+
+        // Remove file from server
+        fs.unlinkSync(req.file.path);
+
+        const pdfData = {
+            public_id: result.public_id,
+            secure_url: result.secure_url,
+            title: title || 'Study Material'
+        };
+
+        let lesson = null;
+        let lessonIndex = -1;
+
+        if (unitId) {
+            const unitIndex = course.units.findIndex(u => u._id.toString() === unitId);
+            if (unitIndex === -1) {
+                return next(new AppError('Unit not found', 404));
+            }
+
+            lessonIndex = course.units[unitIndex].lessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            course.units[unitIndex].lessons[lessonIndex].pdf = pdfData;
+            lesson = course.units[unitIndex].lessons[lessonIndex];
+        } else {
+            lessonIndex = course.directLessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            course.directLessons[lessonIndex].pdf = pdfData;
+            lesson = course.directLessons[lessonIndex];
+        }
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'PDF added successfully',
+            data: lesson
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Add training exam to lesson
+const addTrainingExam = async (req, res, next) => {
+    try {
+        const { courseId, lessonId, unitId } = req.params;
+        const { questions, passingScore, timeLimit } = req.body;
+
+        if (!questions || !Array.isArray(questions) || questions.length === 0) {
+            return next(new AppError('Questions are required', 400));
+        }
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        const examData = {
+            questions,
+            passingScore: passingScore || 70,
+            timeLimit: timeLimit || 30
+        };
+
+        let lesson = null;
+        let lessonIndex = -1;
+
+        if (unitId) {
+            const unitIndex = course.units.findIndex(u => u._id.toString() === unitId);
+            if (unitIndex === -1) {
+                return next(new AppError('Unit not found', 404));
+            }
+
+            lessonIndex = course.units[unitIndex].lessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            course.units[unitIndex].lessons[lessonIndex].trainingExam = examData;
+            lesson = course.units[unitIndex].lessons[lessonIndex];
+        } else {
+            lessonIndex = course.directLessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            course.directLessons[lessonIndex].trainingExam = examData;
+            lesson = course.directLessons[lessonIndex];
+        }
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Training exam added successfully',
+            data: lesson
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Add final exam to lesson
+const addFinalExam = async (req, res, next) => {
+    try {
+        const { courseId, lessonId, unitId } = req.params;
+        const { questions, passingScore, timeLimit } = req.body;
+
+        if (!questions || !Array.isArray(questions) || questions.length === 0) {
+            return next(new AppError('Questions are required', 400));
+        }
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        const examData = {
+            questions,
+            passingScore: passingScore || 80,
+            timeLimit: timeLimit || 45
+        };
+
+        let lesson = null;
+        let lessonIndex = -1;
+
+        if (unitId) {
+            const unitIndex = course.units.findIndex(u => u._id.toString() === unitId);
+            if (unitIndex === -1) {
+                return next(new AppError('Unit not found', 404));
+            }
+
+            lessonIndex = course.units[unitIndex].lessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            course.units[unitIndex].lessons[lessonIndex].finalExam = examData;
+            lesson = course.units[unitIndex].lessons[lessonIndex];
+        } else {
+            lessonIndex = course.directLessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            course.directLessons[lessonIndex].finalExam = examData;
+            lesson = course.directLessons[lessonIndex];
+        }
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Final exam added successfully',
+            data: lesson
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Delete PDF from lesson
+const deletePdfFromLesson = async (req, res, next) => {
+    try {
+        const { courseId, lessonId, unitId } = req.params;
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        let lesson = null;
+        let lessonIndex = -1;
+
+        if (unitId) {
+            const unitIndex = course.units.findIndex(u => u._id.toString() === unitId);
+            if (unitIndex === -1) {
+                return next(new AppError('Unit not found', 404));
+            }
+
+            lessonIndex = course.units[unitIndex].lessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            // Delete from cloudinary if exists
+            if (course.units[unitIndex].lessons[lessonIndex].pdf?.public_id) {
+                await cloudinary.v2.uploader.destroy(course.units[unitIndex].lessons[lessonIndex].pdf.public_id);
+            }
+
+            course.units[unitIndex].lessons[lessonIndex].pdf = null;
+            lesson = course.units[unitIndex].lessons[lessonIndex];
+        } else {
+            lessonIndex = course.directLessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            // Delete from cloudinary if exists
+            if (course.directLessons[lessonIndex].pdf?.public_id) {
+                await cloudinary.v2.uploader.destroy(course.directLessons[lessonIndex].pdf.public_id);
+            }
+
+            course.directLessons[lessonIndex].pdf = null;
+            lesson = course.directLessons[lessonIndex];
+        }
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'PDF deleted successfully',
+            data: lesson
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Delete training exam from lesson
+const deleteTrainingExam = async (req, res, next) => {
+    try {
+        const { courseId, lessonId, unitId } = req.params;
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        let lesson = null;
+        let lessonIndex = -1;
+
+        if (unitId) {
+            const unitIndex = course.units.findIndex(u => u._id.toString() === unitId);
+            if (unitIndex === -1) {
+                return next(new AppError('Unit not found', 404));
+            }
+
+            lessonIndex = course.units[unitIndex].lessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            course.units[unitIndex].lessons[lessonIndex].trainingExam = null;
+            lesson = course.units[unitIndex].lessons[lessonIndex];
+        } else {
+            lessonIndex = course.directLessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            course.directLessons[lessonIndex].trainingExam = null;
+            lesson = course.directLessons[lessonIndex];
+        }
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Training exam deleted successfully',
+            data: lesson
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Delete final exam from lesson
+const deleteFinalExam = async (req, res, next) => {
+    try {
+        const { courseId, lessonId, unitId } = req.params;
+
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError('Course not found', 404));
+        }
+
+        let lesson = null;
+        let lessonIndex = -1;
+
+        if (unitId) {
+            const unitIndex = course.units.findIndex(u => u._id.toString() === unitId);
+            if (unitIndex === -1) {
+                return next(new AppError('Unit not found', 404));
+            }
+
+            lessonIndex = course.units[unitIndex].lessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            course.units[unitIndex].lessons[lessonIndex].finalExam = null;
+            lesson = course.units[unitIndex].lessons[lessonIndex];
+        } else {
+            lessonIndex = course.directLessons.findIndex(l => l._id.toString() === lessonId);
+            if (lessonIndex === -1) {
+                return next(new AppError('Lesson not found', 404));
+            }
+
+            course.directLessons[lessonIndex].finalExam = null;
+            lesson = course.directLessons[lessonIndex];
+        }
+
+        await course.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Final exam deleted successfully',
+            data: lesson
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
 export {
     getAllCourses,
     getLecturesByCourseId,
@@ -1149,5 +1490,11 @@ export {
     deleteUnit,
     deleteLesson,
     deleteDirectLesson,
-    addLessonToUnit
+    addLessonToUnit,
+    addPdfToLesson,
+    addTrainingExam,
+    addFinalExam,
+    deletePdfFromLesson,
+    deleteTrainingExam,
+    deleteFinalExam
 }

@@ -15,6 +15,8 @@ import adminRechargeCodeRoutes from './routes/adminRechargeCode.routes.js';
 import adminUserRoutes from './routes/adminUser.routes.js';
 import whatsappServiceRoutes from './routes/whatsappService.routes.js';
 import videoProgressRoutes from './routes/videoProgress.routes.js';
+import lessonPurchaseRoutes from './routes/lessonPurchase.routes.js';
+import examRoutes from './routes/exam.routes.js';
 import express from 'express';
 import connectToDb from './config/db.config.js';
 import errorMiddleware from './middleware/error.middleware.js';
@@ -65,6 +67,8 @@ app.use('/api/v1/admin/recharge-codes', adminRechargeCodeRoutes);
 app.use('/api/v1/admin/users', adminUserRoutes);
 app.use('/api/v1/whatsapp-services', whatsappServiceRoutes);
 app.use('/api/v1/video-progress', videoProgressRoutes);
+app.use('/api/v1/lesson-purchases', lessonPurchaseRoutes);
+app.use('/api/v1/exams', examRoutes);
  
 
 app.all('*', (req, res) => {

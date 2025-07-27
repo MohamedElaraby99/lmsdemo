@@ -46,12 +46,20 @@ import {
   FaPercent,
   FaFire,
   FaRocket,
-  FaGem
+  FaGem,
+  FaExchangeAlt,
+  FaFilePdf,
+  FaClipboardCheck,
+  FaGraduationCap as FaExam
 } from "react-icons/fa";
 import { axiosInstance } from "../../Helpers/axiosInstance";
 import { toast } from "react-hot-toast";
 import CustomVideoPlayer from "../../Components/CustomVideoPlayer";
+import PurchaseModal from "../../Components/PurchaseModal";
+import PurchaseSuccess from "../../Components/PurchaseSuccess";
+import LessonDetailModal from "../../Components/LessonDetailModal";
 import { getWalletBalance } from "../../Redux/Slices/WalletSlice";
+import { purchaseLesson, checkLessonPurchase, selectIsLessonPurchased, selectPurchaseLoading, selectPurchaseError, clearPurchaseError } from "../../Redux/Slices/LessonPurchaseSlice";
 
 export default function DisplayLecture() {
   const navigate = useNavigate();
@@ -59,6 +67,9 @@ export default function DisplayLecture() {
   const { state } = useLocation();
   const { role, data: userData } = useSelector((state) => state.auth);
   const { balance } = useSelector((state) => state.wallet);
+  const purchaseLoading = useSelector(selectPurchaseLoading);
+  const purchaseError = useSelector(selectPurchaseError);
+  const lessonPurchaseState = useSelector((state) => state.lessonPurchase);
   
   // Debug: Log the role to see what's being detected
   console.log('Current user role:', role);
@@ -82,6 +93,16 @@ export default function DisplayLecture() {
   // Video modal state
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [selectedLessonForPurchase, setSelectedLessonForPurchase] = useState(null);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [purchaseSuccessData, setPurchaseSuccessData] = useState(null);
+  const [isProcessingPurchase, setIsProcessingPurchase] = useState(false);
+
+  // Lesson detail modal state
+  const [showLessonDetailModal, setShowLessonDetailModal] = useState(false);
+  const [selectedLessonForDetail, setSelectedLessonForDetail] = useState(null);
+  const [selectedUnitForDetail, setSelectedUnitForDetail] = useState(null);
 
   // Confirmation modal state
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -114,8 +135,55 @@ export default function DisplayLecture() {
     // Get wallet balance for users
     if (role === 'USER') {
       dispatch(getWalletBalance());
+      
+      // Check lesson purchases for this course
+      if (courseData?._id) {
+        // Check purchases for unit lessons
+        if (courseData.units) {
+          courseData.units.forEach(unit => {
+            if (unit.lessons) {
+              unit.lessons.forEach(lesson => {
+                // Check purchase status for all lessons, not just those with videos
+                dispatch(checkLessonPurchase({ 
+                  courseId: courseData._id, 
+                  lessonId: lesson._id || lesson.id 
+                }));
+              });
+            }
+          });
+        }
+        
+        // Check purchases for direct lessons
+        if (courseData.directLessons) {
+          courseData.directLessons.forEach(lesson => {
+            // Check purchase status for all lessons, not just those with videos
+            dispatch(checkLessonPurchase({ 
+              courseId: courseData._id, 
+              lessonId: lesson._id || lesson.id 
+            }));
+          });
+        }
+      }
     }
+
+    // Clear any purchase errors on component mount
+    dispatch(clearPurchaseError());
   }, [state, navigate, role, dispatch]);
+
+  // Handle purchase errors
+  useEffect(() => {
+    if (purchaseError) {
+      toast.error(purchaseError);
+      dispatch(clearPurchaseError());
+    }
+  }, [purchaseError, dispatch]);
+
+  // Refresh purchase status when lesson purchase state changes
+  useEffect(() => {
+    if (lessonPurchaseState.purchases.length > 0 && courseData?._id) {
+      console.log('Lesson purchases updated:', lessonPurchaseState.purchases);
+    }
+  }, [lessonPurchaseState.purchases, courseData?._id]);
 
   // Suppress browser extension errors
   useEffect(() => {
@@ -147,15 +215,19 @@ export default function DisplayLecture() {
     });
   };
 
-  const expandAllUnits = () => {
+  const toggleAllUnits = () => {
     if (courseData?.units) {
       const allUnitIds = courseData.units.map(unit => unit._id || unit.id);
-      setExpandedUnits(new Set(allUnitIds));
+      const allExpanded = allUnitIds.every(id => expandedUnits.has(id));
+      
+      if (allExpanded) {
+        // If all are expanded, collapse all
+        setExpandedUnits(new Set());
+      } else {
+        // If any are collapsed, expand all
+        setExpandedUnits(new Set(allUnitIds));
+      }
     }
-  };
-
-  const collapseAllUnits = () => {
-    setExpandedUnits(new Set());
   };
 
   const openAddVideoModal = (lesson, unit = null) => {
@@ -339,6 +411,18 @@ export default function DisplayLecture() {
     return lesson.lecture && (lesson.lecture.secure_url || lesson.lecture.youtubeUrl || lesson.isScheduled);
   };
 
+  const hasPdf = (lesson) => {
+    return lesson.pdf && lesson.pdf.secure_url;
+  };
+
+  const hasTrainingExam = (lesson) => {
+    return lesson.trainingExam && lesson.trainingExam.questions && lesson.trainingExam.questions.length > 0;
+  };
+
+  const hasFinalExam = (lesson) => {
+    return lesson.finalExam && lesson.finalExam.questions && lesson.finalExam.questions.length > 0;
+  };
+
   const isVideoScheduled = (lesson) => {
     return lesson.lecture?.isScheduled && lesson.lecture?.scheduledPublishDate;
   };
@@ -370,6 +454,19 @@ export default function DisplayLecture() {
   const closeVideoModal = () => {
     setShowVideoModal(false);
     setSelectedVideo(null);
+  };
+
+  // Lesson detail modal functions
+  const openLessonDetailModal = (lesson, unit = null) => {
+    setSelectedLessonForDetail(lesson);
+    setSelectedUnitForDetail(unit);
+    setShowLessonDetailModal(true);
+  };
+
+  const closeLessonDetailModal = () => {
+    setShowLessonDetailModal(false);
+    setSelectedLessonForDetail(null);
+    setSelectedUnitForDetail(null);
   };
 
   // Pricing and wallet helper functions
@@ -413,54 +510,118 @@ export default function DisplayLecture() {
     return balance >= getLessonPrice(lesson);
   };
 
-  const canAffordCourse = () => {
+  const isLessonPurchasedByUser = (lesson) => {
     if (role === 'ADMIN') return true;
-    return balance >= getTotalCoursePrice();
+    
+    const lessonId = lesson._id || lesson.id;
+    const isPurchased = lessonPurchaseState.purchases.some(purchase => purchase.lessonId === lessonId);
+    
+    console.log('isLessonPurchasedByUser Debug:', {
+      lessonId,
+      lessonTitle: lesson.title,
+      purchases: lessonPurchaseState.purchases,
+      purchaseIds: lessonPurchaseState.purchases.map(p => p.lessonId),
+      isPurchased,
+      role
+    });
+    
+    return isPurchased;
   };
 
+
+
   const handlePurchaseLesson = async (lesson) => {
+    // This function is called when the purchase button is clicked in the lesson detail modal
     if (role === 'ADMIN') {
-      openVideoModal(lesson);
+      // For admin, just close the modal - they can access content through the lesson detail modal
       return;
     }
 
-    const lessonPrice = getLessonPrice(lesson);
+    // Check if already purchased
+    if (isLessonPurchasedByUser(lesson)) {
+      // For already purchased lessons, just close the modal - they can access content through the lesson detail modal
+      return;
+    }
+
+    // Prevent duplicate clicks
+    if (isProcessingPurchase) {
+      return;
+    }
+
+    // Show purchase modal
+    setSelectedLessonForPurchase(lesson);
+    setShowPurchaseModal(true);
+  };
+
+  const handlePurchaseConfirm = async () => {
+    if (!selectedLessonForPurchase) return;
+
+    // Prevent duplicate purchases
+    if (isProcessingPurchase) {
+      return;
+    }
+
+    // Double-check if already purchased
+    if (isLessonPurchasedByUser(selectedLessonForPurchase)) {
+      toast.success('You have already purchased this lesson!');
+      setShowPurchaseModal(false);
+      setSelectedLessonForPurchase(null);
+      return;
+    }
+
+    const lessonPrice = getLessonPrice(selectedLessonForPurchase);
     
-    if (!canAffordLesson(lesson)) {
+    if (!canAffordLesson(selectedLessonForPurchase)) {
       toast.error(`Insufficient balance. You need ${lessonPrice} EGP but have ${balance} EGP`);
       return;
     }
 
+    setIsProcessingPurchase(true);
+
     try {
-      // Here you would implement the purchase logic
-      // For now, just show a success message
-      toast.success(`Successfully purchased lesson for ${lessonPrice} EGP!`);
-      openVideoModal(lesson);
+      const purchaseData = {
+        courseId: courseData._id,
+        lessonId: selectedLessonForPurchase._id || selectedLessonForPurchase.id,
+        lessonTitle: selectedLessonForPurchase.title,
+        unitId: selectedUnit?._id || selectedUnit?.id || null,
+        unitTitle: selectedUnit?.title || null,
+        amount: lessonPrice
+      };
+
+      const result = await dispatch(purchaseLesson(purchaseData)).unwrap();
+      
+      if (result.success) {
+        // Show success notification
+        setPurchaseSuccessData({
+          lessonTitle: selectedLessonForPurchase.title,
+          amount: lessonPrice,
+          remainingBalance: balance - lessonPrice
+        });
+        setShowSuccessNotification(true);
+        
+        // Refresh wallet balance
+        dispatch(getWalletBalance());
+        
+        // Close modal after delay
+        setTimeout(() => {
+          setShowPurchaseModal(false);
+          setSelectedLessonForPurchase(null);
+          setIsProcessingPurchase(false);
+        }, 2000);
+      }
     } catch (error) {
-      toast.error('Failed to purchase lesson');
+      setIsProcessingPurchase(false);
+      if (error.includes('already purchased')) {
+        toast.success('You have already purchased this lesson!');
+        setShowPurchaseModal(false);
+        setSelectedLessonForPurchase(null);
+      } else {
+        toast.error(error || 'Failed to purchase lesson');
+      }
     }
   };
 
-  const handlePurchaseCourse = async () => {
-    if (role === 'ADMIN') {
-      toast.success('Admin access - all content unlocked!');
-      return;
-    }
 
-    const totalPrice = getTotalCoursePrice();
-    
-    if (!canAffordCourse()) {
-      toast.error(`Insufficient balance. You need ${totalPrice} EGP but have ${balance} EGP`);
-      return;
-    }
-
-    try {
-      // Here you would implement the course purchase logic
-      toast.success(`Successfully purchased entire course for ${totalPrice} EGP!`);
-    } catch (error) {
-      toast.error('Failed to purchase course');
-    }
-  };
 
   const formatPrice = (price) => {
     return `${price} EGP`;
@@ -635,6 +796,144 @@ export default function DisplayLecture() {
     setShowConfirmModal(true);
   };
 
+  // PDF Management
+  const handleAddPdf = async (lesson, unit = null) => {
+    try {
+      const lessonId = lesson._id || lesson.id;
+      const courseId = courseData._id;
+      const unitId = unit ? (unit._id || unit.id) : null;
+
+      const endpoint = unitId 
+        ? `/api/v1/courses/${courseId}/units/${unitId}/lessons/${lessonId}/pdf`
+        : `/api/v1/courses/${courseId}/direct-lessons/${lessonId}/pdf`;
+
+      // Create a file input for PDF upload
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.pdf';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('pdf', file);
+        formData.append('title', lesson.title + ' - Study Material');
+
+        await axiosInstance.post(endpoint, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        toast.success('PDF added successfully');
+        
+        // Refresh course data
+        const response = await axiosInstance.get(`/api/v1/courses/${courseId}`);
+        setCourseData(response.data.course);
+      };
+      input.click();
+    } catch (error) {
+      console.error('Error adding PDF:', error);
+      toast.error(error.response?.data?.message || 'Failed to add PDF');
+    }
+  };
+
+  // Training Exam Management
+  const handleAddTrainingExam = async (lesson, unit = null) => {
+    try {
+      const lessonId = lesson._id || lesson.id;
+      const courseId = courseData._id;
+      const unitId = unit ? (unit._id || unit.id) : null;
+
+      const endpoint = unitId 
+        ? `/api/v1/courses/${courseId}/units/${unitId}/lessons/${lessonId}/training-exam`
+        : `/api/v1/courses/${courseId}/direct-lessons/${lessonId}/training-exam`;
+
+      // Sample training exam questions
+      const sampleQuestions = [
+        {
+          question: "What is the main topic of this lesson?",
+          options: ["Option A", "Option B", "Option C", "Option D"],
+          correctAnswer: 0,
+          explanation: "This is the correct answer explanation."
+        },
+        {
+          question: "Which concept is most important in this lesson?",
+          options: ["Concept A", "Concept B", "Concept C", "Concept D"],
+          correctAnswer: 1,
+          explanation: "This concept is fundamental to understanding the lesson."
+        }
+      ];
+
+      const examData = {
+        questions: sampleQuestions,
+        passingScore: 70,
+        timeLimit: 30
+      };
+
+      await axiosInstance.post(endpoint, examData);
+      
+      toast.success('Training exam added successfully');
+      
+      // Refresh course data
+      const response = await axiosInstance.get(`/api/v1/courses/${courseId}`);
+      setCourseData(response.data.course);
+    } catch (error) {
+      console.error('Error adding training exam:', error);
+      toast.error(error.response?.data?.message || 'Failed to add training exam');
+    }
+  };
+
+  // Final Exam Management
+  const handleAddFinalExam = async (lesson, unit = null) => {
+    try {
+      const lessonId = lesson._id || lesson.id;
+      const courseId = courseData._id;
+      const unitId = unit ? (unit._id || unit.id) : null;
+
+      const endpoint = unitId 
+        ? `/api/v1/courses/${courseId}/units/${unitId}/lessons/${lessonId}/final-exam`
+        : `/api/v1/courses/${courseId}/direct-lessons/${lessonId}/final-exam`;
+
+      // Sample final exam questions
+      const sampleQuestions = [
+        {
+          question: "What is the primary learning objective of this lesson?",
+          options: ["Objective A", "Objective B", "Objective C", "Objective D"],
+          correctAnswer: 0,
+          explanation: "This is the main learning objective."
+        },
+        {
+          question: "Which skill is developed through this lesson?",
+          options: ["Skill A", "Skill B", "Skill C", "Skill D"],
+          correctAnswer: 1,
+          explanation: "This skill is essential for mastery of the topic."
+        },
+        {
+          question: "What is the expected outcome after completing this lesson?",
+          options: ["Outcome A", "Outcome B", "Outcome C", "Outcome D"],
+          correctAnswer: 2,
+          explanation: "This outcome demonstrates successful completion."
+        }
+      ];
+
+      const examData = {
+        questions: sampleQuestions,
+        passingScore: 80,
+        timeLimit: 45
+      };
+
+      await axiosInstance.post(endpoint, examData);
+      
+      toast.success('Final exam added successfully');
+      
+      // Refresh course data
+      const response = await axiosInstance.get(`/api/v1/courses/${courseId}`);
+      setCourseData(response.data.course);
+    } catch (error) {
+      console.error('Error adding final exam:', error);
+      toast.error(error.response?.data?.message || 'Failed to add final exam');
+    }
+  };
+
   if (loading) {
     return (
       <Layout hideFooter={true}>
@@ -668,7 +967,7 @@ export default function DisplayLecture() {
   }
 
   return (
-    <Layout hideFooter={true}>
+    <Layout>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <section className="relative py-8 lg:py-12 px-4 overflow-hidden">
           {/* Background Pattern */}
@@ -710,29 +1009,7 @@ export default function DisplayLecture() {
                 {courseData.description || "Explore the course content and lectures"}
               </p>
               
-              {/* Course Stats */}
-              <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600 dark:text-gray-400">
-                <div className="flex items-center gap-2">
-                  <FaBook className="text-blue-500" />
-                  <span>Category: {courseData.category || 'General'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FaSubject className="text-green-500" />
-                  <span>Subject: {courseData.subject?.name || 'General'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FaLayerGroup className="text-purple-500" />
-                  <span>Stage: {courseData.stage || '1 ابتدائي'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FaUsers className="text-orange-500" />
-                  <span>Instructor: {courseData.createdBy || 'Admin'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FaPlay className="text-red-500" />
-                  <span>Total Lessons: {getTotalLessons()}</span>
-                </div>
-              </div>
+
 
               {/* Progress and Pricing Section */}
               {role === 'USER' && (
@@ -751,18 +1028,7 @@ export default function DisplayLecture() {
                       </div>
                     </div>
 
-                    {/* Course Pricing */}
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full">
-                        <FaCoins className="text-white text-xl" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Course Total Price</h3>
-                        <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                          {formatPrice(getTotalCoursePrice())}
-                        </p>
-                      </div>
-                    </div>
+
 
                     {/* Progress Tracking */}
                     <div className="flex items-center gap-4">
@@ -780,20 +1046,8 @@ export default function DisplayLecture() {
                       </div>
                     </div>
 
-                    {/* Purchase Options */}
-                    <div className="flex gap-3">
-                      <button
-                        onClick={handlePurchaseCourse}
-                        disabled={!canAffordCourse()}
-                        className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 ${
-                          canAffordCourse()
-                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
-                      >
-                        <FaShoppingCart />
-                        Buy Full Course
-                      </button>
+                    {/* Wallet Recharge Option */}
+                    <div className="flex justify-center">
                       <button
                         onClick={() => navigate('/wallet')}
                         className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
@@ -828,18 +1082,11 @@ export default function DisplayLecture() {
                   </h2>
                   <div className="flex gap-2">
                     <button
-                      onClick={expandAllUnits}
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors flex items-center gap-2"
+                      onClick={toggleAllUnits}
+                      className="px-4 py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600 transition-colors flex items-center gap-2"
                     >
-                      <FaChevronDown />
-                      Expand All
-                    </button>
-                    <button
-                      onClick={collapseAllUnits}
-                      className="px-4 py-2 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors flex items-center gap-2"
-                    >
-                      <FaChevronRight />
-                      Collapse All
+                      <FaExchangeAlt />
+                      Toggle All
                     </button>
                     {role === "ADMIN" && (
                       <>
@@ -861,6 +1108,60 @@ export default function DisplayLecture() {
                     )}
                   </div>
                 </div>
+
+                {/* Lesson Content Summary */}
+                {role === "ADMIN" && (
+                  <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-4 flex items-center gap-2">
+                      <FaBook className="text-blue-500" />
+                      Lesson Content Management
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
+                        <FaVideo className="text-2xl text-green-500 mx-auto mb-2" />
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Videos</p>
+                        <p className="text-lg font-bold text-green-600">
+                          {courseData.units?.reduce((sum, unit) => 
+                            sum + unit.lessons?.filter(lesson => hasVideo(lesson)).length, 0) + 
+                           (courseData.directLessons?.filter(lesson => hasVideo(lesson)).length || 0)}
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
+                        <FaFilePdf className="text-2xl text-blue-500 mx-auto mb-2" />
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">PDFs</p>
+                        <p className="text-lg font-bold text-blue-600">
+                          {courseData.units?.reduce((sum, unit) => 
+                            sum + unit.lessons?.filter(lesson => hasPdf(lesson)).length, 0) + 
+                           (courseData.directLessons?.filter(lesson => hasPdf(lesson)).length || 0)}
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
+                        <FaClipboardCheck className="text-2xl text-purple-500 mx-auto mb-2" />
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Training Exams</p>
+                        <p className="text-lg font-bold text-purple-600">
+                          {courseData.units?.reduce((sum, unit) => 
+                            sum + unit.lessons?.filter(lesson => hasTrainingExam(lesson)).length, 0) + 
+                           (courseData.directLessons?.filter(lesson => hasTrainingExam(lesson)).length || 0)}
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
+                        <FaExam className="text-2xl text-orange-500 mx-auto mb-2" />
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">Final Exams</p>
+                        <p className="text-lg font-bold text-orange-600">
+                          {courseData.units?.reduce((sum, unit) => 
+                            sum + unit.lessons?.filter(lesson => hasFinalExam(lesson)).length, 0) + 
+                           (courseData.directLessons?.filter(lesson => hasFinalExam(lesson)).length || 0)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 text-sm text-blue-700 dark:text-blue-300">
+                      <p className="flex items-center gap-2">
+                        <FaInfo className="text-blue-500" />
+                        Click on any lesson to add or manage its content (Video, PDF, Training Exam, Final Exam)
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-8">
                   {/* Units Section */}
@@ -944,7 +1245,11 @@ export default function DisplayLecture() {
                                 {unit.lessons && unit.lessons.length > 0 ? (
                                   <div className="space-y-3">
                                     {unit.lessons.map((lesson, lessonIndex) => (
-                                      <div key={lesson._id || lesson.id || lessonIndex} className="bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4">
+                                      <div 
+                                        key={lesson._id || lesson.id || lessonIndex} 
+                                        className="bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4 cursor-pointer hover:shadow-lg transition-all duration-200"
+                                        onClick={() => openLessonDetailModal(lesson, unit)}
+                                      >
                                         <div className="flex items-center justify-between">
                                           <div className="flex items-center gap-3">
                                                                                           <div className="relative">
@@ -979,6 +1284,24 @@ export default function DisplayLecture() {
                                                     Video Available
                                                   </span>
                                                 )}
+                                                {hasPdf(lesson) && (
+                                                  <span className="flex items-center gap-1 text-blue-600">
+                                                    <FaFilePdf />
+                                                    PDF Available
+                                                  </span>
+                                                )}
+                                                {hasTrainingExam(lesson) && (
+                                                  <span className="flex items-center gap-1 text-purple-600">
+                                                    <FaClipboardCheck />
+                                                    Training Exam
+                                                  </span>
+                                                )}
+                                                {hasFinalExam(lesson) && (
+                                                  <span className="flex items-center gap-1 text-orange-600">
+                                                    <FaExam />
+                                                    Final Exam
+                                                  </span>
+                                                )}
                                                 {isVideoScheduled(lesson) && (
                                                   <span className={`flex items-center gap-1 ${
                                                     isVideoPublished(lesson) ? 'text-green-600' : 'text-orange-600'
@@ -994,36 +1317,31 @@ export default function DisplayLecture() {
                                                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
                                                   <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
-                                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriceBadgeColor(getLessonPrice(lesson))}`}>
-                                                        {formatPrice(getLessonPrice(lesson))}
-                                                      </span>
-                                                      {!canAffordLesson(lesson) && role === 'USER' && (
-                                                        <span className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-                                                          <FaLock />
-                                                          Insufficient Balance
+                                                      {isLessonPurchasedByUser(lesson) ? (
+                                                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                                          <FaCheck className="inline mr-1" />
+                                                          Purchased
                                                         </span>
+                                                      ) : (
+                                                        <>
+                                                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriceBadgeColor(getLessonPrice(lesson))}`}>
+                                                            {formatPrice(getLessonPrice(lesson))}
+                                                          </span>
+                                                          {!canAffordLesson(lesson) && role === 'USER' && (
+                                                            <span className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                                                              <FaLock />
+                                                              Insufficient Balance
+                                                            </span>
+                                                          )}
+                                                        </>
                                                       )}
                                                     </div>
                                                     <button
-                                                      onClick={() => handlePurchaseLesson(lesson)}
-                                                      disabled={!canAffordLesson(lesson) && role === 'USER'}
-                                                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1 ${
-                                                        canAffordLesson(lesson) || role === 'ADMIN'
-                                                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700'
-                                                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                      }`}
+                                                      onClick={() => openLessonDetailModal(lesson, unit)}
+                                                      className="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
                                                     >
-                                                      {role === 'ADMIN' ? (
-                                                        <>
-                                                          <FaUnlock />
-                                                          Watch
-                                                        </>
-                                                      ) : (
-                                                        <>
-                                                          <FaShoppingCart />
-                                                          Purchase
-                                                        </>
-                                                      )}
+                                                      <FaPlay />
+                                                      Watch
                                                     </button>
                                                   </div>
                                                 </div>
@@ -1031,15 +1349,6 @@ export default function DisplayLecture() {
                                             </div>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            {hasVideo(lesson) && isVideoPublished(lesson) && (
-                                              <button
-                                                onClick={() => handlePurchaseLesson(lesson)}
-                                                className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                                                title={role === 'ADMIN' ? "Watch Video" : "Purchase & Watch Video"}
-                                              >
-                                                <FaPlay className="text-sm" />
-                                              </button>
-                                            )}
                                             {hasVideo(lesson) && !isVideoPublished(lesson) && (
                                               <div className="relative group">
                                                 <div className="p-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed" title="Video scheduled for later">
@@ -1072,6 +1381,42 @@ export default function DisplayLecture() {
                                                     <FaVideo className="text-sm" />
                                                   </button>
                                                 )}
+                                                {/* PDF Management */}
+                                                <button
+                                                  onClick={() => handleAddPdf(lesson, unit)}
+                                                  className={`p-2 rounded-lg transition-colors ${
+                                                    hasPdf(lesson) 
+                                                      ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                                                      : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                                                  }`}
+                                                  title={hasPdf(lesson) ? "Update PDF" : "Add PDF"}
+                                                >
+                                                  <FaFilePdf className="text-sm" />
+                                                </button>
+                                                {/* Training Exam Management */}
+                                                <button
+                                                  onClick={() => handleAddTrainingExam(lesson, unit)}
+                                                  className={`p-2 rounded-lg transition-colors ${
+                                                    hasTrainingExam(lesson) 
+                                                      ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                                                      : 'bg-pink-500 text-white hover:bg-pink-600'
+                                                  }`}
+                                                  title={hasTrainingExam(lesson) ? "Update Training Exam" : "Add Training Exam"}
+                                                >
+                                                  <FaClipboardCheck className="text-sm" />
+                                                </button>
+                                                {/* Final Exam Management */}
+                                                <button
+                                                  onClick={() => handleAddFinalExam(lesson, unit)}
+                                                  className={`p-2 rounded-lg transition-colors ${
+                                                    hasFinalExam(lesson) 
+                                                      ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                                                      : 'bg-red-500 text-white hover:bg-red-600'
+                                                  }`}
+                                                  title={hasFinalExam(lesson) ? "Update Final Exam" : "Add Final Exam"}
+                                                >
+                                                  <FaExam className="text-sm" />
+                                                </button>
                                                 <button
                                                   onClick={() => handleDeleteLesson(lesson, unit)}
                                                   className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
@@ -1117,7 +1462,11 @@ export default function DisplayLecture() {
                       </h3>
                       <div className="space-y-3">
                         {courseData.directLessons.map((lesson, index) => (
-                          <div key={lesson._id || lesson.id || index} className="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 p-4 lg:p-6 hover:shadow-lg transition-all duration-200">
+                          <div 
+                            key={lesson._id || lesson.id || index} 
+                            className="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 p-4 lg:p-6 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                            onClick={() => openLessonDetailModal(lesson)}
+                          >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-4">
                                 <div className="relative">
@@ -1167,36 +1516,31 @@ export default function DisplayLecture() {
                                     <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
                                       <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriceBadgeColor(getLessonPrice(lesson))}`}>
-                                            {formatPrice(getLessonPrice(lesson))}
-                                          </span>
-                                          {!canAffordLesson(lesson) && role === 'USER' && (
-                                            <span className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-                                              <FaLock />
-                                              Insufficient Balance
+                                          {isLessonPurchasedByUser(lesson) ? (
+                                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                              <FaCheck className="inline mr-1" />
+                                              Purchased
                                             </span>
+                                          ) : (
+                                            <>
+                                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriceBadgeColor(getLessonPrice(lesson))}`}>
+                                                {formatPrice(getLessonPrice(lesson))}
+                                              </span>
+                                              {!canAffordLesson(lesson) && role === 'USER' && (
+                                                <span className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                                                  <FaLock />
+                                                  Insufficient Balance
+                                                </span>
+                                              )}
+                                            </>
                                           )}
                                         </div>
                                         <button
-                                          onClick={() => handlePurchaseLesson(lesson)}
-                                          disabled={!canAffordLesson(lesson) && role === 'USER'}
-                                          className={`px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1 ${
-                                            canAffordLesson(lesson) || role === 'ADMIN'
-                                              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700'
-                                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                          }`}
+                                          onClick={() => openLessonDetailModal(lesson)}
+                                          className="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
                                         >
-                                          {role === 'ADMIN' ? (
-                                            <>
-                                              <FaUnlock />
-                                              Watch
-                                            </>
-                                          ) : (
-                                            <>
-                                              <FaShoppingCart />
-                                              Purchase
-                                            </>
-                                          )}
+                                          <FaPlay />
+                                          Watch
                                         </button>
                                       </div>
                                     </div>
@@ -1204,15 +1548,6 @@ export default function DisplayLecture() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                {hasVideo(lesson) && isVideoPublished(lesson) && (
-                                  <button
-                                    onClick={() => handlePurchaseLesson(lesson)}
-                                    className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                                    title={role === 'ADMIN' ? "Watch Video" : "Purchase & Watch Video"}
-                                  >
-                                    <FaPlay className="text-sm" />
-                                  </button>
-                                )}
                                 {hasVideo(lesson) && !isVideoPublished(lesson) && (
                                   <div className="relative group">
                                     <div className="p-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed" title="Video scheduled for later">
@@ -1245,6 +1580,42 @@ export default function DisplayLecture() {
                                         <FaVideo className="text-sm" />
                                       </button>
                                     )}
+                                    {/* PDF Management */}
+                                    <button
+                                      onClick={() => handleAddPdf(lesson)}
+                                      className={`p-2 rounded-lg transition-colors ${
+                                        hasPdf(lesson) 
+                                          ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                                          : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                                      }`}
+                                      title={hasPdf(lesson) ? "Update PDF" : "Add PDF"}
+                                    >
+                                      <FaFilePdf className="text-sm" />
+                                    </button>
+                                    {/* Training Exam Management */}
+                                    <button
+                                      onClick={() => handleAddTrainingExam(lesson)}
+                                      className={`p-2 rounded-lg transition-colors ${
+                                        hasTrainingExam(lesson) 
+                                          ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                                          : 'bg-pink-500 text-white hover:bg-pink-600'
+                                      }`}
+                                      title={hasTrainingExam(lesson) ? "Update Training Exam" : "Add Training Exam"}
+                                    >
+                                      <FaClipboardCheck className="text-sm" />
+                                    </button>
+                                    {/* Final Exam Management */}
+                                    <button
+                                      onClick={() => handleAddFinalExam(lesson)}
+                                      className={`p-2 rounded-lg transition-colors ${
+                                        hasFinalExam(lesson) 
+                                          ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                                          : 'bg-red-500 text-white hover:bg-red-600'
+                                      }`}
+                                      title={hasFinalExam(lesson) ? "Update Final Exam" : "Add Final Exam"}
+                                    >
+                                      <FaExam className="text-sm" />
+                                    </button>
                                     <button
                                       onClick={() => handleDeleteLesson(lesson)}
                                       className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
@@ -1285,62 +1656,7 @@ export default function DisplayLecture() {
                     </div>
                   )}
 
-                  {/* Course Information */}
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-4 flex items-center gap-2">
-                      <FaInfo className="text-blue-500" />
-                      Course Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <FaBook className="text-blue-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Title:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{courseData.title}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaTag className="text-green-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Category:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{courseData.category || 'General'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaSubject className="text-purple-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Subject:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{courseData.subject?.name || 'General'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaLayerGroup className="text-orange-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Stage:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{courseData.stage || '1 ابتدائي'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaUsers className="text-red-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Instructor:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{courseData.createdBy || 'Admin'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaPlay className="text-yellow-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Total Lessons:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{getTotalLessons()}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaCalendarAlt className="text-indigo-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Created:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {new Date(courseData.createdAt || Date.now()).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaStar className="text-yellow-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Status:</span>
-                        <span className="font-medium text-green-600 dark:text-green-400">{courseData.status || 'Active'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaVideo className="text-blue-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Structure:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{courseData.structureType || 'direct-lessons'}</span>
-                      </div>
-                    </div>
-                  </div>
+
                 </div>
               </div>
             </div>
@@ -1511,6 +1827,49 @@ export default function DisplayLecture() {
             showProgress={true}
           />
         )}
+
+        {/* Purchase Modal */}
+        <PurchaseModal
+          isOpen={showPurchaseModal}
+          onClose={() => {
+            setShowPurchaseModal(false);
+            setSelectedLessonForPurchase(null);
+            setIsProcessingPurchase(false);
+          }}
+          lesson={selectedLessonForPurchase}
+          price={selectedLessonForPurchase ? getLessonPrice(selectedLessonForPurchase) : 0}
+          balance={balance}
+          onPurchase={handlePurchaseConfirm}
+          loading={purchaseLoading || isProcessingPurchase}
+          success={false}
+          error={purchaseError}
+        />
+
+        {/* Lesson Detail Modal */}
+        <LessonDetailModal
+          lesson={selectedLessonForDetail}
+          unit={selectedUnitForDetail}
+          isOpen={showLessonDetailModal}
+          onClose={closeLessonDetailModal}
+          onPurchase={handlePurchaseLesson}
+          isPurchased={selectedLessonForDetail ? isLessonPurchasedByUser(selectedLessonForDetail) : false}
+          canAfford={selectedLessonForDetail ? canAffordLesson(selectedLessonForDetail) : false}
+          purchaseLoading={purchaseLoading}
+          role={role}
+          balance={balance}
+          lessonPrice={selectedLessonForDetail ? getLessonPrice(selectedLessonForDetail) : 0}
+          courseData={courseData}
+        />
+        {console.log('DisplayLecture - isPurchased:', selectedLessonForDetail ? isLessonPurchasedByUser(selectedLessonForDetail) : false)}
+
+        {/* Success Notification */}
+        <PurchaseSuccess
+          isVisible={showSuccessNotification}
+          onClose={() => setShowSuccessNotification(false)}
+          lessonTitle={purchaseSuccessData?.lessonTitle}
+          amount={purchaseSuccessData?.amount}
+          remainingBalance={purchaseSuccessData?.remainingBalance}
+        />
 
         {/* Add Lesson Modal */}
         {showLessonModal && selectedUnitForLesson && (
