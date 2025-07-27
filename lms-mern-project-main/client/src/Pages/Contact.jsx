@@ -41,17 +41,17 @@ export default function Contact() {
   async function onFormSubmit(e) {
     e.preventDefault();
     if (!userInput.email || !userInput.name || !userInput.message) {
-      toast.error("All fields are mandatory");
+      toast.error("جميع الحقول مطلوبة");
       return;
     }
 
     if (!isEmail(userInput.email)) {
-      toast.error("Invalid email");
+      toast.error("بريد إلكتروني غير صحيح");
       return;
     }
 
     setIsLoading(true);
-    const loadingMessage = toast.loading("Sending message...");
+    const loadingMessage = toast.loading("جاري إرسال الرسالة...");
     try {
       const res = await axiosInstance.post("/contact", userInput);
       toast.success(res?.data?.message, { id: loadingMessage });
@@ -61,7 +61,7 @@ export default function Contact() {
         message: "",
       });
     } catch (error) {
-      toast.error("Message sending failed! Try again", { id: loadingMessage });
+      toast.error("فشل إرسال الرسالة! حاول مرة أخرى", { id: loadingMessage });
     } finally {
       setIsLoading(false);
     }
@@ -91,10 +91,10 @@ export default function Contact() {
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              Get in Touch
+              تواصل معنا
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+              لديك أسئلة؟ نحب أن نسمع منك. أرسل لنا رسالة وسنرد عليك في أقرب وقت ممكن.
             </p>
           </div>
 
@@ -103,10 +103,10 @@ export default function Contact() {
             <div className="space-y-8">
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                  Contact Information
+                  معلومات الاتصال
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Reach out to us through any of these channels. We're here to help!
+                  تواصل معنا من خلال أي من هذه القنوات. نحن هنا لمساعدتك!
                 </p>
               </div>
 
@@ -118,7 +118,7 @@ export default function Contact() {
                     <FaPhone className="text-blue-600 dark:text-blue-400 text-xl" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Phone</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">الهاتف</h3>
                     <a href={`tel:${contactInfo.phone}`} className="text-blue-600 dark:text-blue-400 hover:underline">
                       {contactInfo.phone}
                     </a>
@@ -131,7 +131,7 @@ export default function Contact() {
                     <FaWhatsapp className="text-green-600 dark:text-green-400 text-xl" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">WhatsApp</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">واتساب</h3>
                     <a href={contactInfo.whatsapp} className="text-green-600 dark:text-green-400 hover:underline">
                       {contactInfo.whatsapp}
                     </a>
@@ -144,7 +144,7 @@ export default function Contact() {
                     <FaEnvelope className="text-purple-600 dark:text-purple-400 text-xl" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Email</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">البريد الإلكتروني</h3>
                     <a href={`mailto:${contactInfo.email}`} className="text-purple-600 dark:text-purple-400 hover:underline">
                       {contactInfo.email}
                     </a>
@@ -157,7 +157,7 @@ export default function Contact() {
                     <FaComments className="text-orange-600 dark:text-orange-400 text-xl" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Support</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">الدعم</h3>
                     <a href={`mailto:${contactInfo.support}`} className="text-orange-600 dark:text-orange-400 hover:underline">
                       {contactInfo.support}
                     </a>
@@ -170,7 +170,7 @@ export default function Contact() {
                     <FaMapMarkerAlt className="text-red-600 dark:text-red-400 text-xl" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Address</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">العنوان</h3>
                     <p className="text-gray-600 dark:text-gray-300">
                       {contactInfo.address}
                     </p>
@@ -183,7 +183,7 @@ export default function Contact() {
                     <FaClock className="text-indigo-600 dark:text-indigo-400 text-xl" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Working Hours</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">ساعات العمل</h3>
                     <p className="text-gray-600 dark:text-gray-300">
                       {contactInfo.workingHours}
                     </p>
@@ -194,7 +194,7 @@ export default function Contact() {
               {/* Social Media */}
               <div className="mt-12 text-center">
                 <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-8">
-                  Follow Us
+                  تابعنا
                 </h3>
                 <div className="flex flex-wrap justify-center gap-6 max-w-md mx-auto">
                   {socialMedia.map((social, index) => (
@@ -223,34 +223,34 @@ export default function Contact() {
           <div className="mt-16 text-center">
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-8">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Why Choose Our Platform?
+                لماذا تختار منصتنا؟
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                 <div className="text-center">
                   <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FaUser className="text-2xl text-blue-600 dark:text-blue-400" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Expert Support</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">دعم متخصص</h4>
                   <p className="text-gray-600 dark:text-gray-300">
-                    24/7 customer support to help you with any questions
+                    دعم العملاء على مدار الساعة لمساعدتك في أي أسئلة
                   </p>
                 </div>
                 <div className="text-center">
                   <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FaGlobe className="text-2xl text-green-600 dark:text-green-400" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Global Community</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">مجتمع عالمي</h4>
                   <p className="text-gray-600 dark:text-gray-300">
-                    Connect with learners from around the world
+                    تواصل مع المتعلمين من جميع أنحاء العالم
                   </p>
                 </div>
                 <div className="text-center">
                   <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <FaComments className="text-2xl text-purple-600 dark:text-purple-400" />
                   </div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Quick Response</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">استجابة سريعة</h4>
                   <p className="text-gray-600 dark:text-gray-300">
-                    Get answers to your questions within 24 hours
+                    احصل على إجابات لأسئلتك خلال 24 ساعة
                   </p>
                 </div>
               </div>

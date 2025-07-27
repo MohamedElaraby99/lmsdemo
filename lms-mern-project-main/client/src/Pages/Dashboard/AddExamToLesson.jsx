@@ -305,13 +305,13 @@ const AddExamToLesson = () => {
               className="flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mb-4"
             >
               <FaArrowLeft />
-              Back to Dashboard
+              العودة إلى لوحة التحكم
             </button>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Add Exam to Lesson
+              إضافة امتحان للدرس
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Create training and final exams for lessons
+              إنشاء امتحانات تدريبية ونهائية للدروس
             </p>
           </div>
 
@@ -323,7 +323,7 @@ const AddExamToLesson = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Select Course *
+                      اختر الدورة *
                     </label>
                     <select
                       value={selectedCourse}
@@ -331,7 +331,7 @@ const AddExamToLesson = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       required
                     >
-                      <option value="">Choose a course...</option>
+                      <option value="">اختر دورة...</option>
                       {coursesList.map((course) => (
                         <option key={course._id} value={course._id}>
                           {course.title}
@@ -344,14 +344,14 @@ const AddExamToLesson = () => {
                   {selectedCourse && unitsList.length > 0 && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Select Unit (Optional)
+                        اختر الوحدة (اختياري)
                       </label>
                       <select
                         value={selectedUnit}
                         onChange={(e) => setSelectedUnit(e.target.value)}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       >
-                        <option value="">Choose a unit (or skip for direct lessons)...</option>
+                                                  <option value="">اختر وحدة (أو تخطى للدروس المباشرة)...</option>
                         {unitsList.map((unit) => (
                           <option key={unit._id} value={unit._id}>
                             {unit.title}

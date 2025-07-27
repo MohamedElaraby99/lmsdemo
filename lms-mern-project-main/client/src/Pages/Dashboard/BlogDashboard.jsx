@@ -163,10 +163,10 @@ export default function BlogDashboard() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-                Blog Dashboard
+                لوحة تحكم المدونة
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
-                Manage your blog posts and content
+              إدارة مدوناتك ومحتواها
               </p>
             </div>
             <button
@@ -174,7 +174,7 @@ export default function BlogDashboard() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors duration-200"
             >
               <FaPlus />
-                              إنشاء مدونة جديدة
+                            إنشاء مدونة جديدة
             </button>
           </div>
 
@@ -300,7 +300,7 @@ export default function BlogDashboard() {
                   }}
                   className="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
                 >
-                  Clear Filters
+                  مسح الفلتر
                 </button>
               </div>
             </div>

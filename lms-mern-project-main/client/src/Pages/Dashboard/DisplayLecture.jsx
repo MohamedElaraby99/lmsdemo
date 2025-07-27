@@ -330,11 +330,11 @@ export default function DisplayLecture() {
         
         closeAddLessonModal();
       } else {
-        toast.error(response.data.message || "Failed to add lesson");
+        toast.error(response.data.message || "فشل في إضافة الدرس");
       }
     } catch (error) {
       console.error("Error adding lesson:", error);
-      toast.error(error.response?.data?.message || "Failed to add lesson");
+      toast.error(error.response?.data?.message || "فشل في إضافة الدرس");
     }
   };
 
@@ -626,7 +626,7 @@ export default function DisplayLecture() {
     } catch (error) {
       setIsProcessingPurchase(false);
       if (error.includes('already purchased')) {
-        toast.success('You have already purchased this lesson!');
+        toast.success('لقد اشتريت هذا الدرس بالفعل!');
         setShowPurchaseModal(false);
         setSelectedLessonForPurchase(null);
       } else {
@@ -954,7 +954,7 @@ export default function DisplayLecture() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading course content...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">جاري تحميل محتوى الدورة...</p>
           </div>
         </div>
       </Layout>
@@ -967,12 +967,12 @@ export default function DisplayLecture() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
           <div className="text-center">
             <FaExclamationTriangle className="text-4xl text-red-500 mx-auto mb-4" />
-            <p className="text-gray-600 dark:text-gray-400 mb-4">Course not found</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">لم يتم العثور على الدورة</p>
             <button 
               onClick={() => navigate(role === 'USER' ? "/courses" : "/admin/dashboard")}
               className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
             >
-              Back to {role === 'USER' ? 'Courses' : 'Dashboard'}
+              العودة إلى {role === 'USER' ? 'الدورات' : 'لوحة التحكم'}
             </button>
           </div>
         </div>
@@ -1020,7 +1020,7 @@ export default function DisplayLecture() {
                 {courseData.title || "Course Content"}
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-6">
-                {courseData.description || "Explore the course content and lectures"}
+                {courseData.description || "استكشف محتوى الدورة والمحاضرات"}
               </p>
               
 
@@ -1035,7 +1035,7 @@ export default function DisplayLecture() {
                         <FaWallet className="text-white text-xl" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Your Wallet Balance</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">رصيد محفظتك</h3>
                         <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                           {balance || 0} EGP
                         </p>
@@ -1050,12 +1050,12 @@ export default function DisplayLecture() {
                         <FaChartLine className="text-white text-xl" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Your Progress</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">تقدمك</h3>
                         <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                           0 / {getTotalLessons()}
                         </p>
                         <p className="text-xs text-gray-600 dark:text-gray-400">
-                          Lessons completed
+                          الدروس المكتملة
                         </p>
                       </div>
                     </div>
@@ -1067,7 +1067,7 @@ export default function DisplayLecture() {
                         className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
                       >
                         <FaCreditCard />
-                        Recharge Wallet
+                        شحن المحفظة
                       </button>
                     </div>
                   </div>
@@ -1082,7 +1082,7 @@ export default function DisplayLecture() {
                 className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 font-medium"
               >
                 <FaArrowLeft className="text-sm" />
-                Back to {role === 'USER' ? 'Courses' : 'Dashboard'}
+                العودة إلى {role === 'USER' ? 'الدورات' : 'لوحة التحكم'}
               </button>
             </div>
 
@@ -1092,7 +1092,7 @@ export default function DisplayLecture() {
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-semibold text-gray-800 dark:text-white flex items-center gap-3">
                     <FaBook className="text-blue-500" />
-                    units and lessons
+                    الوحدات والدروس
                   </h2>
                   <div className="flex gap-2">
                     <button
@@ -1100,7 +1100,7 @@ export default function DisplayLecture() {
                       className="px-4 py-2 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600 transition-colors flex items-center gap-2"
                     >
                       <FaExchangeAlt />
-                      Toggle All
+                      تبديل الكل
                     </button>
                     {role === "ADMIN" && (
                       <>
@@ -1109,14 +1109,14 @@ export default function DisplayLecture() {
                           className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors flex items-center gap-2"
                         >
                           <FaEdit />
-                          Edit Course
+                          تعديل الدورة
                         </button>
                         <button
                           onClick={() => openAddVideoModal(null, null)}
                           className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 transition-colors flex items-center gap-2"
                         >
                           <FaPlus />
-                          Test Add Video
+                          اختبار إضافة فيديو
                         </button>
                       </>
                     )}
@@ -1128,12 +1128,12 @@ export default function DisplayLecture() {
                   <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
                     <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-4 flex items-center gap-2">
                       <FaBook className="text-blue-500" />
-                      Lesson Content Management
+                      إدارة محتوى الدروس
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
                         <FaVideo className="text-2xl text-green-500 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">Videos</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">الفيديوهات</p>
                         <p className="text-lg font-bold text-green-600">
                           {courseData.units?.reduce((sum, unit) => 
                             sum + unit.lessons?.filter(lesson => hasVideo(lesson)).length, 0) + 
@@ -1142,7 +1142,7 @@ export default function DisplayLecture() {
                       </div>
                       <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
                         <FaFilePdf className="text-2xl text-blue-500 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">PDFs</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">ملفات PDF</p>
                         <p className="text-lg font-bold text-blue-600">
                           {courseData.units?.reduce((sum, unit) => 
                             sum + unit.lessons?.filter(lesson => hasPdf(lesson)).length, 0) + 
@@ -1151,7 +1151,7 @@ export default function DisplayLecture() {
                       </div>
                       <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
                         <FaClipboardCheck className="text-2xl text-purple-500 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">Training Exams</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">الامتحانات التدريبية</p>
                         <p className="text-lg font-bold text-purple-600">
                           {courseData.units?.reduce((sum, unit) => 
                             sum + unit.lessons?.filter(lesson => hasTrainingExam(lesson)).length, 0) + 
@@ -1160,7 +1160,7 @@ export default function DisplayLecture() {
                       </div>
                       <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-200 dark:border-blue-700">
                         <FaExam className="text-2xl text-orange-500 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">Final Exams</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">الامتحانات النهائية</p>
                         <p className="text-lg font-bold text-orange-600">
                           {courseData.units?.reduce((sum, unit) => 
                             sum + unit.lessons?.filter(lesson => hasFinalExam(lesson)).length, 0) + 
@@ -1171,7 +1171,7 @@ export default function DisplayLecture() {
                     <div className="mt-4 text-sm text-blue-700 dark:text-blue-300">
                       <p className="flex items-center gap-2">
                         <FaInfo className="text-blue-500" />
-                        Click on any lesson to add or manage its content (Video, PDF, Training Exam, Final Exam)
+                        انقر على أي درس لإضافة أو إدارة محتواه (فيديو، PDF، امتحان تدريبي، امتحان نهائي)
                       </p>
                     </div>
                   </div>
@@ -1183,7 +1183,7 @@ export default function DisplayLecture() {
                     <div className="space-y-4">
                       <h3 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center gap-2">
                         <FaFolder className="text-green-500" />
-                        Course Units ({courseData.units.length})
+                        وحدات الدورة ({courseData.units.length})
                       </h3>
                       {courseData.units.map((unit, unitIndex) => (
                         <div key={unit._id || unit.id || unitIndex} className="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-all duration-200">
@@ -1211,11 +1211,11 @@ export default function DisplayLecture() {
                                   <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                                     <span className="flex items-center gap-1">
                                       <FaPlay />
-                                      {unit.lessons?.length || 0} lessons
+                                      {unit.lessons?.length || 0} درس
                                     </span>
                                     <span className="flex items-center gap-1">
                                       <FaVideo />
-                                      {unit.lessons?.filter(lesson => hasVideo(lesson)).length || 0} with videos
+                                      {unit.lessons?.filter(lesson => hasVideo(lesson)).length || 0} مع فيديو
                                     </span>
                                   </div>
                                 </div>
@@ -1227,14 +1227,14 @@ export default function DisplayLecture() {
                                     className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 transition-colors flex items-center gap-1"
                                   >
                                     <FaPlus />
-                                    Add Lesson
+                                    إضافة درس
                                   </button>
                                   <button
                                     onClick={() => openAddVideoModal(null, unit)}
                                     className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors flex items-center gap-1"
                                   >
                                     <FaVideo />
-                                    Add Unit Video
+                                    إضافة فيديو الوحدة
                                   </button>
                                   <button
                                     onClick={() => handleDeleteUnit(unit)}
@@ -1242,7 +1242,7 @@ export default function DisplayLecture() {
                                     title="Delete Unit"
                                   >
                                     <FaTrash />
-                                    Delete Unit
+                                    حذف الوحدة
                                   </button>
                                 </div>
                               )}
@@ -1253,7 +1253,7 @@ export default function DisplayLecture() {
                               <div className="mt-6 space-y-3">
                                 <h5 className="font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                                   <FaPlay className="text-blue-500" />
-                                  Lessons in this unit
+                                  الدروس في هذه الوحدة
                                 </h5>
                                 
                                 {unit.lessons && unit.lessons.length > 0 ? (
@@ -1289,40 +1289,40 @@ export default function DisplayLecture() {
                                                 {lesson.duration && (
                                                   <span className="flex items-center gap-1">
                                                     <FaClock />
-                                                    {lesson.duration} min
+                                                    {lesson.duration} دقيقة
                                                   </span>
                                                 )}
                                                 {hasVideo(lesson) && (
                                                   <span className="flex items-center gap-1 text-green-600">
                                                     <FaVideo />
-                                                    Video Available
+                                                    فيديو متاح
                                                   </span>
                                                 )}
                                                 {hasPdf(lesson) && (
                                                   <span className="flex items-center gap-1 text-blue-600">
                                                     <FaFilePdf />
-                                                    PDF Available
+                                                    PDF متاح
                                                   </span>
                                                 )}
                                                 {hasTrainingExam(lesson) && (
                                                   <span className="flex items-center gap-1 text-purple-600">
                                                     <FaClipboardCheck />
-                                                    Training Exam
+                                                    امتحان تدريبي
                                                   </span>
                                                 )}
                                                 {hasFinalExam(lesson) && (
                                                   <span className="flex items-center gap-1 text-orange-600">
                                                     <FaExam />
-                                                    Final Exam
+                                                    امتحان نهائي
                                                   </span>
                                                 )}
                                                 {isVideoScheduled(lesson) && (
-                                                  <span className={`flex items-center gap-1 ${
-                                                    isVideoPublished(lesson) ? 'text-green-600' : 'text-orange-600'
-                                                  }`}>
-                                                    <FaCalendarAlt />
-                                                    {isVideoPublished(lesson) ? 'Published' : 'Scheduled'}
-                                                  </span>
+                                                                                                      <span className={`flex items-center gap-1 ${
+                                                      isVideoPublished(lesson) ? 'text-green-600' : 'text-orange-600'
+                                                    }`}>
+                                                      <FaCalendarAlt />
+                                                      {isVideoPublished(lesson) ? 'منشور' : 'مجدول'}
+                                                    </span>
                                                 )}
                                               </div>
                                               
@@ -1334,7 +1334,7 @@ export default function DisplayLecture() {
                                                       {isLessonPurchasedByUser(lesson) ? (
                                                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
                                                           <FaCheck className="inline mr-1" />
-                                                          Purchased
+                                                          تم الشراء
                                                         </span>
                                                       ) : (
                                                         <>
@@ -1344,7 +1344,7 @@ export default function DisplayLecture() {
                                                           {!canAffordLesson(lesson) && role === 'USER' && (
                                                             <span className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
                                                               <FaLock />
-                                                              Insufficient Balance
+                                                              رصيد غير كافي
                                                             </span>
                                                           )}
                                                         </>
@@ -1355,7 +1355,7 @@ export default function DisplayLecture() {
                                                       className="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
                                                     >
                                                           <FaPlay />
-                                                          Watch
+                                                          مشاهدة
                                                     </button>
                                                   </div>
                                                 </div>
@@ -1369,7 +1369,7 @@ export default function DisplayLecture() {
                                                   <FaCalendarAlt className="text-sm" />
                                                 </div>
                                                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                                                  Scheduled for {formatScheduledDate(lesson.lecture.scheduledPublishDate)}
+                                                  مجدول لـ {formatScheduledDate(lesson.lecture.scheduledPublishDate)}
                                                 </div>
                                               </div>
                                             )}
@@ -1382,7 +1382,7 @@ export default function DisplayLecture() {
                                                       ? 'bg-blue-500 text-white hover:bg-blue-600' 
                                                       : 'bg-orange-500 text-white hover:bg-orange-600'
                                                   }`}
-                                                  title={hasVideo(lesson) ? "Update Video" : "Add Video"}
+                                                  title={hasVideo(lesson) ? "تحديث الفيديو" : "إضافة فيديو"}
                                                 >
                                                   {hasVideo(lesson) ? <FaEdit className="text-sm" /> : <FaPlus className="text-sm" />}
                                                 </button>
@@ -1390,7 +1390,7 @@ export default function DisplayLecture() {
                                                   <button
                                                     onClick={() => handleDeleteVideo(lesson, unit)}
                                                     className="p-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
-                                                    title="Remove Video"
+                                                    title="إزالة الفيديو"
                                                   >
                                                     <FaVideo className="text-sm" />
                                                   </button>
@@ -1403,7 +1403,7 @@ export default function DisplayLecture() {
                                                       ? 'bg-blue-500 text-white hover:bg-blue-600' 
                                                       : 'bg-indigo-500 text-white hover:bg-indigo-600'
                                                   }`}
-                                                  title={hasPdf(lesson) ? "Update PDF" : "Add PDF"}
+                                                  title={hasPdf(lesson) ? "تحديث PDF" : "إضافة PDF"}
                                                 >
                                                   <FaFilePdf className="text-sm" />
                                                 </button>
@@ -1415,7 +1415,7 @@ export default function DisplayLecture() {
                                                       ? 'bg-purple-500 text-white hover:bg-purple-600' 
                                                       : 'bg-pink-500 text-white hover:bg-pink-600'
                                                   }`}
-                                                  title={hasTrainingExam(lesson) ? "Update Training Exam" : "Add Training Exam"}
+                                                  title={hasTrainingExam(lesson) ? "تحديث الامتحان التدريبي" : "إضافة امتحان تدريبي"}
                                                 >
                                                   <FaClipboardCheck className="text-sm" />
                                                 </button>
@@ -1427,14 +1427,14 @@ export default function DisplayLecture() {
                                                       ? 'bg-orange-500 text-white hover:bg-orange-600' 
                                                       : 'bg-red-500 text-white hover:bg-red-600'
                                                   }`}
-                                                  title={hasFinalExam(lesson) ? "Update Final Exam" : "Add Final Exam"}
+                                                  title={hasFinalExam(lesson) ? "تحديث الامتحان النهائي" : "إضافة امتحان نهائي"}
                                                 >
                                                   <FaExam className="text-sm" />
                                                 </button>
                                                 <button
                                                   onClick={() => handleDeleteLesson(lesson, unit)}
                                                   className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                                  title="Delete Lesson"
+                                                  title="حذف الدرس"
                                                 >
                                                   <FaTrash className="text-sm" />
                                                 </button>
@@ -1448,13 +1448,13 @@ export default function DisplayLecture() {
                                 ) : (
                                   <div className="text-center py-6 bg-gray-50 dark:bg-gray-600 rounded-lg">
                                     <FaFileAlt className="text-3xl text-gray-400 mx-auto mb-3" />
-                                    <p className="text-gray-500 dark:text-gray-400">No lessons in this unit yet</p>
+                                    <p className="text-gray-500 dark:text-gray-400">لا توجد دروس في هذه الوحدة بعد</p>
                                     {role === "ADMIN" && (
                                       <button
                                         onClick={() => navigate("/course/edit", { state: { ...courseData } })}
                                         className="mt-3 px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
                                       >
-                                        Add Lessons
+                                        إضافة الدروس
                                       </button>
                                     )}
                                   </div>
@@ -1472,7 +1472,7 @@ export default function DisplayLecture() {
                     <div className="space-y-4">
                       <h3 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center gap-2">
                         <FaPlay className="text-blue-500" />
-                        Direct Lessons ({courseData.directLessons.length})
+                        الدروس المباشرة ({courseData.directLessons.length})
                       </h3>
                       <div className="space-y-3">
                         {courseData.directLessons.map((lesson, index) => (

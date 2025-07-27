@@ -65,7 +65,7 @@ const AddPdfToLesson = () => {
       setCoursesList(response.data.courses || []);
     } catch (error) {
       console.error('Error fetching courses:', error);
-      toast.error('Failed to fetch courses');
+      toast.error('فشل في جلب الدورات');
     } finally {
       setLoading(false);
     }
@@ -115,11 +115,11 @@ const AddPdfToLesson = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.type !== 'application/pdf') {
-        toast.error('Please select a PDF file');
+        toast.error('يرجى اختيار ملف PDF');
         return;
       }
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        toast.error('File size should be less than 10MB');
+        toast.error('يجب أن يكون حجم الملف أقل من 10 ميجابايت');
         return;
       }
       setPdfFile(file);
@@ -133,17 +133,17 @@ const AddPdfToLesson = () => {
     e.preventDefault();
     
     if (!selectedCourse || !selectedLesson) {
-      toast.error('Please select a course and lesson');
+      toast.error('يرجى اختيار دورة ودرس');
       return;
     }
 
     if (!pdfFile) {
-      toast.error('Please select a PDF file');
+      toast.error('يرجى اختيار ملف PDF');
       return;
     }
 
     if (!pdfTitle.trim()) {
-      toast.error('Please enter a title for the PDF');
+      toast.error('يرجى إدخال عنوان للـ PDF');
       return;
     }
 
@@ -158,7 +158,7 @@ const AddPdfToLesson = () => {
       const lesson = lessonsList.find(l => l._id === selectedLesson);
       
       if (!course || !lesson) {
-        toast.error('Invalid course or lesson selection');
+        toast.error('اختيار دورة أو درس غير صحيح');
         return;
       }
 
@@ -177,7 +177,7 @@ const AddPdfToLesson = () => {
         },
       });
 
-      toast.success('PDF added successfully!');
+      toast.success('تم إضافة PDF بنجاح!');
       
       // Reset form
       setPdfFile(null);
@@ -192,7 +192,7 @@ const AddPdfToLesson = () => {
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error('Failed to add PDF');
+        toast.error('فشل في إضافة PDF');
       }
     } finally {
       setUploading(false);
@@ -215,7 +215,7 @@ const AddPdfToLesson = () => {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+            <p className="text-gray-600 dark:text-gray-400">جاري التحميل...</p>
           </div>
         </div>
       </Layout>
@@ -229,9 +229,9 @@ const AddPdfToLesson = () => {
         <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 flex items-center justify-center">
           <div className="text-center">
             <FaTimes className="text-6xl text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h1>
-            <p className="text-gray-600 dark:text-gray-400">You don't have permission to access this page.</p>
-            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">User role: {user?.role || 'Not logged in'}</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">تم رفض الوصول</h1>
+            <p className="text-gray-600 dark:text-gray-400">ليس لديك صلاحية للوصول إلى هذه الصفحة.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">دور المستخدم: {user?.role || 'غير مسجل الدخول'}</p>
           </div>
         </div>
       </Layout>
@@ -249,13 +249,13 @@ const AddPdfToLesson = () => {
               className="flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 mb-4"
             >
               <FaArrowLeft />
-              Back to Dashboard
+              العودة إلى لوحة التحكم
             </button>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Add PDF to Lesson
+              إضافة ملف PDF للدرس
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Upload study materials and documents to lessons
+              رفع المواد الدراسية والمستندات للدروس
             </p>
           </div>
 
@@ -266,7 +266,7 @@ const AddPdfToLesson = () => {
                 {/* Course Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Select Course *
+                    اختر الدورة *
                   </label>
                   <select
                     value={selectedCourse}
@@ -274,7 +274,7 @@ const AddPdfToLesson = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     required
                   >
-                    <option value="">Choose a course...</option>
+                    <option value="">اختر دورة...</option>
                     {coursesList.map((course) => (
                       <option key={course._id} value={course._id}>
                         {course.title}
@@ -287,14 +287,14 @@ const AddPdfToLesson = () => {
                 {selectedCourse && unitsList.length > 0 && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Select Unit (Optional)
+                      اختر الوحدة (اختياري)
                     </label>
                     <select
                       value={selectedUnit}
                       onChange={(e) => setSelectedUnit(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
-                      <option value="">Choose a unit (or skip for direct lessons)...</option>
+                      <option value="">اختر وحدة (أو تخطى للدروس المباشرة)...</option>
                       {unitsList.map((unit) => (
                         <option key={unit._id} value={unit._id}>
                           {unit.title}
@@ -308,7 +308,7 @@ const AddPdfToLesson = () => {
                 {selectedCourse && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Select Lesson *
+                      اختر الدرس *
                     </label>
                     <select
                       value={selectedLesson}
@@ -316,10 +316,10 @@ const AddPdfToLesson = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       required
                     >
-                      <option value="">Choose a lesson...</option>
+                      <option value="">اختر درس...</option>
                       {lessonsList.map((lesson) => (
                         <option key={lesson._id} value={lesson._id}>
-                          {lesson.title} {hasPdf(lesson) && '(Has PDF)'}
+                          {lesson.title} {hasPdf(lesson) && '(يحتوي على PDF)'}
                         </option>
                       ))}
                     </select>
@@ -329,7 +329,7 @@ const AddPdfToLesson = () => {
                 {/* PDF File Upload */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    PDF File *
+                    ملف PDF *
                   </label>
                   <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 dark:hover:border-blue-400 transition-colors">
                     {pdfFile ? (
@@ -355,10 +355,10 @@ const AddPdfToLesson = () => {
                       <div>
                         <FaUpload className="text-4xl text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-600 dark:text-gray-400 mb-2">
-                          Click to upload or drag and drop
+                          انقر للرفع أو اسحب وأفلت
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-500">
-                          PDF files only, max 10MB
+                          ملفات PDF فقط، الحد الأقصى 10 ميجابايت
                         </p>
                         <input
                           type="file"
@@ -372,7 +372,7 @@ const AddPdfToLesson = () => {
                           className="mt-4 inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer"
                         >
                           <FaUpload className="mr-2" />
-                          Choose PDF File
+                          اختر ملف PDF
                         </label>
                       </div>
                     )}
@@ -382,13 +382,13 @@ const AddPdfToLesson = () => {
                 {/* PDF Title */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    PDF Title *
+                    عنوان PDF *
                   </label>
                   <input
                     type="text"
                     value={pdfTitle}
                     onChange={(e) => setPdfTitle(e.target.value)}
-                    placeholder="Enter a title for the PDF (e.g., Study Guide, Notes, etc.)"
+                    placeholder="أدخل عنوان للـ PDF (مثل دليل الدراسة، الملاحظات، إلخ)"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     required
                   />
@@ -404,12 +404,12 @@ const AddPdfToLesson = () => {
                     {uploading ? (
                       <>
                         <FaSpinner className="animate-spin" />
-                        Uploading...
+                        جاري الرفع...
                       </>
                     ) : (
                       <>
                         <FaCheck />
-                        Add PDF to Lesson
+                        إضافة PDF للدرس
                       </>
                     )}
                   </button>
@@ -420,24 +420,24 @@ const AddPdfToLesson = () => {
             {/* Instructions */}
             <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Instructions
+                التعليمات
               </h3>
               <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <li className="flex items-start gap-2">
                   <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Select a course and lesson to add PDF study materials</span>
+                  <span>اختر دورة ودرس لإضافة مواد دراسية PDF</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Upload PDF files up to 10MB in size</span>
+                  <span>ارفع ملفات PDF بحجم يصل إلى 10 ميجابايت</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Provide a descriptive title for the PDF</span>
+                  <span>قدم عنواناً وصفياً للـ PDF</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
-                  <span>Students will be able to download the PDF after purchasing the lesson</span>
+                  <span>سيتمكن الطلاب من تحميل PDF بعد شراء الدرس</span>
                 </li>
               </ul>
             </div>

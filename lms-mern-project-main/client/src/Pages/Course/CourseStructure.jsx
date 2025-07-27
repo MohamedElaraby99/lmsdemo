@@ -74,7 +74,7 @@ export default function CourseStructure() {
   };
 
   const deleteUnit = (unitId) => {
-    if (window.confirm("Are you sure you want to delete this unit?")) {
+    if (window.confirm("هل أنت متأكد من حذف هذه الوحدة؟")) {
       setCourseData(prev => ({
         ...prev,
         units: prev.units.filter(unit => unit.id !== unitId)
@@ -141,7 +141,7 @@ export default function CourseStructure() {
   };
 
   const deleteLessonFromUnit = (unitId, lessonId) => {
-    if (window.confirm("Are you sure you want to delete this lesson?")) {
+    if (window.confirm("هل أنت متأكد من حذف هذا الدرس؟")) {
       setCourseData(prev => ({
         ...prev,
         units: prev.units.map(unit => 
@@ -183,7 +183,7 @@ export default function CourseStructure() {
   };
 
   const deleteDirectLesson = (lessonId) => {
-    if (window.confirm("Are you sure you want to delete this lesson?")) {
+    if (window.confirm("هل أنت متأكد من حذف هذا الدرس؟")) {
       setCourseData(prev => ({
         ...prev,
         directLessons: prev.directLessons.filter(lesson => lesson.id !== lessonId)
@@ -411,20 +411,20 @@ export default function CourseStructure() {
 
         if (response.ok) {
           const result = await response.json();
-          toast.success("Course structure updated successfully!");
+          toast.success("تم تحديث هيكل الدورة بنجاح!");
           console.log("Updated course:", result);
         } else {
           const error = await response.json();
-          toast.error(error.message || "Failed to update course structure");
+          toast.error(error.message || "فشل في تحديث هيكل الدورة");
         }
       } else {
         // Create new course
-        toast.success("Course structure prepared! Use the create course functionality to save.");
+        toast.success("تم إعداد هيكل الدورة! استخدم وظيفة إنشاء الدورة للحفظ.");
         console.log("New course structure:", courseToSubmit);
       }
     } catch (error) {
       console.error("Error saving course structure:", error);
-      toast.error("Failed to save course structure");
+      toast.error("فشل في حفظ هيكل الدورة");
     }
   };
 
@@ -433,7 +433,7 @@ export default function CourseStructure() {
       <section className="py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">
-            Course Structure Manager
+            مدير هيكل الدورة
           </h1>
 
           {/* Navigation Tabs */}
@@ -446,7 +446,7 @@ export default function CourseStructure() {
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
               }`}
             >
-              Course Info
+              معلومات الدورة
             </button>
             <button
               onClick={() => setActiveTab("units")}
@@ -456,7 +456,7 @@ export default function CourseStructure() {
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
               }`}
             >
-              Units ({courseData.units.length})
+              الوحدات ({courseData.units.length})
             </button>
             <button
               onClick={() => setActiveTab("direct-lessons")}
@@ -466,7 +466,7 @@ export default function CourseStructure() {
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
               }`}
             >
-              Direct Lessons ({courseData.directLessons.length})
+              الدروس المباشرة ({courseData.directLessons.length})
             </button>
             <button
               onClick={() => setActiveTab("unified-view")}
@@ -476,7 +476,7 @@ export default function CourseStructure() {
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
               }`}
             >
-              Unified Structure ({courseData.units.length + courseData.directLessons.length} items)
+              الهيكل الموحد ({courseData.units.length + courseData.directLessons.length} عنصر)
             </button>
           </div>
 
@@ -484,42 +484,42 @@ export default function CourseStructure() {
           {activeTab === "course-info" && (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
               <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
-                Course Information
+                معلومات الدورة
               </h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <InputBox
-                  label="Course Title *"
+                  label="عنوان الدورة *"
                   name="title"
                   type="text"
-                  placeholder="Enter course title"
+                  placeholder="أدخل عنوان الدورة"
                   onChange={handleCourseInput}
                   value={courseData.title}
                   required
                 />
                 <InputBox
-                  label="Category"
+                  label="الفئة"
                   name="category"
                   type="text"
-                  placeholder="Enter course category"
+                  placeholder="أدخل فئة الدورة"
                   onChange={handleCourseInput}
                   value={courseData.category}
                 />
                 <div className="md:col-span-2">
                   <TextArea
-                    label="Course Description *"
+                    label="وصف الدورة *"
                     name="description"
                     rows={4}
-                    placeholder="Enter course description"
+                                          placeholder="أدخل وصف الدورة"
                     onChange={handleCourseInput}
                     value={courseData.description}
                     required
                   />
                 </div>
                 <InputBox
-                  label="Instructor"
+                  label="المدرس"
                   name="createdBy"
                   type="text"
-                  placeholder="Enter instructor name"
+                  placeholder="أدخل اسم المدرس"
                   onChange={handleCourseInput}
                   value={courseData.createdBy}
                 />
@@ -532,13 +532,13 @@ export default function CourseStructure() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-                  Course Units (Drag to reorder)
+                  وحدات الدورة (اسحب لإعادة الترتيب)
                 </h2>
                 <button
                   onClick={addUnit}
                   className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
                 >
-                  <FaPlus /> Add Unit
+                  <FaPlus /> إضافة وحدة
                 </button>
               </div>
 
@@ -546,10 +546,10 @@ export default function CourseStructure() {
                 <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
                   <FaBook className="text-4xl text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    No units created yet
+                    لم يتم إنشاء وحدات بعد
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400">
-                    Start by adding your first unit to organize your course content.
+                    ابدأ بإضافة أول وحدة لتنظيم محتوى دورتك.
                   </p>
                 </div>
               ) : (
@@ -622,7 +622,7 @@ export default function CourseStructure() {
                                         ) : (
                                           <div>
                                             <h3 className="font-semibold text-gray-900 dark:text-white">
-                                              {unit.title || "Untitled Unit"}
+                                              {unit.title || "وحدة بدون عنوان"}
                                             </h3>
                                             {unit.description && (
                                               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -635,7 +635,7 @@ export default function CourseStructure() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {unit.lessons.length} lessons
+                                        {unit.lessons.length} درس
                                       </span>
                                       <button
                                         onClick={() => setEditingUnit(unit.id)}
@@ -657,7 +657,7 @@ export default function CourseStructure() {
                                     <div className="mt-4 space-y-3">
                                       <div className="flex justify-between items-center">
                                         <h4 className="font-medium text-gray-700 dark:text-gray-300">
-                                          Lessons in this unit (Drag to reorder)
+                                          الدروس في هذه الوحدة (اسحب لإعادة الترتيب)
                                         </h4>
                                         <button
                                           onClick={() => addLessonToUnit(unit.id)}
@@ -805,7 +805,7 @@ export default function CourseStructure() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-                  Direct Lessons (Drag to reorder)
+                  الدروس المباشرة (اسحب لإعادة الترتيب)
                 </h2>
                 <button
                   onClick={addDirectLesson}
@@ -819,10 +819,10 @@ export default function CourseStructure() {
                 <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
                   <FaPlay className="text-4xl text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    No direct lessons created yet
+                    لم يتم إنشاء دروس مباشرة بعد
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400">
-                    Add lessons that don't belong to any specific unit.
+                    أضف دروس لا تنتمي لأي وحدة محددة.
                   </p>
                 </div>
               ) : (
@@ -951,10 +951,10 @@ export default function CourseStructure() {
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-                    Unified Course Structure
+                    الهيكل الموحد للدورة
                   </h2>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Drag and drop to rearrange units and lessons. You can move lessons between units or convert them to direct lessons.
+                    اسحب وأفلت لإعادة ترتيب الوحدات والدروس. يمكنك نقل الدروس بين الوحدات أو تحويلها إلى دروس مباشرة.
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -977,10 +977,10 @@ export default function CourseStructure() {
                 <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
                   <FaBook className="text-4xl text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    No course structure created yet
+                    لم يتم إنشاء هيكل الدورة بعد
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400">
-                    Start by adding units or direct lessons to organize your course content.
+                    ابدأ بإضافة وحدات أو دروس مباشرة لتنظيم محتوى دورتك.
                   </p>
                 </div>
               ) : (
@@ -1056,7 +1056,7 @@ export default function CourseStructure() {
                                             ) : (
                                               <div>
                                                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                                                  {item.title || "Untitled Unit"}
+                                                  {item.title || "وحدة بدون عنوان"}
                                                 </h3>
                                                 {item.description && (
                                                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -1105,7 +1105,7 @@ export default function CourseStructure() {
                                             ) : (
                                               <div>
                                                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                                                  {item.title || "Untitled Lesson"}
+                                                  {item.title || "درس بدون عنوان"}
                                                 </h3>
                                                 {item.description && (
                                                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -1122,7 +1122,7 @@ export default function CourseStructure() {
                                       {item.type === 'unit' ? (
                                         <>
                                           <span className="text-sm text-gray-500 dark:text-gray-400">
-                                            {item.lessons.length} lessons
+                                            {item.lessons.length} درس
                                           </span>
                                           <button
                                             onClick={() => setEditingUnit(item.id)}
@@ -1161,7 +1161,7 @@ export default function CourseStructure() {
                                     <div className="mt-4 space-y-3">
                                       <div className="flex justify-between items-center">
                                         <h4 className="font-medium text-gray-700 dark:text-gray-300">
-                                          Lessons in this unit
+                                          الدروس في هذه الوحدة
                                         </h4>
                                         <button
                                           onClick={() => addLessonToUnit(item.id)}
@@ -1328,7 +1328,7 @@ export default function CourseStructure() {
               onClick={handleSubmit}
               className="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 transition-colors"
             >
-              Save Course Structure
+              حفظ هيكل الدورة
             </button>
           </div>
         </div>

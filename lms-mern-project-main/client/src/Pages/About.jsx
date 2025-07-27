@@ -25,14 +25,12 @@ function AboutUs() {
         <div className="flex md:flex-row flex-col-reverse items-center justify-center md:gap-10 gap-7 w-full space-y-7">
           <div className="md:w-1/2 w-full space-y-7">
             <h1 className="text-5xl text-yellow-500 font-semibold font-inter">
-              Affordable and <span className="font-nunito-sans">quality education</span>
+              تعليم <span className="font-nunito-sans">ميسور التكلفة وعالي الجودة</span>
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-200 font-nunito-sans">
-              Our goal is to provide the afoordable and quality education to the
-              world. We are providing the platform for the aspiring teachers and
-              students to share their skills, creativity and knowledge to each
-              other to empower and contribute in the growth and wellness of
-              mankind.
+              هدفنا هو توفير التعليم الميسور التكلفة وعالي الجودة للعالم. 
+              نحن نوفر المنصة للمدرسين والطلاب الطموحين لمشاركة مهاراتهم وإبداعهم 
+              ومعرفتهم مع بعضهم البعض لتمكين والمساهمة في نمو ورفاهية البشرية.
             </p>
           </div>
 

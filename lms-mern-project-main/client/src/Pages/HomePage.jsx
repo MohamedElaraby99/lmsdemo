@@ -220,10 +220,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Featured Courses
+              الدورات المميزة
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Discover our most popular and highly-rated courses
+              اكتشف دوراتنا الأكثر شعبية وأعلى تقييماً
             </p>
           </div>
 
@@ -243,10 +243,10 @@ export default function HomePage() {
             <div className="text-center py-12">
               <div className="text-6xl mb-4 animate-bounce">📚</div>
               <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-                No featured courses yet
+                لا توجد دورات مميزة بعد
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Check back soon for amazing courses!
+                عد قريباً لدورات رائعة!
               </p>
             </div>
           )}
@@ -257,7 +257,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
               <FaArrowRight />
-              View All Courses
+              عرض جميع الدورات
             </Link>
           </div>
         </div>
@@ -268,10 +268,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Explore by Category
+              استكشف حسب الفئة
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Find the perfect course in your area of interest
+              ابحث عن الدورة المثالية في مجال اهتمامك
             </p>
           </div>
 
@@ -298,10 +298,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Latest from Our Blog
+              أحدث الأخبار من مدونتنا
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Discover insights, tips, and stories from our learning community
+              اكتشف الأفكار والنصائح والقصص من مجتمع التعلم لدينا
             </p>
           </div>
 
@@ -388,7 +388,7 @@ export default function HomePage() {
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Start Your Learning Journey?
+                          هل أنت مستعد لبدء رحلة التعلم؟
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
             Join thousands of learners who have already transformed their careers with our expert-led courses.
@@ -396,18 +396,18 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link to="/signup">
               <button className="px-8 py-4 bg-white text-blue-600 font-semibold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                Get Started Free
+                ابدأ مجاناً
               </button>
             </Link>
             <Link to="/subjects">
               <button className="px-8 py-4 border-2 border-white text-white font-semibold rounded-full text-lg hover:bg-white hover:text-blue-600 transition-all duration-300">
-                Browse Courses
+                تصفح الدورات
               </button>
             </Link>
             <Link to="/qa">
               <button className="px-8 py-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2">
                 <FaQuestionCircle className="w-5 h-5" />
-                Ask a Question
+                اطرح سؤالاً
               </button>
             </Link>
           </div>
@@ -423,10 +423,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Have Questions? Get Answers!
+              لديك أسئلة؟ احصل على إجابات!
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Join our community of learners and experts. Ask questions, share knowledge, and learn together.
+              انضم إلى مجتمعنا من المتعلمين والخبراء. اطرح الأسئلة، شارك المعرفة، وتعلم معاً.
             </p>
           </div>
 
@@ -436,10 +436,10 @@ export default function HomePage() {
                 <FaQuestionCircle className="text-3xl text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Ask Questions
+                اطرح الأسئلة
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Get help from our community of experts and fellow learners
+                احصل على مساعدة من مجتمعنا من الخبراء والمتعلمين
               </p>
             </div>
 
@@ -448,10 +448,10 @@ export default function HomePage() {
                 <FaUsers className="text-3xl text-green-600 dark:text-green-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Community Support
+                دعم المجتمع
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Connect with thousands of learners worldwide
+                تواصل مع آلاف المتعلمين حول العالم
               </p>
             </div>
 
@@ -460,10 +460,10 @@ export default function HomePage() {
                 <FaStar className="text-3xl text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Expert Answers
+                إجابات الخبراء
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Get answers from industry professionals and instructors
+                احصل على إجابات من محترفي الصناعة والمدرسين
               </p>
             </div>
           </div>
@@ -472,7 +472,7 @@ export default function HomePage() {
             <Link to="/qa">
               <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2 mx-auto">
                 <FaQuestionCircle className="w-5 h-5" />
-                Ask a Question
+                اطرح سؤالاً
               </button>
             </Link>
           </div>
@@ -487,10 +487,10 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
-              Frequently Asked Questions
+              الأسئلة الشائعة
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Everything you need to know about our platform
+              كل ما تحتاج معرفته عن منصتنا
             </p>
           </div>
           <FAQAccordion />

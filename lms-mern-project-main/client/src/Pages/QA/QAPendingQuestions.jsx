@@ -27,7 +27,7 @@ export default function QAPendingQuestions() {
 
   const handleAnswerQuestion = async (questionId) => {
     if (!answer.trim()) {
-      alert("Please provide an answer");
+      alert("يرجى تقديم إجابة");
       return;
     }
 
@@ -76,15 +76,15 @@ export default function QAPendingQuestions() {
               className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors mb-4"
             >
               <FaArrowLeft />
-              Back to Q&A Dashboard
+              العودة إلى لوحة تحكم الأسئلة والأجوبة
             </Link>
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-                  Pending Questions
+                  الأسئلة المعلقة
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Review and answer questions from the community
+                  راجع وأجب على الأسئلة من المجتمع
                 </p>
               </div>
               <div className="text-right">
@@ -92,7 +92,7 @@ export default function QAPendingQuestions() {
                   {pendingQuestions.length}
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Pending Questions
+                  الأسئلة المعلقة
                 </div>
               </div>
             </div>
@@ -102,17 +102,17 @@ export default function QAPendingQuestions() {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">Loading pending questions...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">جاري تحميل الأسئلة المعلقة...</p>
             </div>
           ) : pendingQuestions.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🎉</div>
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-                No pending questions
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                All questions have been answered! Great job!
-              </p>
+                              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+                  لا توجد أسئلة معلقة
+                </h3>
+                              <p className="text-gray-600 dark:text-gray-300">
+                  تمت الإجابة على جميع الأسئلة! عمل رائع!
+                </p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -126,7 +126,7 @@ export default function QAPendingQuestions() {
                         </span>
                         <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
                           <FaClock />
-                          Pending
+                          معلق
                         </span>
                       </div>
                       
@@ -168,7 +168,7 @@ export default function QAPendingQuestions() {
                         className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
                       >
                         <FaEdit />
-                        Answer
+                        إجابة
                       </button>
                     </div>
                   </div>
@@ -184,7 +184,7 @@ export default function QAPendingQuestions() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
-                  Answer Question
+                  الإجابة على السؤال
                 </h3>
                 <button
                   onClick={() => {
@@ -199,7 +199,7 @@ export default function QAPendingQuestions() {
               </div>
               
               <div className="mb-4">
-                <h4 className="font-medium text-gray-800 dark:text-white mb-2">Question:</h4>
+                <h4 className="font-medium text-gray-800 dark:text-white mb-2">السؤال:</h4>
                 <p className="text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded">
                   {selectedQuestion.question}
                 </p>
@@ -207,14 +207,14 @@ export default function QAPendingQuestions() {
               
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Your Answer *
+                  إجابتك *
                 </label>
                 <textarea
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   rows="6"
-                  placeholder="Provide a detailed and helpful answer..."
+                  placeholder="قدم إجابة مفصلة ومفيدة..."
                 />
               </div>
               
@@ -227,14 +227,14 @@ export default function QAPendingQuestions() {
                   }}
                   className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
                 >
-                  Cancel
+                  إلغاء
                 </button>
                 <button
                   onClick={() => handleAnswerQuestion(selectedQuestion._id)}
                   className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
                 >
                   <FaCheck />
-                  Submit Answer
+                  إرسال الإجابة
                 </button>
               </div>
             </div>

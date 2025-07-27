@@ -227,7 +227,7 @@ export default function WhatsAppServiceDashboard() {
         if (window.confirm("هل أنت متأكد من إزالة رقم واتساب هذا؟")) {
             try {
                 await dispatch(removeWhatsAppNumber({ serviceId, numberId })).unwrap();
-                toast.success("WhatsApp number removed successfully!");
+                toast.success("تم إزالة رقم واتساب بنجاح!");
             } catch (error) {
                 toast.error(error);
             }

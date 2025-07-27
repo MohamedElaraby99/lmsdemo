@@ -40,7 +40,7 @@ export default function WhatsAppServices() {
     }, [error, dispatch]);
 
     const handleWhatsAppClick = (number, serviceName) => {
-        const message = `Hello! I'm interested in your ${serviceName} service. Can you provide more information?`;
+        const message = `مرحباً! أنا مهتم بخدمة ${serviceName}. هل يمكنك تقديم المزيد من المعلومات؟`;
         const whatsappUrl = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
@@ -107,11 +107,11 @@ export default function WhatsAppServices() {
                             <FaWhatsapp className="h-8 w-8 text-white" />
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            WhatsApp Services
+                            خدمات واتساب
                         </h1>
                         <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                            Connect with our expert team through WhatsApp for personalized services, 
-                            course assistance, tutoring, and professional consultation.
+                            تواصل مع فريقنا المتخصص عبر واتساب للحصول على خدمات مخصصة، 
+                            مساعدة في الدورات، التدريس، والاستشارات المهنية.
                         </p>
                     </div>
 
@@ -123,7 +123,7 @@ export default function WhatsAppServices() {
                                     <FaBook className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Services</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">إجمالي الخدمات</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{services.length}</p>
                                 </div>
                             </div>
@@ -134,7 +134,7 @@ export default function WhatsAppServices() {
                                     <FaUsers className="h-6 w-6 text-green-600 dark:text-green-400" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Services</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الخدمات النشطة</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
                                         {services.filter(s => s.isActive).length}
                                     </p>
@@ -147,7 +147,7 @@ export default function WhatsAppServices() {
                                     <FaHeadset className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Categories</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الفئات</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
                                         {new Set(services.map(s => s.category)).size}
                                     </p>
@@ -160,7 +160,7 @@ export default function WhatsAppServices() {
                                     <FaPhone className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Contact Numbers</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">أرقام الاتصال</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
                                         {services.reduce((total, service) => total + service.whatsappNumbers.length, 0)}
                                     </p>
@@ -176,7 +176,7 @@ export default function WhatsAppServices() {
                                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Search services..."
+                                    placeholder="البحث في الخدمات..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -187,7 +187,7 @@ export default function WhatsAppServices() {
                                 onChange={(e) => setCategoryFilter(e.target.value)}
                                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             >
-                                <option value="all">All Categories</option>
+                                <option value="all">جميع الفئات</option>
                                 {categories.map(category => (
                                     <option key={category} value={category}>
                                         {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -199,12 +199,12 @@ export default function WhatsAppServices() {
                                 onChange={(e) => setSortBy(e.target.value)}
                                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             >
-                                <option value="name">Name A-Z</option>
-                                <option value="price">Price Low-High</option>
-                                <option value="category">Category</option>
+                                <option value="name">الاسم أ-ي</option>
+                                <option value="price">السعر منخفض-عالي</option>
+                                <option value="category">الفئة</option>
                             </select>
                             <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center justify-center">
-                                {sortedServices.length} services found
+                                {sortedServices.length} خدمة تم العثور عليها
                             </div>
                         </div>
                     </div>
@@ -266,7 +266,7 @@ export default function WhatsAppServices() {
                                         <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                                             <div className="mb-3">
                                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    Contact Numbers ({service.whatsappNumbers.length})
+                                                    أرقام الاتصال ({service.whatsappNumbers.length})
                                                 </span>
                                             </div>
                                             <div className="space-y-2">
@@ -296,7 +296,7 @@ export default function WhatsAppServices() {
                                                             className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                                                         >
                                                             <FaWhatsapp />
-                                                            <span className="hidden sm:inline">Contact</span>
+                                                            <span className="hidden sm:inline">تواصل</span>
                                                             <FaExternalLinkAlt className="text-xs" />
                                                         </button>
                                                     </div>
@@ -312,18 +312,18 @@ export default function WhatsAppServices() {
                     {sortedServices.length === 0 && !loading && (
                         <div className="text-center py-12">
                             <FaInfoCircle className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No services found</h3>
+                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">لم يتم العثور على خدمات</h3>
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Try adjusting your search or filter criteria.
+                                حاول تعديل معايير البحث أو المرشحات.
                             </p>
                         </div>
                     )}
 
                     {/* Call to Action */}
                     <div className="mt-12 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg p-8 text-center text-white">
-                        <h2 className="text-2xl font-bold mb-4">Need Help?</h2>
+                        <h2 className="text-2xl font-bold mb-4">تحتاج مساعدة؟</h2>
                         <p className="text-green-100 mb-6 max-w-2xl mx-auto">
-                            Can't find what you're looking for? Our support team is available 24/7 to assist you with any questions or special requests.
+                            لا تجد ما تبحث عنه؟ فريق الدعم لدينا متاح على مدار الساعة لمساعدتك في أي أسئلة أو طلبات خاصة.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <button
@@ -331,14 +331,14 @@ export default function WhatsAppServices() {
                                 className="bg-white text-green-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
                             >
                                 <FaWhatsapp />
-                                Contact Support
+                                تواصل مع الدعم
                             </button>
                             <a
                                 href="/contact"
                                 className="border border-white text-white px-6 py-3 rounded-lg font-medium hover:bg-white hover:text-green-600 transition-colors flex items-center justify-center gap-2"
                             >
                                 <FaPhone />
-                                Other Contact Methods
+                                طرق الاتصال الأخرى
                             </a>
                         </div>
                     </div>

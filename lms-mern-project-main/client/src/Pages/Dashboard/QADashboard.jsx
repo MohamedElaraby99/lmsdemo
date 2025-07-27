@@ -151,10 +151,10 @@ export default function QADashboard() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-                Q&A Management
+                إدارة الأسئلة والأجوبة
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
-                Manage questions and answers for your community
+                إدارة الأسئلة والأجوبة لمجتمعك
               </p>
             </div>
             <div className="flex gap-3">
@@ -163,14 +163,14 @@ export default function QADashboard() {
                 className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
               >
                 <FaPlus />
-                Add Q&A
+                إضافة سؤال وجواب
               </button>
               <Link
                 to="/admin/qa-pending"
                 className="inline-flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
               >
                 <FaClock />
-                Pending Questions
+                الأسئلة المعلقة
               </Link>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function QADashboard() {
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search Q&As..."
+                  placeholder="البحث في الأسئلة والأجوبة..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -194,7 +194,7 @@ export default function QADashboard() {
                 onChange={(e) => setCategory(e.target.value)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
-                <option value="">All Categories</option>
+                <option value="">جميع الفئات</option>
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
@@ -230,28 +230,28 @@ export default function QADashboard() {
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Question
+                        السؤال
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Category
+                        الفئة
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Status
+                        الحالة
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Author
+                        المؤلف
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Votes
+                        التصويت
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Views
+                        المشاهدات
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Date
+                        التاريخ
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                        Actions
+                        الإجراءات
                       </th>
                     </tr>
                   </thead>
@@ -264,7 +264,7 @@ export default function QADashboard() {
                               {qa.question}
                             </div>
                             <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                              {qa.answer ? qa.answer.substring(0, 100) + '...' : 'No answer yet'}
+                              {qa.answer ? qa.answer.substring(0, 100) + '...' : 'لا توجد إجابة بعد'}
                             </div>
                           </div>
                         </td>
@@ -331,11 +331,11 @@ export default function QADashboard() {
         {showCreateModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Create New Q&A</h2>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">إنشاء سؤال وجواب جديد</h2>
               <form onSubmit={handleCreateQA} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Question
+                    السؤال
                   </label>
                   <textarea
                     value={formData.question}
@@ -348,7 +348,7 @@ export default function QADashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Answer
+                    الإجابة
                   </label>
                   <textarea
                     value={formData.answer}
@@ -434,7 +434,7 @@ export default function QADashboard() {
                     type="submit"
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    Create Q&A
+                    إنشاء سؤال وجواب
                   </button>
                 </div>
               </form>
@@ -446,7 +446,7 @@ export default function QADashboard() {
         {showEditModal && selectedQA && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Edit Q&A</h2>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">تعديل السؤال والجواب</h2>
               <form onSubmit={handleEditQA} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -549,7 +549,7 @@ export default function QADashboard() {
                     type="submit"
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    Update Q&A
+                    تحديث السؤال والجواب
                   </button>
                 </div>
               </form>

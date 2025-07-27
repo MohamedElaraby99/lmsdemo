@@ -32,17 +32,17 @@ export default function QACreate() {
     const newErrors = {};
 
     if (!formData.question.trim()) {
-      newErrors.question = "Question is required";
+      newErrors.question = "السؤال مطلوب";
     } else if (formData.question.length < 10) {
-      newErrors.question = "Question must be at least 10 characters";
+      newErrors.question = "يجب أن يكون السؤال 10 أحرف على الأقل";
     }
 
     if (!formData.category) {
-      newErrors.category = "Category is required";
+      newErrors.category = "الفئة مطلوبة";
     }
 
     if (!formData.author.trim()) {
-      newErrors.author = "Author name is required";
+      newErrors.author = "اسم المؤلف مطلوب";
     }
 
     setErrors(newErrors);
@@ -91,7 +91,7 @@ export default function QACreate() {
               className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors mb-4"
             >
               <FaArrowLeft />
-              Back to Q&As
+              العودة إلى الأسئلة والأجوبة
             </button>
             
             <div className="text-center">
@@ -99,10 +99,10 @@ export default function QACreate() {
                 <FaQuestionCircle className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-                Ask a Question
+                اطرح سؤالاً
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
-                Share your question with the community. Our admins will review and answer your question.
+                شارك سؤالك مع المجتمع. سيقوم مدراؤنا بمراجعة والإجابة على سؤالك.
               </p>
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function QACreate() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <FaQuestionCircle className="inline mr-2" />
-                  Your Question *
+                  سؤالك *
                 </label>
                 <textarea
                   name="question"
@@ -124,7 +124,7 @@ export default function QACreate() {
                     errors.question ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                   }`}
                   rows="4"
-                  placeholder="What would you like to ask? Be specific and clear..."
+                  placeholder="ماذا تريد أن تسأل؟ كن محدداً وواضحاً..."
                 />
                 {errors.question && (
                   <p className="text-red-500 text-sm mt-1">{errors.question}</p>
@@ -137,7 +137,7 @@ export default function QACreate() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Category *
+                    الفئة *
                   </label>
                   <select
                     name="category"
@@ -147,7 +147,7 @@ export default function QACreate() {
                       errors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
                   >
-                    <option value="">Select a category</option>
+                    <option value="">اختر فئة</option>
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
@@ -160,7 +160,7 @@ export default function QACreate() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <FaUser className="inline mr-2" />
-                    Your Name *
+                    اسمك *
                   </label>
                   <input
                     type="text"
@@ -170,7 +170,7 @@ export default function QACreate() {
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
                       errors.author ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
-                    placeholder="Enter your name"
+                    placeholder="أدخل اسمك"
                   />
                   {errors.author && (
                     <p className="text-red-500 text-sm mt-1">{errors.author}</p>
@@ -182,7 +182,7 @@ export default function QACreate() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <FaTag className="inline mr-2" />
-                  Tags (optional)
+                  العلامات (اختياري)
                 </label>
                 <input
                   type="text"
@@ -190,17 +190,17 @@ export default function QACreate() {
                   value={formData.tags}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="Enter tags separated by commas (e.g., javascript, react, tutorial)"
+                  placeholder="أدخل العلامات مفصولة بفواصل (مثل javascript, react, tutorial)"
                 />
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Tags help others find your question more easily
+                  العلامات تساعد الآخرين في العثور على سؤالك بسهولة أكبر
                 </p>
               </div>
 
               {/* Status */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Status
+                  الحالة
                 </label>
                 <select
                   name="status"
@@ -208,9 +208,9 @@ export default function QACreate() {
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                 >
-                  <option value="answered">Answered</option>
-                  <option value="pending">Pending</option>
-                  <option value="featured">Featured</option>
+                  <option value="answered">تمت الإجابة</option>
+                  <option value="pending">معلق</option>
+                  <option value="featured">مميز</option>
                 </select>
               </div>
 
@@ -222,14 +222,14 @@ export default function QACreate() {
                   className="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <FaTimes />
-                  Cancel
+                  إلغاء
                 </button>
                 <button
                   type="submit"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   <FaSave />
-                  Create Q&A
+                  إنشاء سؤال وجواب
                 </button>
               </div>
             </form>
@@ -238,14 +238,14 @@ export default function QACreate() {
           {/* Tips */}
           <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-3">
-              💡 Tips for a Great Q&A
+              💡 نصائح لسؤال وجواب ممتاز
             </h3>
             <ul className="space-y-2 text-blue-700 dark:text-blue-300">
-              <li>• Be specific and clear in your question</li>
-              <li>• Provide context and relevant details</li>
-              <li>• Use appropriate tags to help others find your question</li>
-              <li>• Check if your question has already been answered</li>
-              <li>• Be respectful and constructive in your communication</li>
+              <li>• كن محدداً وواضحاً في سؤالك</li>
+              <li>• قدم السياق والتفاصيل ذات الصلة</li>
+              <li>• استخدم العلامات المناسبة لمساعدة الآخرين في العثور على سؤالك</li>
+              <li>• تحقق مما إذا كان سؤالك قد تمت الإجابة عليه بالفعل</li>
+              <li>• كن محترماً وبناءً في تواصلك</li>
             </ul>
           </div>
         </div>

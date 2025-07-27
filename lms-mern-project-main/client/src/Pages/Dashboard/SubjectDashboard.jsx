@@ -53,27 +53,27 @@ export default function SubjectDashboard() {
     const newErrors = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = "Title is required";
+      newErrors.title = "العنوان مطلوب";
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
+      newErrors.description = "الوصف مطلوب";
     }
 
     if (!formData.category) {
-      newErrors.category = "Category is required";
+      newErrors.category = "الفئة مطلوبة";
     }
 
     if (!formData.instructor.trim()) {
-      newErrors.instructor = "Instructor is required";
+      newErrors.instructor = "المدرس مطلوب";
     }
 
     if (!formData.level) {
-      newErrors.level = "Level is required";
+      newErrors.level = "المستوى مطلوب";
     }
 
     if (!formData.price || parseFloat(formData.price) <= 0) {
-      newErrors.price = "Valid price is required";
+      newErrors.price = "السعر الصحيح مطلوب";
     }
 
     setErrors(newErrors);
@@ -136,7 +136,7 @@ export default function SubjectDashboard() {
   };
 
   const handleDeleteSubject = async (subjectId) => {
-    if (window.confirm('Are you sure you want to delete this subject?')) {
+    if (window.confirm('هل أنت متأكد من حذف هذه المادة الدراسية؟')) {
       try {
         await dispatch(deleteSubject(subjectId));
       } catch (error) {
@@ -216,10 +216,10 @@ export default function SubjectDashboard() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-                Subject Management
+                إدارة المواد الدراسية
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
-                Manage courses and subjects for your platform
+                إدارة الدورات والمواد الدراسية لمنصتك
               </p>
             </div>
             <button
@@ -227,7 +227,7 @@ export default function SubjectDashboard() {
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
             >
               <FaPlus />
-              Add Subject
+                              إضافة مادة دراسية
             </button>
           </div>
 
@@ -238,7 +238,7 @@ export default function SubjectDashboard() {
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search subjects..."
+                  placeholder="البحث في المواد الدراسية..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -250,7 +250,7 @@ export default function SubjectDashboard() {
                 onChange={(e) => setCategory(e.target.value)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
-                <option value="">All Categories</option>
+                <option value="">جميع الفئات</option>
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
@@ -261,14 +261,14 @@ export default function SubjectDashboard() {
                 onChange={(e) => setStatus(e.target.value)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="featured">Featured</option>
+                <option value="">جميع الحالات</option>
+                <option value="active">نشط</option>
+                <option value="inactive">غير نشط</option>
+                <option value="featured">مميز</option>
               </select>
 
               <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
-                {filteredSubjects.length} subjects found
+                {filteredSubjects.length} مادة دراسية تم العثور عليها
               </div>
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function SubjectDashboard() {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">Loading subjects...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">جاري تحميل المواد الدراسية...</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -302,7 +302,7 @@ export default function SubjectDashboard() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
-                  Add New Subject
+                  إضافة مادة دراسية جديدة
                 </h3>
                 <button
                   onClick={() => {
@@ -319,7 +319,7 @@ export default function SubjectDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Title *
+                      العنوان *
                     </label>
                     <input
                       type="text"
@@ -501,7 +501,7 @@ export default function SubjectDashboard() {
                     className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
                   >
                     <FaSave />
-                    Create Subject
+                    إنشاء مادة دراسية
                   </button>
                 </div>
               </form>
@@ -515,7 +515,7 @@ export default function SubjectDashboard() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
-                  Edit Subject
+                  تعديل المادة الدراسية
                 </h3>
                 <button
                   onClick={() => {
@@ -717,7 +717,7 @@ export default function SubjectDashboard() {
                     className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
                   >
                     <FaSave />
-                    Update Subject
+                    تحديث المادة الدراسية
                   </button>
                 </div>
               </form>

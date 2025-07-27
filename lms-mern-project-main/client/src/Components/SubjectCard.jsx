@@ -54,7 +54,7 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
         {subject.featured && (
           <div className="absolute top-2 left-2">
             <span className="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-              Featured
+              مميز
             </span>
           </div>
         )}
@@ -100,7 +100,7 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
 
         {/* Instructor */}
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-          By {subject.instructor}
+          بواسطة {subject.instructor}
         </p>
 
         {/* Meta Info */}
@@ -112,11 +112,11 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
             </span>
             <span className="flex items-center gap-1">
               <FaUsers />
-              {subject.studentsEnrolled} students
+              {subject.studentsEnrolled} طالب
             </span>
             <span className="flex items-center gap-1">
               <FaPlay />
-              {subject.lessons} lessons
+              {subject.lessons} درس
             </span>
           </div>
           
@@ -138,7 +138,7 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
             ))}
             {subject.tags.length > 3 && (
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                +{subject.tags.length - 3} more
+                +{subject.tags.length - 3} المزيد
               </span>
             )}
           </div>
@@ -156,7 +156,7 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
                 onClick={() => onEdit(subject)}
                 className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
               >
-                Edit
+                تعديل
               </button>
               <button
                 onClick={() => onToggleFeatured(subject._id)}
@@ -166,13 +166,13 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
                     : 'bg-gray-600 hover:bg-gray-700 text-white'
                 }`}
               >
-                {subject.featured ? 'Unfeature' : 'Feature'}
+                {subject.featured ? 'إلغاء التميز' : 'تمييز'}
               </button>
               <button
                 onClick={() => onDelete(subject._id)}
                 className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
               >
-                Delete
+                حذف
               </button>
             </div>
           ) : (
@@ -181,7 +181,7 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
               className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
             >
               <FaPlay />
-              View Course
+              عرض الدورة
             </Link>
           )}
         </div>
