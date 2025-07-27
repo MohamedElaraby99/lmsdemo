@@ -85,23 +85,23 @@ export default function Navbar() {
   }, [isMenuOpen]);
 
   const menuItems = [
-    { name: "Home", path: "/", icon: FaHome },
-    { name: "Courses", path: "/subjects", icon: FaGraduationCap },
-    { name: "All Courses", path: "/courses", icon: FaList },
-    { name: "Blog", path: "/blogs", icon: FaBlog },
-    { name: "Q&A", path: "/qa", icon: FaQuestionCircle },
-    { name: "Exam History", path: "/exam-history", icon: FaHistory },
-    { name: "About", path: "/about", icon: FaInfoCircle },
-    { name: "Contact", path: "/contact", icon: FaPhone },
+    { name: "الرئيسية", path: "/", icon: FaHome },
+    { name: "الدورات", path: "/subjects", icon: FaGraduationCap },
+    { name: "جميع الدورات", path: "/courses", icon: FaList },
+    { name: "المدونة", path: "/blogs", icon: FaBlog },
+    { name: "الأسئلة والأجوبة", path: "/qa", icon: FaQuestionCircle },
+    { name: "تاريخ الامتحانات", path: "/exam-history", icon: FaHistory },
+    { name: "حول", path: "/about", icon: FaInfoCircle },
+    { name: "اتصل بنا", path: "/contact", icon: FaPhone },
   ];
 
   const adminMenuItems = [
-    { name: "Dashboard", path: "/admin", icon: FaUser },
-    { name: "Manage Courses", path: "/admin/courses", icon: FaGraduationCap },
-    { name: "Manage Users", path: "/admin/users", icon: FaUser },
-    { name: "Manage Blogs", path: "/admin/blogs", icon: FaBlog },
-    { name: "Manage Q&A", path: "/admin/qa", icon: FaQuestionCircle },
-    { name: "Manage Subjects", path: "/admin/subjects", icon: FaGraduationCap },
+    { name: "لوحة التحكم", path: "/admin", icon: FaUser },
+    { name: "إدارة الدورات", path: "/admin/courses", icon: FaGraduationCap },
+    { name: "إدارة المستخدمين", path: "/admin/users", icon: FaUser },
+    { name: "إدارة المدونة", path: "/admin/blogs", icon: FaBlog },
+    { name: "إدارة الأسئلة والأجوبة", path: "/admin/qa", icon: FaQuestionCircle },
+    { name: "إدارة المواد", path: "/admin/subjects", icon: FaGraduationCap },
   ];
 
   return (
@@ -166,14 +166,14 @@ export default function Navbar() {
                         className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-300"
                       >
                         <FaUser className="w-4 h-4" />
-                        <span>Profile</span>
+                        <span>الملف الشخصي</span>
                       </Link>
                       <button
                         onClick={handleLogout}
                         className="flex items-center space-x-3 px-4 py-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-300 w-full text-left"
                       >
                         <FaSignOutAlt className="w-4 h-4" />
-                        <span>Logout</span>
+                        <span>تسجيل الخروج</span>
                       </button>
                     </div>
                   </div>
@@ -217,7 +217,7 @@ export default function Navbar() {
             <div className="space-y-2">
               <div className="px-4 py-2">
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Navigation
+                  التنقل
                 </p>
               </div>
               {menuItems.map((item) => (
@@ -273,7 +273,7 @@ export default function Navbar() {
                   <div className="space-y-2">
                     <div className="px-4 py-2">
                       <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-                        Admin Panel
+                        لوحة الإدارة
                       </p>
                     </div>
                     {adminMenuItems.map((item) => (
@@ -303,7 +303,7 @@ export default function Navbar() {
                 <div className="space-y-2">
                   <div className="px-4 py-2">
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Account
+                      الحساب
                     </p>
                   </div>
                   <Link
@@ -313,7 +313,7 @@ export default function Navbar() {
                     <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700">
                       <FaUser className="w-5 h-5" />
                     </div>
-                    <span className="font-semibold">Profile</span>
+                    <span className="font-semibold">الملف الشخصي</span>
                   </Link>
                   <button
                     onClick={handleLogout}
@@ -322,7 +322,7 @@ export default function Navbar() {
                     <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
                       <FaSignOutAlt className="w-5 h-5" />
                     </div>
-                    <span className="font-semibold">Logout</span>
+                    <span className="font-semibold">تسجيل الخروج</span>
                   </button>
                 </div>
               </>
@@ -335,13 +335,13 @@ export default function Navbar() {
                   to="/login"
                   className="block w-full px-6 py-3 text-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors duration-300 transform hover:scale-105 mobile-menu-item"
                 >
-                  Login
+                  تسجيل الدخول
                 </Link>
                 <Link
                   to="/signup"
                   className="block w-full px-6 py-3 text-center border-2 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white rounded-xl font-semibold transition-all duration-300 mobile-menu-item"
                 >
-                  Sign Up
+                  إنشاء حساب
                 </Link>
               </div>
             )}

@@ -136,36 +136,36 @@ export default function DisplayLecture() {
     if (role === 'USER') {
       dispatch(getWalletBalance());
     }
-    
+      
     // Load all user purchases and check lesson purchases for this course
     if (courseData?._id && role !== 'ADMIN') {
       // First, load all user purchases
       dispatch(getUserLessonPurchases());
       
-      // Check purchases for unit lessons
-      if (courseData.units) {
-        courseData.units.forEach(unit => {
-          if (unit.lessons) {
-            unit.lessons.forEach(lesson => {
+        // Check purchases for unit lessons
+        if (courseData.units) {
+          courseData.units.forEach(unit => {
+            if (unit.lessons) {
+              unit.lessons.forEach(lesson => {
               // Check purchase status for all lessons, not just those with videos
+                  dispatch(checkLessonPurchase({ 
+                    courseId: courseData._id, 
+                    lessonId: lesson._id || lesson.id 
+                  }));
+              });
+            }
+          });
+        }
+        
+        // Check purchases for direct lessons
+        if (courseData.directLessons) {
+          courseData.directLessons.forEach(lesson => {
+          // Check purchase status for all lessons, not just those with videos
               dispatch(checkLessonPurchase({ 
                 courseId: courseData._id, 
                 lessonId: lesson._id || lesson.id 
               }));
-            });
-          }
-        });
-      }
-      
-      // Check purchases for direct lessons
-      if (courseData.directLessons) {
-        courseData.directLessons.forEach(lesson => {
-          // Check purchase status for all lessons, not just those with videos
-          dispatch(checkLessonPurchase({ 
-            courseId: courseData._id, 
-            lessonId: lesson._id || lesson.id 
-          }));
-        });
+          });
       }
     }
 
@@ -184,15 +184,18 @@ export default function DisplayLecture() {
   // Load user purchases on component mount for non-admin users
   useEffect(() => {
     if (role !== 'ADMIN') {
+      console.log('Loading user lesson purchases for role:', role);
       dispatch(getUserLessonPurchases());
     }
   }, [role, dispatch]);
 
   // Refresh purchase status when lesson purchase state changes
   useEffect(() => {
-    if (lessonPurchaseState.purchases.length > 0 && courseData?._id) {
-      console.log('Lesson purchases updated:', lessonPurchaseState.purchases);
-    }
+    console.log('Lesson purchase state changed:', {
+      purchasesCount: lessonPurchaseState.purchases.length,
+      purchases: lessonPurchaseState.purchases,
+      courseId: courseData?._id
+    });
   }, [lessonPurchaseState.purchases, courseData?._id]);
 
   // Suppress browser extension errors
@@ -1351,8 +1354,8 @@ export default function DisplayLecture() {
                                                       onClick={() => openLessonDetailModal(lesson, unit)}
                                                       className="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
                                                     >
-                                                      <FaPlay />
-                                                      Watch
+                                                          <FaPlay />
+                                                          Watch
                                                     </button>
                                                   </div>
                                                 </div>
@@ -1550,8 +1553,8 @@ export default function DisplayLecture() {
                                           onClick={() => openLessonDetailModal(lesson)}
                                           className="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
                                         >
-                                          <FaPlay />
-                                          Watch
+                                              <FaPlay />
+                                              Watch
                                         </button>
                                       </div>
                                     </div>
@@ -1668,8 +1671,8 @@ export default function DisplayLecture() {
                   )}
 
 
-                </div>
-              </div>
+                      </div>
+                      </div>
             </div>
           </div>
         </section>

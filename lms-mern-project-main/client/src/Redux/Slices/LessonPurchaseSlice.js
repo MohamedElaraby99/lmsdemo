@@ -30,9 +30,12 @@ export const getUserLessonPurchases = createAsyncThunk(
     'lessonPurchase/getUserLessonPurchases',
     async (_, { rejectWithValue }) => {
         try {
+            console.log('Fetching user lesson purchases...');
             const response = await axiosInstance.get('/lesson-purchases/user/history');
+            console.log('User lesson purchases response:', response.data);
             return response.data;
         } catch (error) {
+            console.error('Error fetching user lesson purchases:', error);
             return rejectWithValue(error.response?.data?.message || 'Failed to get lesson purchases');
         }
     }
@@ -104,6 +107,7 @@ const lessonPurchaseSlice = createSlice({
             })
             .addCase(getUserLessonPurchases.fulfilled, (state, action) => {
                 state.loading = false;
+                state.purchases = action.payload.data.purchases;
                 state.purchaseHistory = action.payload.data.purchases;
             })
             .addCase(getUserLessonPurchases.rejected, (state, action) => {

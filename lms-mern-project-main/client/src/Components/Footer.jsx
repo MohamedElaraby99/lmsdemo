@@ -29,7 +29,7 @@ export default function Footer() {
     <footer className="py-12 md:px-16 px-3 bg-slate-100 dark:bg-gray-900">
       <div className="flex md:flex-row flex-col md:justify-between justify-center items-center gap-4 mb-8">
         <span className="md:text-xl text-lg font-[600] text-gray-700 dark:text-white">
-          Copyright {year} | All Right Reserved
+          حقوق النشر {year} | جميع الحقوق محفوظة
         </span>
         <div className="flex gap-5 items-center">
           {/* Protection Toggle Button */}
@@ -40,17 +40,17 @@ export default function Footer() {
                 ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800'
                 : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-300 dark:hover:bg-red-800'
             }`}
-            title={protectionEnabled ? "Click to disable protection" : "Click to enable protection"}
+            title={protectionEnabled ? "انقر لتعطيل الحماية" : "انقر لتفعيل الحماية"}
           >
             {protectionEnabled ? (
               <>
                 <FaShieldAlt className="text-green-600 dark:text-green-400" />
-                <span className="hidden sm:inline">Protection ON</span>
+                <span className="hidden sm:inline">الحماية مفعلة</span>
               </>
             ) : (
               <>
                 <FaUnlock className="text-red-600 dark:text-red-400" />
-                <span className="hidden sm:inline">Protection OFF</span>
+                <span className="hidden sm:inline">الحماية معطلة</span>
               </>
             )}
           </button>
@@ -78,7 +78,7 @@ export default function Footer() {
       <div className="flex flex-col items-center justify-center pt-8 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            Powered by
+            مدعوم بواسطة
           </span>
           <a 
             href="https://fikra.solutions/" 

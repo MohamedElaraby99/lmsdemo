@@ -158,6 +158,8 @@ const getUserLessonPurchases = async (req, res, next) => {
         .populate('course', 'title description thumbnail')
         .sort({ createdAt: -1 });
 
+        console.log('User lesson purchases found:', purchases.length);
+        
         res.status(200).json({
             success: true,
             message: 'Lesson purchases retrieved successfully',

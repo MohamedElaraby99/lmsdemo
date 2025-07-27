@@ -78,48 +78,48 @@ export default function HomePage() {
   };
 
   const stats = [
-    { icon: FaUsers, number: "10K+", label: "Students Enrolled", color: "text-blue-600" },
-    { icon: FaGraduationCap, number: "500+", label: "Courses Available", color: "text-green-600" },
-    { icon: FaStar, number: "4.9", label: "Average Rating", color: "text-yellow-600" },
-    { icon: FaAward, number: "50+", label: "Expert Instructors", color: "text-purple-600" }
+    { icon: FaUsers, number: "10K+", label: "طالب مسجل", color: "text-blue-600" },
+    { icon: FaGraduationCap, number: "500+", label: "دورة متاحة", color: "text-green-600" },
+    { icon: FaStar, number: "4.9", label: "متوسط التقييم", color: "text-yellow-600" },
+    { icon: FaAward, number: "50+", label: "مدرس خبير", color: "text-purple-600" }
   ];
 
   const features = [
     {
       icon: FaRocket,
-      title: "Learn at Your Pace",
-      description: "Flexible learning schedules that fit your lifestyle and commitments.",
+      title: "تعلم بوتيرتك الخاصة",
+      description: "جداول تعلم مرنة تناسب نمط حياتك والتزاماتك.",
       color: "text-blue-600",
       bgColor: "bg-blue-50 dark:bg-blue-900/20"
     },
     {
       icon: FaLightbulb,
-      title: "Expert-Led Courses",
-      description: "Learn from industry professionals with years of real-world experience.",
+      title: "دورات بقيادة الخبراء",
+      description: "تعلم من المحترفين في المجال مع سنوات من الخبرة العملية.",
       color: "text-green-600",
       bgColor: "bg-green-50 dark:bg-green-900/20"
     },
     {
       icon: FaShieldAlt,
-      title: "Certified Learning",
-      description: "Earn certificates that are recognized by top companies worldwide.",
+      title: "التعلم المعتمد",
+      description: "احصل على شهادات معترف بها من أفضل الشركات في العالم.",
       color: "text-purple-600",
       bgColor: "bg-purple-50 dark:bg-purple-900/20"
     },
     {
       icon: FaGlobe,
-      title: "Global Community",
-      description: "Connect with learners from around the world and share experiences.",
+      title: "المجتمع العالمي",
+      description: "تواصل مع المتعلمين من جميع أنحاء العالم وشارك الخبرات.",
       color: "text-orange-600",
       bgColor: "bg-orange-50 dark:bg-orange-900/20"
     }
   ];
 
   const categories = [
-    { icon: FaCode, name: "Programming", count: "150+ Courses", color: "bg-blue-500" },
-    { icon: FaPalette, name: "Design", count: "120+ Courses", color: "bg-purple-500" },
-    { icon: FaChartLine, name: "Business", count: "200+ Courses", color: "bg-green-500" },
-    { icon: FaBookOpen, name: "Marketing", count: "180+ Courses", color: "bg-orange-500" }
+    { icon: FaCode, name: "البرمجة", count: "150+ دورة", color: "bg-blue-500" },
+    { icon: FaPalette, name: "التصميم", count: "120+ دورة", color: "bg-purple-500" },
+    { icon: FaChartLine, name: "الأعمال", count: "200+ دورة", color: "bg-green-500" },
+    { icon: FaBookOpen, name: "التسويق", count: "180+ دورة", color: "bg-orange-500" }
   ];
 
   return (
@@ -137,23 +137,23 @@ export default function HomePage() {
           <div className="text-center">
             <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6">
-                Master Your
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Skills</span>
+                أتقن
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> مهاراتك</span>
                 <br />
-                <span className="text-4xl md:text-6xl">With Expert-Led</span>
+                <span className="text-4xl md:text-6xl">مع الدورات بقيادة الخبراء</span>
                 <br />
-                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">Courses</span>
+                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">الدورات</span>
               </h1>
               
               <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-                Join thousands of learners worldwide and transform your career with our comprehensive online courses designed by industry experts.
+                انضم إلى آلاف المتعلمين حول العالم وحول مسيرتك المهنية مع دوراتنا الشاملة عبر الإنترنت المصممة من قبل خبراء الصناعة.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
                 <Link to="/subjects">
                   <button className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                     <span className="flex items-center gap-2">
-                      Start Learning
+                      ابدأ التعلم
                       <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
                     </span>
                   </button>
@@ -163,7 +163,7 @@ export default function HomePage() {
                   <button className="group px-8 py-4 border-2 border-blue-600 text-blue-600 dark:text-blue-400 font-semibold rounded-full text-lg hover:bg-blue-600 hover:text-white transition-all duration-300">
                     <span className="flex items-center gap-2">
                       <FaPlay className="group-hover:scale-110 transition-transform duration-300" />
-                      Explore Courses
+                      استكشف الدورات
                     </span>
                   </button>
                 </Link>
@@ -191,10 +191,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Why Choose Our Platform?
+              لماذا تختار منصتنا؟
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              We provide everything you need to succeed in your learning journey
+              نقدم لك كل ما تحتاجه للنجاح في رحلة تعلمك
             </p>
           </div>
 

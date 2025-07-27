@@ -58,10 +58,10 @@ export default function Login() {
               <FaGraduationCap className="h-10 w-10 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Welcome Back
+              مرحباً بعودتك
             </h2>
             <p className="text-gray-600 dark:text-gray-300">
-              Sign in to your account to continue learning
+              سجل دخولك إلى حسابك لمتابعة التعلم
             </p>
           </div>
 
@@ -71,7 +71,7 @@ export default function Login() {
               {/* Email Field */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Email Address
+                  البريد الإلكتروني
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -83,7 +83,7 @@ export default function Login() {
                     type="email"
                     required
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your email"
+                    placeholder="أدخل بريدك الإلكتروني"
                     value={loginData.email}
                     onChange={handleUserInput}
                   />
@@ -93,7 +93,7 @@ export default function Login() {
               {/* Password Field */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Password
+                  كلمة المرور
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -105,7 +105,7 @@ export default function Login() {
                     type={showPassword ? "text" : "password"}
                     required
                     className="block w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your password"
+                    placeholder="أدخل كلمة المرور"
                     value={loginData.password}
                     onChange={handleUserInput}
                   />
@@ -135,10 +135,10 @@ export default function Login() {
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Signing in...
+                    جاري تسجيل الدخول...
                   </div>
                 ) : (
-                  "Sign In"
+                  "تسجيل الدخول"
                 )}
               </button>
             </form>
@@ -151,7 +151,7 @@ export default function Login() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                    New to Fikra Software?
+                    جديد في فكرة سوفت وير؟
                   </span>
                 </div>
               </div>
@@ -163,7 +163,7 @@ export default function Login() {
                 to="/signup"
                 className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-200"
               >
-                Create your account
+                إنشاء حسابك
               </Link>
             </div>
           </div>
@@ -171,13 +171,13 @@ export default function Login() {
           {/* Footer */}
           <div className="text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              By signing in, you agree to our{" "}
+              بتسجيل الدخول، أنت توافق على{" "}
               <Link to="/terms" className="text-blue-600 dark:text-blue-400 hover:underline">
-                Terms of Service
+                شروط الخدمة
               </Link>{" "}
-              and{" "}
+              و{" "}
               <Link to="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
-                Privacy Policy
+                سياسة الخصوصية
               </Link>
             </p>
           </div>
