@@ -97,7 +97,7 @@ export default function AdminRechargeCodeDashboard() {
         e.preventDefault();
         
         if (!generateForm.amount || !generateForm.quantity) {
-            toast.error("Please fill in all fields");
+            toast.error("يرجى ملء جميع الحقول");
             return;
         }
 
@@ -201,10 +201,10 @@ export default function AdminRechargeCodeDashboard() {
                             <FaCreditCard className="h-8 w-8 text-white" />
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            Recharge Code Management
+                            إدارة رموز الشحن
                         </h1>
                         <p className="text-gray-600 dark:text-gray-300">
-                            Generate and manage recharge codes for user wallets
+                            إنشاء وإدارة رموز الشحن لمحافظ المستخدمين
                         </p>
                     </div>
 
@@ -216,7 +216,7 @@ export default function AdminRechargeCodeDashboard() {
                                     <FaCreditCard className="h-6 w-6 text-blue-600" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Codes</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">إجمالي الرموز</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalCodes}</p>
                                 </div>
                             </div>
@@ -228,7 +228,7 @@ export default function AdminRechargeCodeDashboard() {
                                     <FaMoneyBillWave className="h-6 w-6 text-green-600" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Value</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">القيمة الإجمالية</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalAmount.toFixed(2)} EGP</p>
                                 </div>
                             </div>
@@ -240,7 +240,7 @@ export default function AdminRechargeCodeDashboard() {
                                     <FaCheckCircle className="h-6 w-6 text-yellow-600" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Used Codes</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الرموز المستخدمة</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.usedCodes}</p>
                                 </div>
                             </div>
@@ -252,7 +252,7 @@ export default function AdminRechargeCodeDashboard() {
                                     <FaExclamationTriangle className="h-6 w-6 text-purple-600" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Unused Codes</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الرموز غير المستخدمة</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.unusedCodes}</p>
                                 </div>
                             </div>
@@ -270,7 +270,7 @@ export default function AdminRechargeCodeDashboard() {
                             }`}
                         >
                             <FaPlus className="inline mr-2" />
-                            Generate Codes
+                            إنشاء الرموز
                         </button>
                         <button
                             onClick={() => setActiveTab("manage")}
@@ -281,7 +281,7 @@ export default function AdminRechargeCodeDashboard() {
                             }`}
                         >
                             <FaCreditCard className="inline mr-2" />
-                            Manage Codes
+                            إدارة الرموز
                         </button>
                     </div>
 
@@ -290,14 +290,14 @@ export default function AdminRechargeCodeDashboard() {
                         {activeTab === "generate" && (
                             <div className="p-6">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                                    Generate Recharge Codes
+                                    إنشاء رموز الشحن
                                 </h3>
                                 
                                 <form onSubmit={handleGenerateCodes} className="space-y-6 max-w-md">
                                     {/* Amount Input */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Amount (EGP)
+                                            المبلغ (جنيه مصري)
                                         </label>
                                         <input
                                             type="number"
@@ -305,7 +305,7 @@ export default function AdminRechargeCodeDashboard() {
                                             value={generateForm.amount}
                                             onChange={handleGenerateFormChange}
                                             className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                                            placeholder="Enter amount in EGP"
+                                            placeholder="أدخل المبلغ بالجنيه المصري"
                                             min="1"
                                             step="0.01"
                                             required
@@ -315,7 +315,7 @@ export default function AdminRechargeCodeDashboard() {
                                     {/* Quantity Input */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Quantity
+                                            الكمية
                                         </label>
                                         <input
                                             type="number"
@@ -323,7 +323,7 @@ export default function AdminRechargeCodeDashboard() {
                                             value={generateForm.quantity}
                                             onChange={handleGenerateFormChange}
                                             className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                                            placeholder="Number of codes to generate"
+                                            placeholder="عدد الرموز المراد إنشاؤها"
                                             min="1"
                                             max="100"
                                             required
@@ -339,12 +339,12 @@ export default function AdminRechargeCodeDashboard() {
                                         {generateLoading ? (
                                             <div className="flex items-center">
                                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                                Generating...
+                                                جاري الإنشاء...
                                             </div>
                                         ) : (
                                             <div className="flex items-center">
                                                 <FaPlus className="mr-2" />
-                                                Generate Codes
+                                                إنشاء الرموز
                                             </div>
                                         )}
                                     </button>
@@ -355,14 +355,14 @@ export default function AdminRechargeCodeDashboard() {
                                     <div className="mt-8">
                                         <div className="flex items-center justify-between mb-4">
                                             <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                Generated Codes
+                                                الرموز المنشأة
                                             </h4>
                                             <button
                                                 onClick={handleCopyAllCodes}
                                                 className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
                                             >
                                                 <FaCopy className="mr-2" />
-                                                Copy All
+                                                نسخ الكل
                                             </button>
                                         </div>
                                         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
@@ -379,7 +379,7 @@ export default function AdminRechargeCodeDashboard() {
                                                     <button
                                                         onClick={() => handleCopyCode(code.code)}
                                                         className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-                                                        title="Copy code"
+                                                        title="نسخ الرمز"
                                                     >
                                                         <FaCopy />
                                                     </button>
@@ -394,7 +394,7 @@ export default function AdminRechargeCodeDashboard() {
                         {activeTab === "manage" && (
                             <div className="p-6">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                                    Manage Recharge Codes
+                                    إدارة رموز الشحن
                                 </h3>
 
                                 {/* Filters */}
@@ -402,7 +402,7 @@ export default function AdminRechargeCodeDashboard() {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Status
+                                                الحالة
                                             </label>
                                             <select
                                                 name="status"
@@ -410,14 +410,14 @@ export default function AdminRechargeCodeDashboard() {
                                                 onChange={handleFilterChange}
                                                 className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                                             >
-                                                <option value="">All Status</option>
-                                                <option value="unused">Unused</option>
-                                                <option value="used">Used</option>
+                                                <option value="">جميع الحالات</option>
+                                                <option value="unused">غير مستخدم</option>
+                                                <option value="used">مستخدم</option>
                                             </select>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Amount
+                                                المبلغ
                                             </label>
                                             <input
                                                 type="number"
@@ -425,7 +425,7 @@ export default function AdminRechargeCodeDashboard() {
                                                 value={filters.amount}
                                                 onChange={handleFilterChange}
                                                 className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                                placeholder="Filter by amount"
+                                                placeholder="تصفية حسب المبلغ"
                                             />
                                         </div>
                                         <div className="flex items-end">
@@ -434,7 +434,7 @@ export default function AdminRechargeCodeDashboard() {
                                                 className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
                                             >
                                                 <FaFilter className="inline mr-2" />
-                                                Apply Filters
+                                                تطبيق المرشحات
                                             </button>
                                         </div>
                                     </div>
@@ -449,7 +449,7 @@ export default function AdminRechargeCodeDashboard() {
                                     <div className="text-center py-8">
                                         <FaCreditCard className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                                         <p className="text-gray-500 dark:text-gray-400">
-                                            No recharge codes found. Generate some codes to get started!
+                                            لم يتم العثور على رموز شحن. أنشئ بعض الرموز للبدء!
                                         </p>
                                     </div>
                                 ) : (
@@ -475,12 +475,12 @@ export default function AdminRechargeCodeDashboard() {
                                                         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                                             <span className="flex items-center">
                                                                 <FaCalendarAlt className="mr-1" />
-                                                                Created: {formatDate(code.createdAt)}
+                                                                تم الإنشاء: {formatDate(code.createdAt)}
                                                             </span>
                                                             {code.isUsed && code.usedBy && (
                                                                 <span className="flex items-center mt-1">
                                                                     <FaUser className="mr-1" />
-                                                                    Used by: {code.usedBy.fullName}
+                                                                    استخدم بواسطة: {code.usedBy.fullName}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -490,7 +490,7 @@ export default function AdminRechargeCodeDashboard() {
                                                     <button
                                                         onClick={() => handleCopyCode(code.code)}
                                                         className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-                                                        title="Copy code"
+                                                        title="نسخ الرمز"
                                                     >
                                                         <FaCopy />
                                                     </button>
@@ -499,7 +499,7 @@ export default function AdminRechargeCodeDashboard() {
                                                             onClick={() => handleDeleteCode(code.id)}
                                                             disabled={deleteLoading}
                                                             className="p-2 text-gray-500 hover:text-red-600 transition-colors disabled:opacity-50"
-                                                            title="Delete code"
+                                                            title="حذف الرمز"
                                                         >
                                                             <FaTrash />
                                                         </button>

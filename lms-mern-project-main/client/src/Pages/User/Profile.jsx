@@ -182,7 +182,7 @@ export default function Profile() {
         >
           <div className="flex justify-center items-center">
             <h1 className="text-center absolute left-6 md:top-auto top-5 text-violet-500 dark:text-purple-500 md:text-4xl text-3xl font-bold font-inter after:content-[' ']  after:absolute after:-bottom-3.5 after:left-0 after:h-1.5 after:w-[60%] after:rounded-full after:bg-yellow-400 dark:after:bg-yellow-600">
-              Profile
+              الملف الشخصي
             </h1>
             {/* avatar */}
             <div
@@ -229,13 +229,13 @@ export default function Profile() {
                     className="text-gray-700 w-full flex items-center gap-2 dark:text-white px-3 pb-2 border-b-[1px] border-gray-300"
                     onClick={() => navigate("change-password")}
                   >
-                    <IoIosLock /> Change password
+                    <IoIosLock /> تغيير كلمة المرور
                   </button>
                   <button
                     className="text-[#ff1414] dark:text-red-300 px-3 w-full flex items-center gap-2"
                     onClick={() => navigate("reset-password")}
                   >
-                    <IoIosRefresh /> Reset password
+                    <IoIosRefresh /> إعادة تعيين كلمة المرور
                   </button>
                 </div>
               </dialog>
@@ -246,7 +246,7 @@ export default function Profile() {
           <div className="w-full space-y-6">
             <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-2">
               <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-                Personal Information
+                المعلومات الشخصية
               </h2>
               {!isEditing && (
                 <button
@@ -255,7 +255,7 @@ export default function Profile() {
                   className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
                 >
                   <FaEdit size={14} />
-                  Edit Profile
+                  تعديل الملف الشخصي
                 </button>
               )}
             </div>
@@ -265,7 +265,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <FaUser className="text-blue-500" />
-                  Full Name
+                  الاسم الكامل
                 </label>
                 <input
                   type="text"
@@ -277,7 +277,7 @@ export default function Profile() {
                       ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
                       : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   }`}
-                  placeholder="Enter your full name"
+                  placeholder="أدخل اسمك الكامل"
                 />
               </div>
 
@@ -285,7 +285,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <FaUser className="text-purple-500" />
-                  Username
+                  اسم المستخدم
                 </label>
                 <input
                   type="text"
@@ -297,7 +297,7 @@ export default function Profile() {
                       ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
                       : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   }`}
-                  placeholder="Enter your username"
+                  placeholder="أدخل اسم المستخدم"
                 />
               </div>
 
@@ -305,7 +305,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <FaEnvelope className="text-green-500" />
-                  Email Address
+                  البريد الإلكتروني
                 </label>
                 <input
                   type="email"
@@ -319,7 +319,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <FaPhone className="text-green-500" />
-                  Phone Number
+                  رقم الهاتف
                 </label>
                 <input
                   type="tel"
@@ -331,7 +331,7 @@ export default function Profile() {
                       ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
                       : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   }`}
-                  placeholder="Enter your phone number"
+                  placeholder="أدخل رقم هاتفك"
                 />
               </div>
 
@@ -339,7 +339,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <FaPhone className="text-purple-500" />
-                  Father's Phone Number
+                  رقم هاتف الأب
                 </label>
                 <input
                   type="tel"
@@ -351,7 +351,7 @@ export default function Profile() {
                       ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
                       : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   }`}
-                  placeholder="Enter father's phone number"
+                  placeholder="أدخل رقم هاتف الأب"
                 />
               </div>
 
@@ -359,7 +359,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <FaCalendarAlt className="text-orange-500" />
-                  Age
+                  العمر
                 </label>
                 <input
                   type="number"
@@ -371,7 +371,7 @@ export default function Profile() {
                       ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
                       : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   }`}
-                  placeholder="Enter your age"
+                  placeholder="أدخل عمرك"
                   min="5"
                   max="100"
                 />
@@ -381,7 +381,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <FaGraduationCap className="text-indigo-500" />
-                  Grade
+                  الصف الدراسي
                 </label>
                 
                 <select
@@ -394,7 +394,7 @@ export default function Profile() {
                       : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   }`}
                 >
-                  <option value="">Select Grade</option>
+                  <option value="">اختر الصف الدراسي</option>
                   <option value="1 ابتدائي">1 ابتدائي</option>
                   <option value="2 ابتدائي">2 ابتدائي</option>
                   <option value="3 ابتدائي">3 ابتدائي</option>
@@ -419,7 +419,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <FaMapMarkerAlt className="text-red-500" />
-                  Governorate
+                  المحافظة
                 </label>
                 <select
                   value={isEditing ? userInput.governorate : (userData?.governorate || "")}
@@ -431,7 +431,7 @@ export default function Profile() {
                       : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   }`}
                 >
-                  <option value="">Select Governorate</option>
+                  <option value="">اختر المحافظة</option>
                   <option value="Cairo">Cairo</option>
                   <option value="Alexandria">Alexandria</option>
                   <option value="Giza">Giza</option>
@@ -469,7 +469,7 @@ export default function Profile() {
           {/* Account Information Section */}
           <div className="w-full space-y-6">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-              Account Information
+              معلومات الحساب
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -477,7 +477,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <FaIdCard className="text-blue-500" />
-                  Account Role
+                  دور الحساب
                 </label>
                 <input
                   type="text"
@@ -491,7 +491,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <FaIdCard className="text-green-500" />
-                  Subscription Status
+                  حالة الاشتراك
                 </label>
                 <input
                   type="text"
@@ -514,12 +514,12 @@ export default function Profile() {
                   {isUpdating ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Saving Changes...
+                      جاري حفظ التغييرات...
                     </>
                   ) : (
                     <>
                       <FaSave size={14} />
-                      Save Changes
+                      حفظ التغييرات
                     </>
                   )}
             </button>
@@ -531,7 +531,7 @@ export default function Profile() {
                   disabled={isUpdating}
                 >
                   <FaTimes size={14} />
-                  Cancel
+                  إلغاء
                 </button>
               </>
             ) : (
@@ -542,7 +542,7 @@ export default function Profile() {
                 onClick={handleCancelSubscription}
                 className="py-3.5 rounded-md bg-[#f32e2e] mt-3 text-white font-inter md:w-[48%] w-full"
               >
-                Cancel Subscription
+                إلغاء الاشتراك
               </button>
               )
             )}

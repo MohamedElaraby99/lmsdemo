@@ -79,7 +79,7 @@ export default function CreateCourse() {
         }
       } catch (error) {
         console.error('Error fetching subjects:', error);
-        toast.error('Failed to load subjects');
+        toast.error('فشل في تحميل المواد الدراسية');
       } finally {
         setLoading(false);
       }
@@ -413,10 +413,10 @@ export default function CreateCourse() {
                 </div>
               </div>
               <h1 className="text-3xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-4">
-                Create New Course
+                إنشاء دورة جديدة
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                Build an amazing course for your students with our step-by-step creation process.
+                أنشئ دورة رائعة لطلابك مع عملية الإنشاء خطوة بخطوة.
               </p>
             </div>
 
@@ -450,7 +450,7 @@ export default function CreateCourse() {
                 className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 font-medium"
               >
                 <FaArrowLeft className="text-sm" />
-                Back to Dashboard
+                العودة إلى لوحة التحكم
               </button>
             </div>
 
@@ -460,10 +460,10 @@ export default function CreateCourse() {
                 <div className="p-6 lg:p-8">
                   <div className="text-center mb-8">
                     <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      Basic Course Information
+                      المعلومات الأساسية للدورة
                     </h2>
                     <p className="text-gray-600 dark:text-gray-300">
-                      Let's start with the essential details about your course
+                      دعنا نبدأ بالتفاصيل الأساسية لدورتك
                     </p>
                   </div>
 
@@ -473,15 +473,15 @@ export default function CreateCourse() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                           <FaBook className="text-blue-500" />
-                          Course Details
+                          تفاصيل الدورة
                         </h3>
                         
                         <div className="space-y-4">
                           <InputBox
-                            label="Course Title *"
+                            label="عنوان الدورة *"
                             name="title"
                             type="text"
-                            placeholder="Enter course title"
+                            placeholder="أدخل عنوان الدورة"
                             onChange={handleCourseInput}
                             value={courseData.title}
                             required
@@ -489,12 +489,12 @@ export default function CreateCourse() {
                           
                           <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              Course Description *
+                              وصف الدورة *
                             </label>
                             <TextArea
                               name="description"
                               rows={4}
-                              placeholder="Enter detailed course description..."
+                              placeholder="أدخل وصف مفصل للدورة..."
                               onChange={handleCourseInput}
                               value={courseData.description}
                               required
@@ -503,10 +503,10 @@ export default function CreateCourse() {
                           </div>
 
                           <InputBox
-                            label="Category"
+                            label="الفئة"
                             name="category"
                             type="text"
-                            placeholder="Enter course category"
+                            placeholder="أدخل فئة الدورة"
                             onChange={handleCourseInput}
                             value={courseData.category}
                           />
@@ -516,14 +516,14 @@ export default function CreateCourse() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                           <FaUser className="text-green-500" />
-                          Instructor Information
+                          معلومات المدرس
                         </h3>
                         
                         <InputBox
-                          label="Instructor Name"
+                          label="اسم المدرس"
                           name="createdBy"
                           type="text"
-                          placeholder="Enter instructor name"
+                          placeholder="أدخل اسم المدرس"
                           onChange={handleCourseInput}
                           value={courseData.createdBy}
                         />
@@ -535,13 +535,13 @@ export default function CreateCourse() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                           <FaTag className="text-purple-500" />
-                          Subject & Stage
+                          المادة والمرحلة
                         </h3>
                         
                         <div className="space-y-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              Subject *
+                              المادة *
                             </label>
                             <select
                               name="subject"
@@ -550,7 +550,7 @@ export default function CreateCourse() {
                               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                               required
                             >
-                              <option value="">Select a subject</option>
+                              <option value="">اختر مادة</option>
                               {subjects.map((subject) => (
                                 <option key={subject._id} value={subject._id}>
                                   {subject.title}
@@ -561,7 +561,7 @@ export default function CreateCourse() {
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              Stage *
+                              المرحلة *
                             </label>
                             <select
                               name="stage"
@@ -594,7 +594,7 @@ export default function CreateCourse() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                           <FaImage className="text-orange-500" />
-                          Course Thumbnail
+                          صورة مصغرة للدورة
                         </h3>
                         
                         <div className="relative">
@@ -617,7 +617,7 @@ export default function CreateCourse() {
                                 <div className="text-center py-8">
                                   <FaImage className="text-gray-400 text-4xl mx-auto mb-4" />
                                   <p className="text-gray-600 dark:text-gray-400 font-medium">
-                                    Click to upload thumbnail
+                                    انقر لرفع الصورة المصغرة
                                   </p>
                                   <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
                                     JPG, PNG up to 5MB
@@ -641,13 +641,13 @@ export default function CreateCourse() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                           <FaStar className="text-yellow-500" />
-                          Pricing
+                          التسعير
                         </h3>
                         
                         <div className="space-y-4">
                           <div className="grid grid-cols-2 gap-4">
                             <InputBox
-                              label="Price (EGP)"
+                              label="السعر (جنيه مصري)"
                               name="price"
                               type="number"
                               placeholder="0"
@@ -667,7 +667,7 @@ export default function CreateCourse() {
                                   }))}
                                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                 />
-                                Paid Course
+                                دورة مدفوعة
                               </label>
                             </div>
                           </div>
@@ -680,7 +680,7 @@ export default function CreateCourse() {
                   <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
                     <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
                       <FaCheck className="text-blue-500" />
-                      Required Fields
+                      الحقول المطلوبة
                     </h4>
                     <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
                       <li className="flex items-center gap-2">
@@ -689,7 +689,7 @@ export default function CreateCourse() {
                         ) : (
                           <FaTimes className="text-red-500" />
                         )}
-                        Course Title
+                        عنوان الدورة
                       </li>
                       <li className="flex items-center gap-2">
                         {courseData.description ? (
@@ -697,7 +697,7 @@ export default function CreateCourse() {
                         ) : (
                           <FaTimes className="text-red-500" />
                         )}
-                        Course Description
+                        وصف الدورة
                       </li>
                       <li className="flex items-center gap-2">
                         {courseData.subject ? (
@@ -705,7 +705,7 @@ export default function CreateCourse() {
                         ) : (
                           <FaTimes className="text-red-500" />
                         )}
-                        Subject
+                        المادة
                       </li>
                       <li className="flex items-center gap-2">
                         {courseData.stage ? (
@@ -713,7 +713,7 @@ export default function CreateCourse() {
                         ) : (
                           <FaTimes className="text-red-500" />
                         )}
-                        Stage
+                        المرحلة
                       </li>
                     </ul>
                   </div>
@@ -726,7 +726,7 @@ export default function CreateCourse() {
                         disabled={!courseData.title || !courseData.description || !courseData.subject || !courseData.stage}
                         className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-8 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2"
                       >
-                        Next Step
+                        الخطوة التالية
                         <FaArrowRight />
                       </button>
                     </div>
@@ -741,10 +741,10 @@ export default function CreateCourse() {
                 <div className="p-6 lg:p-8">
                   <div className="text-center mb-8">
                     <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      Course Structure
+                      هيكل الدورة
                     </h2>
                     <p className="text-gray-600 dark:text-gray-300">
-                      Organize your course content with units and lessons
+                      نظم محتوى دورتك مع الوحدات والدروس
                     </p>
                   </div>
 
@@ -752,7 +752,7 @@ export default function CreateCourse() {
                   <div className="mb-8">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                       <FaFolder className="text-blue-500" />
-                      Choose Course Structure
+                      اختر هيكل الدورة
                     </h3>
                     <div className="grid md:grid-cols-3 gap-4">
                       <button
@@ -765,8 +765,8 @@ export default function CreateCourse() {
                       >
                         <div className="text-center">
                           <FaPlay className="text-2xl mx-auto mb-2 text-blue-500" />
-                          <h4 className="font-semibold text-gray-900 dark:text-white">Direct Lessons</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Simple list of lessons</p>
+                          <h4 className="font-semibold text-gray-900 dark:text-white">دروس مباشرة</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">قائمة بسيطة من الدروس</p>
                         </div>
                       </button>
                       
@@ -780,8 +780,8 @@ export default function CreateCourse() {
                       >
                         <div className="text-center">
                           <FaFolder className="text-2xl mx-auto mb-2 text-green-500" />
-                          <h4 className="font-semibold text-gray-900 dark:text-white">Units with Lessons</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Organized into units</p>
+                          <h4 className="font-semibold text-gray-900 dark:text-white">وحدات مع دروس</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">منظم في وحدات</p>
                         </div>
                       </button>
                       
@@ -795,8 +795,8 @@ export default function CreateCourse() {
                       >
                         <div className="text-center">
                           <FaBook className="text-2xl mx-auto mb-2 text-purple-500" />
-                          <h4 className="font-semibold text-gray-900 dark:text-white">Mixed Structure</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Both units and direct lessons</p>
+                          <h4 className="font-semibold text-gray-900 dark:text-white">هيكل مختلط</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">كل من الوحدات والدروس المباشرة</p>
                         </div>
                       </button>
                     </div>
@@ -808,13 +808,13 @@ export default function CreateCourse() {
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                           <FaFolder className="text-green-500" />
-                          Course Units ({courseData.units.length})
+                          وحدات الدورة ({courseData.units.length})
                         </h3>
                         <button
                           onClick={addUnit}
                           className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
                         >
-                          <FaPlus /> Add Unit
+                          <FaPlus /> إضافة وحدة
                         </button>
                       </div>
 
@@ -822,10 +822,10 @@ export default function CreateCourse() {
                 <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
                   <FaBook className="text-4xl text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    No units created yet
+                    لم يتم إنشاء وحدات بعد
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400">
-                    Start by adding your first unit to organize your course content.
+                    ابدأ بإضافة وحدتك الأولى لتنظيم محتوى دورتك.
                   </p>
                 </div>
               ) : (
@@ -871,13 +871,13 @@ export default function CreateCourse() {
                                               value={unit.title}
                                               onChange={(e) => updateUnit(unit.id, 'title', e.target.value)}
                                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                              placeholder="Unit title"
+                                              placeholder="عنوان الوحدة"
                                             />
                                             <textarea
                                               value={unit.description}
                                               onChange={(e) => updateUnit(unit.id, 'description', e.target.value)}
                                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                              placeholder="Unit description"
+                                              placeholder="وصف الوحدة"
                                               rows={2}
                                             />
                                             <div className="flex gap-2">
@@ -1000,14 +1000,14 @@ export default function CreateCourse() {
                                                                 onClick={() => setEditingLesson(null)}
                                                                 className="px-2 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
                                                               >
-                                                                Cancel
+                                                                إلغاء
                                                               </button>
                                                             </div>
                                                           </div>
                                                         ) : (
                                                           <div>
                                                             <div className="font-medium text-gray-900 dark:text-white">
-                                                              {lesson.title || "Untitled Lesson"}
+                                                              {lesson.title || "درس بدون عنوان"}
                                                             </div>
                                                             {lesson.description && (
                                                               <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -1064,13 +1064,13 @@ export default function CreateCourse() {
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                           <FaPlay className="text-blue-500" />
-                          Direct Lessons ({courseData.directLessons.length})
+                          الدروس المباشرة ({courseData.directLessons.length})
                         </h3>
                         <button
                           onClick={addDirectLesson}
                           className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
                         >
-                          <FaPlus /> Add Direct Lesson
+                          <FaPlus /> إضافة درس مباشر
                         </button>
                       </div>
 
@@ -1078,10 +1078,10 @@ export default function CreateCourse() {
                         <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-xl">
                           <FaPlay className="text-4xl text-gray-400 mx-auto mb-4" />
                           <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                            No direct lessons created yet
+                            لم يتم إنشاء دروس مباشرة بعد
                           </h4>
                           <p className="text-gray-500 dark:text-gray-400">
-                            Add lessons that don't belong to any specific unit.
+                            أضف الدروس التي لا تنتمي إلى وحدة محددة.
                           </p>
                         </div>
                       ) : (
@@ -1188,39 +1188,39 @@ export default function CreateCourse() {
                   <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 mb-8">
                     <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-4 flex items-center gap-2">
                       <FaInfo className="text-blue-500" />
-                      Course Summary
+                      ملخص الدورة
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <FaBook className="text-blue-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Title:</span>
+                        <span className="text-gray-700 dark:text-gray-300">العنوان:</span>
                         <span className="font-medium text-gray-900 dark:text-white">{courseData.title || 'Not set'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <FaTag className="text-green-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Subject:</span>
+                        <span className="text-gray-700 dark:text-gray-300">المادة:</span>
                         <span className="font-medium text-gray-900 dark:text-white">
                           {subjects.find(s => s._id === courseData.subject)?.title || 'Not selected'}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <FaUsers className="text-purple-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Stage:</span>
+                        <span className="text-gray-700 dark:text-gray-300">المرحلة:</span>
                         <span className="font-medium text-gray-900 dark:text-white">{courseData.stage}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <FaFolder className="text-orange-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Units:</span>
+                        <span className="text-gray-700 dark:text-gray-300">الوحدات:</span>
                         <span className="font-medium text-gray-900 dark:text-white">{courseData.units.length}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <FaPlay className="text-red-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Direct Lessons:</span>
+                        <span className="text-gray-700 dark:text-gray-300">الدروس المباشرة:</span>
                         <span className="font-medium text-gray-900 dark:text-white">{courseData.directLessons.length}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <FaStar className="text-yellow-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Total Lessons:</span>
+                        <span className="text-gray-700 dark:text-gray-300">إجمالي الدروس:</span>
                         <span className="font-medium text-gray-900 dark:text-white">
                           {courseData.units.reduce((sum, unit) => sum + unit.lessons.length, 0) + courseData.directLessons.length}
                         </span>
@@ -1235,7 +1235,7 @@ export default function CreateCourse() {
                       className="flex items-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
                       <FaArrowLeft />
-                      Previous Step
+                      الخطوة السابقة
                     </button>
                     
                     <button
@@ -1246,12 +1246,12 @@ export default function CreateCourse() {
                       {isCreatingCourse ? (
                         <>
                           <FaSpinner className="animate-spin" />
-                          Creating Course...
+                          جاري إنشاء الدورة...
                         </>
                       ) : (
                         <>
                           <FaSave />
-                          Create Course
+                          إنشاء الدورة
                         </>
                       )}
                     </button>

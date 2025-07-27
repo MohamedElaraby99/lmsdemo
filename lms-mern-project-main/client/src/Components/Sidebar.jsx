@@ -112,10 +112,10 @@ export default function Sidebar({ hideBar = false }) {
             <li className="mb-6">
               <div className="text-center pb-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400">
-                  Learning Hub
+                  مركز التعلم
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Your Gateway to Knowledge
+                  بوابتك للمعرفة
                 </p>
               </div>
             </li>
@@ -127,7 +127,7 @@ export default function Sidebar({ hideBar = false }) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <FaWallet className="text-white" size={14} />
-                      <span className="text-xs font-medium">Balance</span>
+                      <span className="text-xs font-medium">الرصيد</span>
                     </div>
                   </div>
                   <div className="text-lg font-bold mt-1">
@@ -142,7 +142,7 @@ export default function Sidebar({ hideBar = false }) {
                   size={18}
                   className="text-gray-500 dark:text-slate-100"
                 />
-                Home
+                الرئيسية
               </Link>
             </li>
 
@@ -152,7 +152,7 @@ export default function Sidebar({ hideBar = false }) {
                   size={18}
                   className="text-gray-500 dark:text-slate-100"
                 />
-                Blog
+                المدونة
               </Link>
             </li>
 
@@ -162,7 +162,7 @@ export default function Sidebar({ hideBar = false }) {
                   size={18}
                   className="text-gray-500 dark:text-slate-100"
                 />
-                Q&A
+                الأسئلة والأجوبة
               </Link>
             </li>
 
@@ -173,7 +173,7 @@ export default function Sidebar({ hideBar = false }) {
                     size={18}
                     className="text-gray-500 dark:text-slate-100"
                   />
-                  My Wallet
+                  محفظتي
                 </Link>
               </li>
             )}
@@ -185,7 +185,7 @@ export default function Sidebar({ hideBar = false }) {
                     size={18}
                     className="text-gray-500 dark:text-slate-100"
                   />
-                  Admin DashBoard
+                  لوحة تحكم الإدارة
                 </Link>
               </li>
             )}
@@ -197,7 +197,7 @@ export default function Sidebar({ hideBar = false }) {
                     size={18}
                     className="text-gray-500 dark:text-slate-100"
                   />
-                  Create new course
+                  إنشاء دورة جديدة
                 </Link>
               </li>
             )}
@@ -209,7 +209,7 @@ export default function Sidebar({ hideBar = false }) {
                     size={18}
                     className="text-gray-500 dark:text-slate-100"
                   />
-                  Blog Management
+                  إدارة المدونة
                 </Link>
               </li>
             )}
@@ -221,7 +221,7 @@ export default function Sidebar({ hideBar = false }) {
                     size={18}
                     className="text-gray-500 dark:text-slate-100"
                   />
-                  Q&A Management
+                  إدارة الأسئلة والأجوبة
                 </Link>
               </li>
             )}
@@ -233,7 +233,7 @@ export default function Sidebar({ hideBar = false }) {
                     size={18}
                     className="text-gray-500 dark:text-slate-100"
                   />
-                  Recharge Codes
+                  رموز الشحن
                 </Link>
               </li>
             )}
@@ -245,7 +245,7 @@ export default function Sidebar({ hideBar = false }) {
                     size={18}
                     className="text-gray-500 dark:text-slate-100"
                   />
-                  User Management
+                  إدارة المستخدمين
                 </Link>
               </li>
             )}
@@ -257,7 +257,7 @@ export default function Sidebar({ hideBar = false }) {
                     size={18}
                     className="text-gray-500 dark:text-slate-100"
                   />
-                  WhatsApp Management
+                  إدارة واتساب
                 </Link>
               </li>
             )}
@@ -268,7 +268,7 @@ export default function Sidebar({ hideBar = false }) {
                   size={18}
                   className="text-gray-500 dark:text-slate-100"
                 />
-                All Courses
+                جميع الدورات
               </Link>
             </li>
 
@@ -278,7 +278,7 @@ export default function Sidebar({ hideBar = false }) {
                   size={18}
                   className="text-gray-500 dark:text-slate-100"
                 />
-                WhatsApp Services
+                خدمات واتساب
               </Link>
             </li>
 
@@ -288,7 +288,7 @@ export default function Sidebar({ hideBar = false }) {
                   size={18}
                   className="text-gray-500 dark:text-slate-100"
                 />
-                Contact Us
+                اتصل بنا
               </Link>
             </li>
 
@@ -298,7 +298,7 @@ export default function Sidebar({ hideBar = false }) {
                   size={18}
                   className="text-gray-500 dark:text-slate-100"
                 />
-                About Us
+                عننا
               </Link>
             </li>
 
@@ -328,7 +328,7 @@ export default function Sidebar({ hideBar = false }) {
                       {data?.fullName || "User"}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {role === "ADMIN" ? "Administrator" : "Student"}
+                      {role === "ADMIN" ? "مدير" : "طالب"}
                     </div>
                   </div>
 
@@ -347,10 +347,10 @@ export default function Sidebar({ hideBar = false }) {
                           {isLoading ? (
                             <div className="flex items-center gap-2">
                               <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin group-hover:border-white group-hover:border-t-transparent"></div>
-                              Logging out...
+                              جاري تسجيل الخروج...
                             </div>
                           ) : (
-                            "Sign Out"
+                            "تسجيل الخروج"
                           )}
                         </span>
                       </div>
@@ -373,7 +373,7 @@ export default function Sidebar({ hideBar = false }) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                         </svg>
                         <span className="font-semibold text-blue-500 group-hover:text-white transition-colors duration-300">
-                          Sign In
+                          تسجيل الدخول
                         </span>
                       </div>
                     </div>
@@ -391,7 +391,7 @@ export default function Sidebar({ hideBar = false }) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                         </svg>
                         <span className="font-semibold text-green-500 group-hover:text-white transition-colors duration-300">
-                          Sign Up
+                          إنشاء حساب
                         </span>
                       </div>
                     </div>

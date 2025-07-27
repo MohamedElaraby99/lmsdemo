@@ -62,7 +62,7 @@ export default function QAList() {
   };
 
   const handleDeleteQA = async (qaId) => {
-    if (window.confirm('Are you sure you want to delete this Q&A?')) {
+    if (window.confirm('هل أنت متأكد من حذف هذا السؤال والجواب؟')) {
       try {
         await dispatch(deleteQA(qaId));
         // Refresh the Q&A list after deletion
@@ -120,12 +120,12 @@ export default function QAList() {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
-              {isAdmin ? "Q&A Management" : "Q&A Community"}
+              {isAdmin ? "إدارة الأسئلة والأجوبة" : "مجتمع الأسئلة والأجوبة"}
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
               {isAdmin 
-                ? "Manage questions, provide answers, and moderate the community"
-                : "Browse questions and learn from our community"
+                ? "إدارة الأسئلة وتقديم الإجابات وتنظيم المجتمع"
+                : "تصفح الأسئلة وتعلم من مجتمعنا"
               }
             </p>
             {!isAdmin && (
@@ -134,7 +134,7 @@ export default function QAList() {
                 className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
               >
                 <FaPlus />
-                Ask a Question
+                اطرح سؤالاً
               </Link>
             )}
           </div>
@@ -147,7 +147,7 @@ export default function QAList() {
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search Q&As..."
+                  placeholder="البحث في الأسئلة والأجوبة..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -160,7 +160,7 @@ export default function QAList() {
                 onChange={(e) => setCategory(e.target.value)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
-                <option value="">All Categories</option>
+                <option value="">جميع الفئات</option>
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
@@ -172,10 +172,10 @@ export default function QAList() {
                 onChange={(e) => setStatus(e.target.value)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
-                <option value="">All Status</option>
-                <option value="answered">Answered</option>
-                {isAdmin && <option value="pending">Pending</option>}
-                <option value="featured">Featured</option>
+                <option value="">جميع الحالات</option>
+                <option value="answered">تم الرد</option>
+                {isAdmin && <option value="pending">في الانتظار</option>}
+                <option value="featured">مميز</option>
               </select>
 
               {/* Sort */}
@@ -184,10 +184,10 @@ export default function QAList() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="votes">Most Voted</option>
-                <option value="views">Most Viewed</option>
+                <option value="newest">الأحدث أولاً</option>
+                <option value="oldest">الأقدم أولاً</option>
+                <option value="votes">الأكثر تصويتاً</option>
+                <option value="views">الأكثر مشاهدة</option>
               </select>
             </div>
           </div>
@@ -196,27 +196,27 @@ export default function QAList() {
           <div className={`grid gap-4 mb-8 ${isAdmin ? 'grid-cols-1 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{total}</div>
-              <div className="text-sm text-blue-600 dark:text-blue-400">Total Q&As</div>
+              <div className="text-sm text-blue-600 dark:text-blue-400">إجمالي الأسئلة والأجوبة</div>
             </div>
             <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {qas.filter(qa => qa.status === 'answered').length}
               </div>
-              <div className="text-sm text-green-600 dark:text-green-400">Answered</div>
+              <div className="text-sm text-green-600 dark:text-green-400">تم الرد</div>
             </div>
             {isAdmin && (
               <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
                 <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                   {qas.filter(qa => qa.status === 'pending').length}
                 </div>
-                <div className="text-sm text-yellow-600 dark:text-yellow-400">Pending</div>
+                <div className="text-sm text-yellow-600 dark:text-yellow-400">في الانتظار</div>
               </div>
             )}
             <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
               <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                 {qas.filter(qa => qa.status === 'featured').length}
               </div>
-              <div className="text-sm text-purple-600 dark:text-purple-400">Featured</div>
+              <div className="text-sm text-purple-600 dark:text-purple-400">مميز</div>
             </div>
           </div>
 
@@ -224,7 +224,7 @@ export default function QAList() {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">Loading Q&As...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">جاري تحميل الأسئلة والأجوبة...</p>
             </div>
           ) : qas.length > 0 ? (
             <div className="space-y-6">
@@ -258,10 +258,10 @@ export default function QAList() {
                         <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                           <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
                             <FaClock className="text-sm" />
-                            <span className="text-sm font-medium">Pending Answer</span>
+                            <span className="text-sm font-medium">في انتظار الإجابة</span>
                           </div>
                           <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">
-                            This question is waiting for an admin to provide an answer.
+                            هذا السؤال في انتظار أن يقدم المدير إجابة.
                           </p>
                         </div>
                       )}
@@ -291,7 +291,7 @@ export default function QAList() {
                           </span>
                           <span className="flex items-center gap-1">
                             <FaEye />
-                            {qa.views} views
+                            {qa.views} مشاهدة
                           </span>
                         </div>
 
@@ -326,7 +326,7 @@ export default function QAList() {
                                 title="Answer Question"
                               >
                                 <FaReply />
-                                Answer
+                                إجابة
                               </button>
                               <button
                                 onClick={() => handleEditQA(qa._id)}
@@ -334,7 +334,7 @@ export default function QAList() {
                                 title="Edit Question"
                               >
                                 <FaEdit />
-                                Edit
+                                تعديل
                               </button>
                               <button
                                 onClick={() => handleDeleteQA(qa._id)}
@@ -342,7 +342,7 @@ export default function QAList() {
                                 title="Delete Question"
                               >
                                 <FaTrash />
-                                Delete
+                                حذف
                               </button>
                             </div>
                           )}
@@ -357,14 +357,14 @@ export default function QAList() {
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🤔</div>
               <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-                No Q&As found
+                لم يتم العثور على أسئلة وأجوبة
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
                 {search || category || status 
-                  ? "Try adjusting your search criteria" 
+                  ? "حاول تعديل معايير البحث" 
                   : isAdmin 
-                    ? "No questions have been asked yet."
-                    : "Be the first to ask a question!"
+                    ? "لم يتم طرح أي أسئلة بعد."
+                    : "كن أول من يطرح سؤالاً!"
                 }
               </p>
               {!search && !category && !status && !isAdmin && (
@@ -373,7 +373,7 @@ export default function QAList() {
                   className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
                 >
                   <FaPlus />
-                  Ask a Question
+                  اطرح سؤالاً
                 </Link>
               )}
             </div>

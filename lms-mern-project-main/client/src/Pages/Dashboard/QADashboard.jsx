@@ -60,7 +60,7 @@ export default function QADashboard() {
         status: "answered"
       });
     } catch (error) {
-      console.error('Create QA error:', error);
+      console.error('خطأ في إنشاء السؤال والجواب:', error);
     }
   };
 
@@ -79,16 +79,16 @@ export default function QADashboard() {
         status: "answered"
       });
     } catch (error) {
-      console.error('Update QA error:', error);
+      console.error('خطأ في تحديث السؤال والجواب:', error);
     }
   };
 
   const handleDeleteQA = async (qaId) => {
-    if (window.confirm('Are you sure you want to delete this Q&A?')) {
+    if (window.confirm('هل أنت متأكد من حذف هذا السؤال والجواب؟')) {
       try {
         await dispatch(deleteQA(qaId));
       } catch (error) {
-        console.error('Delete QA error:', error);
+        console.error('خطأ في حذف السؤال والجواب:', error);
       }
     }
   };
@@ -205,14 +205,14 @@ export default function QADashboard() {
                 onChange={(e) => setStatus(e.target.value)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               >
-                <option value="">All Status</option>
-                <option value="answered">Answered</option>
-                <option value="pending">Pending</option>
-                <option value="featured">Featured</option>
+                <option value="">جميع الحالات</option>
+                <option value="answered">تم الرد</option>
+                <option value="pending">في الانتظار</option>
+                <option value="featured">مميز</option>
               </select>
 
               <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center">
-                {filteredQAs.length} Q&As found
+                {filteredQAs.length} سؤال وجواب تم العثور عليه
               </div>
             </div>
           </div>
@@ -221,7 +221,7 @@ export default function QADashboard() {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">Loading Q&As...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">جاري تحميل الأسئلة والأجوبة...</p>
             </div>
           ) : (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">

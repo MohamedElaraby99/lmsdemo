@@ -45,13 +45,13 @@ export default function BlogDetail() {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
-              Blog not found
+              المدونة غير موجودة
             </h2>
             <Link
               to="/blogs"
               className="text-blue-600 hover:text-blue-700 underline"
             >
-              Back to blogs
+              العودة إلى المدونات
             </Link>
           </div>
         </div>
@@ -69,7 +69,7 @@ export default function BlogDetail() {
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8"
           >
             <FaArrowLeft />
-            Back to blogs
+            العودة إلى المدونات
           </Link>
 
           {/* Blog Header */}
@@ -89,11 +89,11 @@ export default function BlogDetail() {
               </span>
               <span className="flex items-center gap-2">
                 <FaEye />
-                {currentBlog.views} views
+                {currentBlog.views} مشاهدة
               </span>
               <span className="flex items-center gap-2">
                 <FaHeart />
-                {currentBlog.likes} likes
+                {currentBlog.likes} إعجاب
               </span>
             </div>
 
@@ -141,7 +141,7 @@ export default function BlogDetail() {
               className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-colors duration-200"
             >
               <FaHeart />
-              Like this post
+              أعجب بهذا المنشور
             </button>
           </div>
         </div>

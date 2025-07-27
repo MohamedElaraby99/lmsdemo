@@ -76,7 +76,7 @@ export default function BlogDashboard() {
       });
       setSelectedImage(null);
     } catch (error) {
-      console.error("Error creating blog:", error);
+      console.error("خطأ في إنشاء المدونة:", error);
     }
   };
 
@@ -174,7 +174,7 @@ export default function BlogDashboard() {
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors duration-200"
             >
               <FaPlus />
-              Create New Blog
+                              إنشاء مدونة جديدة
             </button>
           </div>
 
@@ -207,7 +207,7 @@ export default function BlogDashboard() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Drafts</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">المسودات</p>
                   <p className="text-2xl font-bold text-yellow-600">{draftBlogs}</p>
                 </div>
                 <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-full">
@@ -219,7 +219,7 @@ export default function BlogDashboard() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Views</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">إجمالي المشاهدات</p>
                   <p className="text-2xl font-bold text-purple-600">{totalViews}</p>
                 </div>
                 <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
@@ -231,7 +231,7 @@ export default function BlogDashboard() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Likes</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">إجمالي الإعجابات</p>
                   <p className="text-2xl font-bold text-red-600">{totalLikes}</p>
                 </div>
                 <div className="bg-red-100 dark:bg-red-900 p-3 rounded-full">
@@ -246,13 +246,13 @@ export default function BlogDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Search
+                  البحث
                 </label>
                 <div className="relative">
                   <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search blogs..."
+                    placeholder="البحث في المدونات..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -262,14 +262,14 @@ export default function BlogDashboard() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Category
+                  الفئة
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">All Categories</option>
+                  <option value="">جميع الفئات</option>
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
@@ -278,16 +278,16 @@ export default function BlogDashboard() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Status
+                  الحالة
                 </label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">All Status</option>
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
+                  <option value="">جميع الحالات</option>
+                  <option value="published">منشور</option>
+                  <option value="draft">مسودة</option>
                 </select>
               </div>
 
@@ -313,25 +313,25 @@ export default function BlogDashboard() {
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Blog
+                      المدونة
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Author
+                      المؤلف
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Category
+                      الفئة
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Status
+                      الحالة
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Stats
+                      الإحصائيات
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Date
+                      التاريخ
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Actions
+                      الإجراءات
                     </th>
                   </tr>
                 </thead>
@@ -429,7 +429,7 @@ export default function BlogDashboard() {
                   ) : (
                     <tr>
                       <td colSpan="7" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                        No blogs found.
+                        لم يتم العثور على مدونات.
                       </td>
                     </tr>
                   )}
@@ -444,7 +444,7 @@ export default function BlogDashboard() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Create New Blog</h2>
+                                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">إنشاء مدونة جديدة</h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -595,7 +595,7 @@ export default function BlogDashboard() {
                     type="submit"
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
-                    Create Blog
+                    إنشاء المدونة
                   </button>
                 </div>
               </form>
@@ -608,7 +608,7 @@ export default function BlogDashboard() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Edit Blog</h2>
+                                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">تعديل المدونة</h2>
                 <button
                   onClick={() => setShowEditModal(false)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -769,7 +769,7 @@ export default function BlogDashboard() {
                     type="submit"
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
-                    Update Blog
+                    تحديث المدونة
                   </button>
                 </div>
               </form>

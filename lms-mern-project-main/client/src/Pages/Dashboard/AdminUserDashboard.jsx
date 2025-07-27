@@ -215,10 +215,10 @@ export default function AdminUserDashboard() {
                             <FaUsers className="h-8 w-8 text-white" />
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            User Management
+                            إدارة المستخدمين
                         </h1>
                         <p className="text-gray-600 dark:text-gray-300">
-                            Manage users, view activities, and control access
+                            إدارة المستخدمين وعرض الأنشطة والتحكم في الوصول
                         </p>
                     </div>
 
@@ -230,7 +230,7 @@ export default function AdminUserDashboard() {
                                     <FaUsers className="h-6 w-6 text-blue-600" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">إجمالي المستخدمين</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalUsers}</p>
                                 </div>
                             </div>
@@ -242,7 +242,7 @@ export default function AdminUserDashboard() {
                                     <FaUserCheck className="h-6 w-6 text-green-600" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Users</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون النشطون</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.activeUsers}</p>
                                 </div>
                             </div>
@@ -254,7 +254,7 @@ export default function AdminUserDashboard() {
                                     <FaUserTimes className="h-6 w-6 text-red-600" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Inactive Users</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون غير النشطين</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.inactiveUsers}</p>
                                 </div>
                             </div>
@@ -266,7 +266,7 @@ export default function AdminUserDashboard() {
                                     <FaCrown className="h-6 w-6 text-purple-600" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Admins</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المديرون</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.adminUsers}</p>
                                 </div>
                             </div>
@@ -278,7 +278,7 @@ export default function AdminUserDashboard() {
                                     <FaUser className="h-6 w-6 text-indigo-600" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Regular Users</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون العاديون</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.regularUsers}</p>
                                 </div>
                             </div>
@@ -296,7 +296,7 @@ export default function AdminUserDashboard() {
                             }`}
                         >
                             <FaUsers className="inline mr-2" />
-                            All Users
+                            جميع المستخدمين
                         </button>
                         {selectedUser && (
                             <button
@@ -308,7 +308,7 @@ export default function AdminUserDashboard() {
                                 }`}
                             >
                                 <FaUser className="inline mr-2" />
-                                User Details
+                                تفاصيل المستخدم
                             </button>
                         )}
                     </div>
@@ -318,7 +318,7 @@ export default function AdminUserDashboard() {
                         {activeTab === "users" && (
                             <div className="p-6">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                                    All Users
+                                    جميع المستخدمين
                                 </h3>
 
                                 {/* Filters */}
@@ -326,7 +326,7 @@ export default function AdminUserDashboard() {
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Search
+                                                البحث
                                             </label>
                                             <input
                                                 type="text"
@@ -334,12 +334,12 @@ export default function AdminUserDashboard() {
                                                 value={filters.search}
                                                 onChange={handleFilterChange}
                                                 className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                                placeholder="Search by name or email"
+                                                placeholder="البحث بالاسم أو البريد الإلكتروني"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Role
+                                                الدور
                                             </label>
                                             <select
                                                 name="role"
@@ -347,14 +347,14 @@ export default function AdminUserDashboard() {
                                                 onChange={handleFilterChange}
                                                 className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             >
-                                                <option value="">All Roles</option>
-                                                <option value="USER">User</option>
-                                                <option value="ADMIN">Admin</option>
+                                                <option value="">جميع الأدوار</option>
+                                                <option value="USER">مستخدم</option>
+                                                <option value="ADMIN">مدير</option>
                                             </select>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Status
+                                                الحالة
                                             </label>
                                             <select
                                                 name="status"
@@ -362,9 +362,9 @@ export default function AdminUserDashboard() {
                                                 onChange={handleFilterChange}
                                                 className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             >
-                                                <option value="">All Status</option>
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
+                                                <option value="">جميع الحالات</option>
+                                                <option value="active">نشط</option>
+                                                <option value="inactive">غير نشط</option>
                                             </select>
                                         </div>
                                         <div className="flex items-end">
@@ -373,7 +373,7 @@ export default function AdminUserDashboard() {
                                                 className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition-colors"
                                             >
                                                 <FaFilter className="inline mr-2" />
-                                                Apply Filters
+                                                تطبيق المرشحات
                                             </button>
                                         </div>
                                     </div>
@@ -388,7 +388,7 @@ export default function AdminUserDashboard() {
                                     <div className="text-center py-8">
                                         <FaUsers className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                                         <p className="text-gray-500 dark:text-gray-400">
-                                            No users found matching your criteria.
+                                            لم يتم العثور على مستخدمين يطابقون معاييرك.
                                         </p>
                                     </div>
                                 ) : (
@@ -415,7 +415,7 @@ export default function AdminUserDashboard() {
                                                             {user.email}
                                                         </p>
                                                         <p className="text-xs text-gray-400 dark:text-gray-500">
-                                                            Wallet: {user.walletBalance} EGP • Transactions: {user.totalTransactions}
+                                                            المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -423,21 +423,21 @@ export default function AdminUserDashboard() {
                                                     <button
                                                         onClick={() => handleViewUser(user.id)}
                                                         className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-                                                        title="View details"
+                                                        title="عرض التفاصيل"
                                                     >
                                                         <FaEye />
                                                     </button>
                                                     <button
                                                         onClick={() => handleToggleStatus(user.id, user.isActive)}
                                                         className="p-2 text-gray-500 hover:text-yellow-600 transition-colors"
-                                                        title={user.isActive ? "Deactivate" : "Activate"}
+                                                        title={user.isActive ? "إلغاء التفعيل" : "تفعيل"}
                                                     >
                                                         {user.isActive ? <FaToggleOn /> : <FaToggleOff />}
                                                     </button>
                                                     <button
                                                         onClick={() => handleUpdateRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
                                                         className="p-2 text-gray-500 hover:text-purple-600 transition-colors"
-                                                        title="Change role"
+                                                        title="تغيير الدور"
                                                     >
                                                         <FaUserCog />
                                                     </button>
@@ -448,7 +448,7 @@ export default function AdminUserDashboard() {
                                                                 setShowDeleteConfirm(true);
                                                             }}
                                                             className="p-2 text-gray-500 hover:text-red-600 transition-colors"
-                                                            title="Delete user"
+                                                            title="حذف المستخدم"
                                                         >
                                                             <FaTrash />
                                                         </button>
@@ -489,7 +489,7 @@ export default function AdminUserDashboard() {
                         {activeTab === "details" && selectedUser && (
                             <div className="p-6">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                                    User Details: {selectedUser.fullName}
+                                    تفاصيل المستخدم: {selectedUser.fullName}
                                 </h3>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -497,7 +497,7 @@ export default function AdminUserDashboard() {
                                     <div className="lg:col-span-1">
                                         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
                                             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                                Personal Information
+                                                المعلومات الشخصية
                                             </h4>
                                             <div className="space-y-3">
                                                 <div className="flex items-center space-x-3">

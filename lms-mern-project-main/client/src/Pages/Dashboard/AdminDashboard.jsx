@@ -210,7 +210,7 @@ export default function AdminDashboard() {
   // Statistics cards data
   const statsCards = [
     {
-      title: "Total Courses",
+      title: "إجمالي الدورات",
       value: totalCourses,
       icon: FaBook,
       color: "from-blue-500 to-blue-600",
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
       changeType: "increase"
     },
     {
-      title: "Total Users",
+      title: "إجمالي المستخدمين",
       value: allUsersCount,
       icon: FaUsers,
       color: "from-green-500 to-green-600",
@@ -230,7 +230,7 @@ export default function AdminDashboard() {
       changeType: "increase"
     },
     {
-      title: "Total Revenue",
+      title: "إجمالي الإيرادات",
       value: `EGP ${totalRevenue}`,
       icon: FaDollarSign,
       color: "from-purple-500 to-purple-600",
@@ -240,7 +240,7 @@ export default function AdminDashboard() {
       changeType: "increase"
     },
     {
-      title: "Total Lectures",
+      title: "إجمالي المحاضرات",
       value: totalLectures,
       icon: FaPlay,
       color: "from-orange-500 to-orange-600",
@@ -267,10 +267,10 @@ export default function AdminDashboard() {
             {/* Header */}
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-4">
-                Admin Dashboard
+                لوحة تحكم الإدارة
         </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Welcome back! Here's an overview of your learning platform's performance and key metrics.
+                مرحباً بعودتك! إليك نظرة عامة على أداء منصة التعلم والمقاييس الرئيسية.
               </p>
               </div>
 
@@ -312,7 +312,7 @@ export default function AdminDashboard() {
                     <FaChartLine className="text-blue-600 dark:text-blue-400 text-lg lg:text-xl" />
                   </div>
                   <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
-                    Course Categories
+                    فئات الدورات
                   </h3>
                 </div>
                 <div className="h-48 sm:h-56 lg:h-64 w-full">
@@ -347,7 +347,7 @@ export default function AdminDashboard() {
                     <FaRocket className="text-green-600 dark:text-green-400 text-lg lg:text-xl" />
                   </div>
                   <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
-                    Platform Growth
+                    نمو المنصة
                   </h3>
                 </div>
                 <div className="h-48 sm:h-56 lg:h-64 w-full">
@@ -402,7 +402,7 @@ export default function AdminDashboard() {
             <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl p-4 lg:p-6 mb-8 lg:mb-12">
               <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-6 flex items-center gap-3">
                 <FaCog className="text-blue-500" />
-                Quick Actions
+                الإجراءات السريعة
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
                 <button
@@ -410,56 +410,56 @@ export default function AdminDashboard() {
                   className="group p-3 lg:p-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg lg:rounded-xl text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <FaPlus className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="text-xs lg:text-sm font-medium">Create Course</span>
+                  <span className="text-xs lg:text-sm font-medium">إنشاء دورة</span>
                 </button>
                 <button
                   onClick={() => navigate("/course/structure")}
                   className="group p-3 lg:p-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg lg:rounded-xl text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <FaBook className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="text-xs lg:text-sm font-medium">Course Structure</span>
+                  <span className="text-xs lg:text-sm font-medium">هيكل الدورة</span>
                 </button>
                 <button
                   onClick={() => navigate("/admin/blog-dashboard")}
                   className="group p-3 lg:p-4 bg-gradient-to-r from-green-500 to-green-600 rounded-lg lg:rounded-xl text-white hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <FaBlog className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="text-xs lg:text-sm font-medium">Blog Dashboard</span>
+                  <span className="text-xs lg:text-sm font-medium">لوحة المدونة</span>
                 </button>
                 <button
                   onClick={() => navigate("/admin/qa-dashboard")}
                   className="group p-3 lg:p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg lg:rounded-xl text-white hover:from-orange-600 hover:to-orange-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <FaQuestionCircle className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="text-xs lg:text-sm font-medium">Q&A Dashboard</span>
+                  <span className="text-xs lg:text-sm font-medium">لوحة الأسئلة والأجوبة</span>
                 </button>
                 <button
                   onClick={() => navigate("/admin/subject-dashboard")}
                   className="group p-3 lg:p-4 bg-gradient-to-r from-red-500 to-red-600 rounded-lg lg:rounded-xl text-white hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <FaGraduationCap className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="text-xs lg:text-sm font-medium">Subject Dashboard</span>
+                  <span className="text-xs lg:text-sm font-medium">لوحة المواد</span>
                 </button>
                 <button
                   onClick={() => navigate("/admin/users")}
                   className="group p-3 lg:p-4 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg lg:rounded-xl text-white hover:from-indigo-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <FaUsers className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="text-xs lg:text-sm font-medium">User Management</span>
+                  <span className="text-xs lg:text-sm font-medium">إدارة المستخدمين</span>
                 </button>
                 <button
                   onClick={() => navigate("/course/add-pdf")}
                   className="group p-3 lg:p-4 bg-gradient-to-r from-red-500 to-red-600 rounded-lg lg:rounded-xl text-white hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <FaFilePdf className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="text-xs lg:text-sm font-medium">Add PDF</span>
+                  <span className="text-xs lg:text-sm font-medium">إضافة PDF</span>
                 </button>
                 <button
                   onClick={() => navigate("/course/add-exam")}
                   className="group p-3 lg:p-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg lg:rounded-xl text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <FaClipboardCheck className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
-                  <span className="text-xs lg:text-sm font-medium">Add Exam</span>
+                  <span className="text-xs lg:text-sm font-medium">إضافة امتحان</span>
                 </button>
               </div>
             </div>
@@ -469,7 +469,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between mb-4 lg:mb-6">
                 <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                   <FaBook className="text-blue-500" />
-                  Course Management
+                  إدارة الدورات
                 </h3>
                 <div className="flex items-center gap-2">
                   <button
@@ -507,7 +507,7 @@ export default function AdminDashboard() {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search courses..."
+                    placeholder="البحث في الدورات..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-9 lg:pl-10 pr-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base"
@@ -519,7 +519,7 @@ export default function AdminDashboard() {
                   onChange={(e) => setCategoryFilter(e.target.value)}
                   className="px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base"
                 >
-                  <option value="all">All Categories</option>
+                  <option value="all">جميع الفئات</option>
                   {uniqueCategories.map(category => (
                     <option key={category} value={category}>{category}</option>
                   ))}
@@ -530,7 +530,7 @@ export default function AdminDashboard() {
                   onChange={(e) => setInstructorFilter(e.target.value)}
                   className="px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base"
                 >
-                  <option value="all">All Instructors</option>
+                  <option value="all">جميع المدرسين</option>
                   {uniqueInstructors.map(instructor => (
                     <option key={instructor} value={instructor}>{instructor}</option>
                   ))}
@@ -541,17 +541,17 @@ export default function AdminDashboard() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base"
                 >
-                  <option value="title">Sort by Title</option>
-                  <option value="category">Sort by Category</option>
-                  <option value="createdBy">Sort by Instructor</option>
-                  <option value="numberOfLectures">Sort by Lectures</option>
+                  <option value="title">ترتيب حسب العنوان</option>
+                  <option value="category">ترتيب حسب الفئة</option>
+                  <option value="createdBy">ترتيب حسب المدرس</option>
+                  <option value="numberOfLectures">ترتيب حسب المحاضرات</option>
                 </select>
               </div>
 
               {/* Results Info */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs lg:text-sm text-gray-600 dark:text-gray-400 mb-4 lg:mb-6 gap-2">
                 <span>
-                  Showing {filteredAndSortedCourses.length} of {myCourses?.length || 0} courses
+                  عرض {filteredAndSortedCourses.length} من {myCourses?.length || 0} دورة
                 </span>
                 {(searchTerm || categoryFilter !== "all" || instructorFilter !== "all") && (
                   <button
@@ -562,7 +562,7 @@ export default function AdminDashboard() {
                     }}
                     className="text-blue-600 dark:text-blue-400 hover:underline text-left sm:text-right"
                   >
-                    Clear filters
+                    مسح الفلاتر
                   </button>
                 )}
               </div>
@@ -597,12 +597,12 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex items-center gap-2">
                           <FaPlay className="text-purple-500 text-xs lg:text-sm" />
-                          <span className="text-gray-600 dark:text-gray-300">{course?.numberOfLectures || 0} lectures</span>
+                          <span className="text-gray-600 dark:text-gray-300">{course?.numberOfLectures || 0} محاضرة</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <FaDollarSign className="text-orange-500 text-xs lg:text-sm" />
                           <span className="text-gray-600 dark:text-gray-300">
-                            {course?.isPaid ? `${course?.price || 0} EGP` : 'Free'}
+                            {course?.isPaid ? `${course?.price || 0} جنيه` : 'مجاني'}
                           </span>
                         </div>
                       </div>
@@ -613,21 +613,21 @@ export default function AdminDashboard() {
                           className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 px-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center justify-center gap-2 text-xs lg:text-sm"
                         >
                           <FaEye className="w-3 h-3 lg:w-4 lg:h-4" />
-                          <span className="font-medium">View</span>
+                          <span className="font-medium">عرض</span>
                         </button>
                           <button
                           onClick={() => navigate("/course/edit", { state: { ...course } })}
                           className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 text-xs lg:text-sm"
                         >
                           <FaEdit className="w-3 h-3 lg:w-4 lg:h-4" />
-                          <span className="font-medium">Edit</span>
+                          <span className="font-medium">تعديل</span>
                           </button>
                           <button
                             onClick={() => onCourseDelete(course?._id)}
                           className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-2 px-3 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center justify-center gap-2 text-xs lg:text-sm"
                           >
                           <FaTrashAlt className="w-3 h-3 lg:w-4 lg:h-4" />
-                          <span className="font-medium">Delete</span>
+                          <span className="font-medium">حذف</span>
                         </button>
                       </div>
                     </div>
@@ -638,13 +638,13 @@ export default function AdminDashboard() {
                   <div className="w-16 h-16 lg:w-24 lg:h-24 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                     <FaBook className="text-gray-400 text-2xl lg:text-3xl" />
                   </div>
-                  <h3 className="text-base lg:text-lg font-medium text-gray-900 dark:text-white mb-2">No courses found</h3>
-                  <p className="text-sm lg:text-base text-gray-500 dark:text-gray-400 mb-4">Get started by creating your first course.</p>
+                  <h3 className="text-base lg:text-lg font-medium text-gray-900 dark:text-white mb-2">لم يتم العثور على دورات</h3>
+                  <p className="text-sm lg:text-base text-gray-500 dark:text-gray-400 mb-4">ابدأ بإنشاء دورتك الأولى.</p>
                   <button
                     onClick={() => navigate("/course/create")}
                     className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg lg:rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm lg:text-base"
                   >
-                    Create Your First Course
+                    إنشاء دورتك الأولى
                           </button>
                 </div>
               )}

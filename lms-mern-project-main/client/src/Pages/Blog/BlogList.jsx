@@ -41,10 +41,10 @@ export default function BlogList() {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
-              Our Blog
+              مدونتنا
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Discover insights, tips, and stories from our learning community
+              اكتشف الرؤى والنصائح والقصص من مجتمعنا التعليمي
             </p>
           </div>
 
@@ -53,7 +53,7 @@ export default function BlogList() {
             <div className="flex-1">
               <input
                 type="text"
-                placeholder="Search blogs..."
+                placeholder="البحث في المدونات..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -64,7 +64,7 @@ export default function BlogList() {
               onChange={(e) => setCategory(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">All Categories</option>
+              <option value="">جميع الفئات</option>
               {categories.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
@@ -75,7 +75,7 @@ export default function BlogList() {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">Loading blogs...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">جاري تحميل المدونات...</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -152,7 +152,7 @@ export default function BlogList() {
                       to={`/blog/${blog._id}`}
                       className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
                     >
-                      Read More
+                      اقرأ المزيد
                     </Link>
                   </div>
                 </div>
@@ -163,7 +163,7 @@ export default function BlogList() {
           {/* Pagination */}
           {blogs?.length === 0 && !loading && (
             <div className="text-center py-12">
-              <p className="text-gray-600 dark:text-gray-300">No blogs found.</p>
+              <p className="text-gray-600 dark:text-gray-300">لم يتم العثور على مدونات.</p>
             </div>
           )}
         </div>
