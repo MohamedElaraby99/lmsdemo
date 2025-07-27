@@ -6,7 +6,12 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
+    "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "setup-db": "node scripts/setup-database.js",
+    "test-db": "node scripts/setup-database.js",
+    "create-admin": "node scripts/create-admin.js",
+    "create-admin-custom": "node scripts/create-custom-admin.js",
     "migrate:add-username": "node migrations/addUsernameField.js",
     "migrate:cleanup-video-progress": "node migrations/cleanupVideoProgress.js",
     "migrate:fix-inconsistent-progress": "node migrations/fixInconsistentProgress.js",
