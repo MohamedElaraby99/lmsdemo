@@ -5,6 +5,7 @@ import { FaHome, FaArrowLeft, FaSearch, FaExclamationTriangle, FaGraduationCap, 
 
 function NotFound() {
   const navigate = useNavigate();
+  const { role } = useSelector((state) => state.auth);
 
   return (
     <Layout>
@@ -76,7 +77,7 @@ function NotFound() {
                       onClick={() => navigate("/courses")}
                       className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
                     >
-                      courses
+                      {role === "USER" ? "كورساتي" : "courses"}
                     </button>{" "}
                     and{" "}
                     <button 
@@ -162,15 +163,20 @@ function NotFound() {
                 <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                   <FaGraduationCap className="w-6 h-6 text-white" />
                 </div>
-                <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Browse Courses</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-white mb-2">
+                  {role === "USER" ? "كورساتي" : "Browse Courses"}
+                </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  Explore our comprehensive course catalog
+                  {role === "USER" 
+                    ? "استكشف دوراتك الشخصية" 
+                    : "Explore our comprehensive course catalog"
+                  }
                 </p>
                 <button 
                   onClick={() => navigate("/courses")}
                   className="text-blue-600 dark:text-blue-400 hover:underline font-medium text-sm"
                 >
-                  View All Courses →
+                  {role === "USER" ? "عرض كورساتي →" : "View All Courses →"}
                 </button>
               </div>
             </div>

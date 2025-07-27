@@ -210,7 +210,7 @@ export default function AdminDashboard() {
   // Statistics cards data
   const statsCards = [
     {
-      title: "إجمالي الدورات",
+      title: "إجمالي الكورسات",
       value: totalCourses,
       icon: FaBook,
       color: "from-blue-500 to-blue-600",
@@ -240,7 +240,7 @@ export default function AdminDashboard() {
       changeType: "increase"
     },
     {
-      title: "إجمالي المحاضرات",
+      title: "إجمالي الدروس",
       value: totalLectures,
       icon: FaPlay,
       color: "from-orange-500 to-orange-600",
@@ -312,7 +312,7 @@ export default function AdminDashboard() {
                     <FaChartLine className="text-blue-600 dark:text-blue-400 text-lg lg:text-xl" />
                   </div>
                   <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
-                    فئات الدورات
+                    فئات الكورسات
                   </h3>
                 </div>
                 <div className="h-48 sm:h-56 lg:h-64 w-full">
@@ -469,7 +469,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between mb-4 lg:mb-6">
                 <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                   <FaBook className="text-blue-500" />
-                  إدارة الدورات
+                  إدارة الكورسات
                 </h3>
                 <div className="flex items-center gap-2">
                   <button
@@ -507,7 +507,7 @@ export default function AdminDashboard() {
                   </div>
                   <input
                     type="text"
-                    placeholder="البحث في الدورات..."
+                    placeholder="البحث في الكورسات..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-9 lg:pl-10 pr-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base"
@@ -544,7 +544,7 @@ export default function AdminDashboard() {
                   <option value="title">ترتيب حسب العنوان</option>
                   <option value="category">ترتيب حسب الفئة</option>
                   <option value="createdBy">ترتيب حسب المدرس</option>
-                  <option value="numberOfLectures">ترتيب حسب المحاضرات</option>
+                  <option value="numberOfLectures">ترتيب حسب الدروس</option>
                 </select>
               </div>
 

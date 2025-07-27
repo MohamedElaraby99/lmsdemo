@@ -27,25 +27,21 @@ const NewsletterSection = () => {
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
               <FaRocket className="text-white" />
-              <span className="text-white font-semibold">Stay Updated</span>
+              <span className="text-white font-semibold">ابق على اطلاع</span>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Never Miss a Learning Opportunity
+              لا تفوت فرصة التعلم أبدًا
             </h2>
             
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Get weekly updates on new courses, exclusive content, and learning tips delivered straight to your inbox.
+              احصل على تحديثات أسبوعية حول الدورات التدريبية الجديدة والمحتوى الحصري ونصائح التعلم التي يتم إرسالها مباشرة إلى صندوق الوارد الخاص بك.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
               <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                <FaGift className="text-white" />
-                <span className="text-white text-sm">Free course every month</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
                 <FaEnvelope className="text-white" />
-                <span className="text-white text-sm">No spam, unsubscribe anytime</span>
+                <span className="text-white text-sm">لا رسائل مزعجة، يمكنك إلغاء الاشتراك في أي وقت</span>
               </div>
             </div>
 
@@ -56,7 +52,7 @@ const NewsletterSection = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
+                    placeholder="أدخل عنوان بريدك الإلكتروني"
                     className="w-full px-6 py-4 bg-white/90 backdrop-blur-sm text-gray-900 rounded-full focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white transition-all duration-300"
                     required
                   />
@@ -66,7 +62,7 @@ const NewsletterSection = () => {
                   className="group px-8 py-4 bg-white text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   <span className="flex items-center gap-2">
-                    Subscribe
+                    اشتراك
                     <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
                 </button>
@@ -76,13 +72,13 @@ const NewsletterSection = () => {
             {isSubscribed && (
               <div className="mt-6 p-4 bg-green-500/20 backdrop-blur-sm rounded-lg border border-green-400/30">
                 <p className="text-green-100 font-semibold">
-                  🎉 Thanks for subscribing! Check your email for confirmation.
+                  🎉 شكراً لك على الاشتراك! تحقق من بريدك الإلكتروني للتأكيد.
                 </p>
               </div>
             )}
 
             <p className="text-blue-200 text-sm mt-6">
-              Join 50,000+ learners who are already getting the best learning content
+              انضم إلى أكثر من 50,000 متعلم يحصلون على أفضل محتوى تعليمي
             </p>
           </div>
         </div>

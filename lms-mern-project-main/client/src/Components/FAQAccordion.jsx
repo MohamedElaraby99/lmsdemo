@@ -4,43 +4,43 @@ import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 const faqData = [
   {
     id: 1,
-    question: "How do I get started with the courses?",
-    answer: "Getting started is easy! Simply create an account, browse our course catalog, and enroll in courses that interest you. You can start learning immediately after enrollment. All courses are self-paced, so you can learn at your own speed."
+    question: "كيف أبدأ مع الدورات؟",
+    answer: "البدء سهل! ما عليك سوى إنشاء حساب، تصفح كتالوج الدورات لدينا، وسجل في الدورات التي تهمك. يمكنك البدء في التعلم فوراً بعد التسجيل. جميع الدورات ذاتية السرعة، لذا يمكنك التعلم بالسرعة التي تناسبك."
   },
   {
     id: 2,
-    question: "What payment methods do you accept?",
-    answer: "We accept all major credit cards, debit cards, and digital wallets including PayPal, Apple Pay, and Google Pay. All payments are processed securely through our trusted payment partners. We also offer installment plans for some courses."
+    question: "ما هي طرق الدفع التي تقبلونها؟",
+    answer: "نحن نقبل جميع بطاقات الائتمان الرئيسية، بطاقات الخصم، والمحافظ الرقمية بما في ذلك PayPal وApple Pay وGoogle Pay. جميع المدفوعات تتم معالجتها بأمان من خلال شركائنا الموثوقين في الدفع. كما نقدم خطط تقسيط لبعض الدورات."
   },
   {
     id: 3,
-    question: "Can I access courses offline?",
-    answer: "Currently, our courses are available online only for the best learning experience. However, you can download course materials, PDFs, and resources for offline reference. We're working on offline video downloads for premium members."
+    question: "هل يمكنني الوصول للدورات بدون إنترنت؟",
+    answer: "حالياً، دوراتنا متاحة عبر الإنترنت فقط للحصول على أفضل تجربة تعليمية. ومع ذلك، يمكنك تحميل المواد التعليمية والملفات PDF والموارد للاستخدام بدون إنترنت. نحن نعمل على تحميل الفيديوهات بدون إنترنت للأعضاء المميزين."
   },
   {
     id: 4,
-    question: "Do you offer certificates upon completion?",
-    answer: "Yes! Upon completion of a course, you'll receive a professional certificate that you can download and share on your LinkedIn profile, resume, or portfolio. Our certificates are recognized by employers worldwide."
+    question: "هل تقدمون شهادات عند الانتهاء؟",
+    answer: "نعم! عند الانتهاء من الدورة، ستحصل على شهادة مهنية يمكنك تحميلها ومشاركتها في ملفك الشخصي على LinkedIn أو سيرتك الذاتية أو محفظتك. شهاداتنا معترف بها من قبل أصحاب العمل في جميع أنحاء العالم."
   },
   {
     id: 5,
-    question: "What if I'm not satisfied with a course?",
-    answer: "We offer a 30-day money-back guarantee for all courses. If you're not completely satisfied with your learning experience, simply contact our support team within 30 days of purchase for a full refund."
+    question: "ماذا لو لم أكن راضياً عن الدورة؟",
+    answer: "نحن نقدم ضمان استرداد الأموال لمدة 30 يوماً لجميع الدورات. إذا لم تكن راضياً تماماً عن تجربة التعلم الخاصة بك، ما عليك سوى الاتصال بفريق الدعم لدينا خلال 30 يوماً من الشراء للحصول على استرداد كامل."
   },
   {
     id: 6,
-    question: "How do I get help if I have technical issues?",
-    answer: "Our support team is available 24/7 to help you with any technical issues. You can reach us through live chat, email, or our community forum. We also have a comprehensive help center with tutorials and guides."
+    question: "كيف أحصل على المساعدة إذا واجهت مشاكل تقنية؟",
+    answer: "فريق الدعم لدينا متاح على مدار الساعة طوال أيام الأسبوع لمساعدتك في أي مشاكل تقنية. يمكنك الوصول إلينا من خلال الدردشة المباشرة أو البريد الإلكتروني أو منتدى المجتمع. كما لدينا مركز مساعدة شامل مع دروس تعليمية وأدلة."
   },
   {
     id: 7,
-    question: "Are the courses suitable for beginners?",
-    answer: "Absolutely! We offer courses for all skill levels - from complete beginners to advanced professionals. Each course clearly indicates the required skill level, and many include prerequisite information to help you choose the right course."
+    question: "هل الدورات مناسبة للمبتدئين؟",
+    answer: "بالتأكيد! نحن نقدم دورات لجميع مستويات المهارة - من المبتدئين تماماً إلى المحترفين المتقدمين. كل دورة تشير بوضوح إلى مستوى المهارة المطلوب، والعديد منها يتضمن معلومات متطلبات مسبقة لمساعدتك في اختيار الدورة المناسبة."
   },
   {
     id: 8,
-    question: "Can I interact with instructors and other students?",
-    answer: "Yes! Our platform includes discussion forums, live Q&A sessions, and direct messaging with instructors. You can also join study groups and participate in community challenges to enhance your learning experience."
+    question: "هل يمكنني التفاعل مع المدربين والطلاب الآخرين؟",
+    answer: "نعم! منصتنا تتضمن منتديات مناقشة وجلسات أسئلة وأجوبة مباشرة ورسائل مباشرة مع المدربين. يمكنك أيضاً الانضمام إلى مجموعات الدراسة والمشاركة في تحديات المجتمع لتعزيز تجربة التعلم الخاصة بك."
   }
 ];
 
@@ -76,7 +76,7 @@ const FAQItem = ({ item, isOpen, onToggle }) => {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Helpful answer</span>
+                <span>إجابة مفيدة</span>
               </div>
             )}
           </div>
@@ -129,7 +129,7 @@ const FAQAccordion = () => {
         </div>
         <input
           type="text"
-          placeholder="Search FAQ questions..."
+          placeholder="البحث في الأسئلة الشائعة..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -137,7 +137,7 @@ const FAQAccordion = () => {
         {searchTerm && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {filteredItems.length} result{filteredItems.length !== 1 ? 's' : ''}
+              {filteredItems.length} نتيجة
             </span>
           </div>
         )}
@@ -165,14 +165,14 @@ const FAQAccordion = () => {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                     </svg>
-                    Show Less
+                    عرض أقل
                   </>
                 ) : (
                   <>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
-                    Show All Questions
+                    عرض جميع الأسئلة
                   </>
                 )}
               </button>
@@ -183,16 +183,16 @@ const FAQAccordion = () => {
         <div className="text-center py-8">
           <div className="text-6xl mb-4">🔍</div>
           <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-            No questions found
+            لم يتم العثور على أسئلة
           </h3>
           <p className="text-gray-600 dark:text-gray-300">
-            Try adjusting your search terms or browse all questions below.
+            حاول تعديل مصطلحات البحث أو تصفح جميع الأسئلة أدناه.
           </p>
           <button
             onClick={() => setSearchTerm("")}
             className="mt-4 inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
           >
-            Clear Search
+            مسح البحث
           </button>
         </div>
       )}

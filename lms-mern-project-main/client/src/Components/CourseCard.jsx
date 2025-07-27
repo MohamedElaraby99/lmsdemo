@@ -73,7 +73,7 @@ export default function CourseCard({ data, viewMode = "grid" }) {
               {/* Action */}
               <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
-                  View Course
+                  مشاهدة الكورس
                 </button>
               </div>
             </div>
@@ -155,7 +155,7 @@ export default function CourseCard({ data, viewMode = "grid" }) {
 
         {/* Action Button */}
         <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105">
-          View Course
+          مشاهدة الكورس
         </button>
       </div>
     </div>

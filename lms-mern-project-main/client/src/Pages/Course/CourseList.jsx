@@ -8,6 +8,7 @@ import { FaSearch, FaFilter, FaSort, FaGraduationCap, FaUsers, FaClock, FaStar }
 export default function CourseList() {
   const dispatch = useDispatch();
   const { coursesData } = useSelector((state) => state.course);
+  const { role } = useSelector((state) => state.auth);
   
   // State for search and filtering
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,11 +70,13 @@ export default function CourseList() {
             {/* Header */}
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-4">
-                استكشف دوراتنا
+                {role === "USER" ? "كورساتي" : "استكشف دوراتنا"}
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                اكتشف دورات مصممة بمهارة من قبل متخصصي الصناعة. 
-                ابدأ رحلة التعلم اليوم واطلق إمكانياتك.
+                {role === "USER" 
+                  ? "استكشف دوراتك الشخصية وابدأ رحلة التعلم المخصصة لك." 
+                  : "اكتشف دورات مصممة بمهارة من قبل متخصصي الصناعة. ابدأ رحلة التعلم اليوم واطلق إمكانياتك."
+                }
               </p>
               
               {/* Stats */}
@@ -82,7 +85,7 @@ export default function CourseList() {
                   <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {coursesData?.length || 0}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">إجمالي الدورات</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">إجمالي الكورسات</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
@@ -109,7 +112,7 @@ export default function CourseList() {
                   </div>
                   <input
                     type="text"
-                    placeholder="البحث في الدورات..."
+                    placeholder="البحث في الكورسات..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"

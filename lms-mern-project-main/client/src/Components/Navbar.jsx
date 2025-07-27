@@ -10,7 +10,7 @@ export default function Navbar() {
     localStorage.getItem("theme") === "dark"
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user } = useSelector((state) => state.auth);
+  const { user, role } = useSelector((state) => state.auth);
   const location = useLocation();
   const dispatch = useDispatch();
 
@@ -86,8 +86,8 @@ export default function Navbar() {
 
   const menuItems = [
     { name: "الرئيسية", path: "/", icon: FaHome },
-    { name: "الدورات", path: "/subjects", icon: FaGraduationCap },
-    { name: "جميع الدورات", path: "/courses", icon: FaList },
+    { name: "الكورسات", path: "/subjects", icon: FaGraduationCap },
+    { name: role === "USER" ? "كورساتي" : "جميع الكورسات", path: "/courses", icon: FaList },
     { name: "المدونة", path: "/blogs", icon: FaBlog },
     { name: "الأسئلة والأجوبة", path: "/qa", icon: FaQuestionCircle },
     { name: "تاريخ الامتحانات", path: "/exam-history", icon: FaHistory },
@@ -97,7 +97,7 @@ export default function Navbar() {
 
   const adminMenuItems = [
     { name: "لوحة التحكم", path: "/admin", icon: FaUser },
-    { name: "إدارة الدورات", path: "/admin/courses", icon: FaGraduationCap },
+    { name: "إدارة الكورسات", path: "/admin/courses", icon: FaGraduationCap },
     { name: "إدارة المستخدمين", path: "/admin/users", icon: FaUser },
     { name: "إدارة المدونة", path: "/admin/blogs", icon: FaBlog },
     { name: "إدارة الأسئلة والأجوبة", path: "/admin/qa", icon: FaQuestionCircle },

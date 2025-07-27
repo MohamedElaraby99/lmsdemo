@@ -65,7 +65,7 @@ const AddPdfToLesson = () => {
       setCoursesList(response.data.courses || []);
     } catch (error) {
       console.error('Error fetching courses:', error);
-      toast.error('فشل في جلب الدورات');
+      toast.error('فشل في جلب الكورسات');
     } finally {
       setLoading(false);
     }

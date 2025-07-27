@@ -111,7 +111,7 @@ export default function WhatsAppServices() {
                         </h1>
                         <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                             تواصل مع فريقنا المتخصص عبر واتساب للحصول على خدمات مخصصة، 
-                            مساعدة في الدورات، التدريس، والاستشارات المهنية.
+                            مساعدة في الكورسات، التدريس، والاستشارات المهنية.
                         </p>
                     </div>
 

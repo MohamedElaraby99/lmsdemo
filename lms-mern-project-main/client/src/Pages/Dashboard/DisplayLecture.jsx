@@ -972,7 +972,7 @@ export default function DisplayLecture() {
               onClick={() => navigate(role === 'USER' ? "/courses" : "/admin/dashboard")}
               className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
             >
-              العودة إلى {role === 'USER' ? 'الدورات' : 'لوحة التحكم'}
+              العودة إلى {role === 'USER' ? 'كورساتي' : 'لوحة التحكم'}
             </button>
           </div>
         </div>
@@ -1020,7 +1020,7 @@ export default function DisplayLecture() {
                 {courseData.title || "Course Content"}
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-6">
-                {courseData.description || "استكشف محتوى الدورة والمحاضرات"}
+                {courseData.description || "استكشف محتوى الدورة والدروس"}
               </p>
               
 
@@ -1082,7 +1082,7 @@ export default function DisplayLecture() {
                 className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 font-medium"
               >
                 <FaArrowLeft className="text-sm" />
-                العودة إلى {role === 'USER' ? 'الدورات' : 'لوحة التحكم'}
+                العودة إلى {role === 'USER' ? 'الكورسات' : 'لوحة التحكم'}
               </button>
             </div>
 
@@ -1110,13 +1110,6 @@ export default function DisplayLecture() {
                         >
                           <FaEdit />
                           تعديل الدورة
-                        </button>
-                        <button
-                          onClick={() => openAddVideoModal(null, null)}
-                          className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 transition-colors flex items-center gap-2"
-                        >
-                          <FaPlus />
-                          اختبار إضافة فيديو
                         </button>
                       </>
                     )}
@@ -1183,7 +1176,7 @@ export default function DisplayLecture() {
                     <div className="space-y-4">
                       <h3 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center gap-2">
                         <FaFolder className="text-green-500" />
-                        وحدات الدورة ({courseData.units.length})
+                        الوحدات  ({courseData.units.length})
                       </h3>
                       {courseData.units.map((unit, unitIndex) => (
                         <div key={unit._id || unit.id || unitIndex} className="bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-all duration-200">
@@ -1472,7 +1465,7 @@ export default function DisplayLecture() {
                     <div className="space-y-4">
                       <h3 className="text-xl font-semibold text-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center gap-2">
                         <FaPlay className="text-blue-500" />
-                        الدروس المباشرة ({courseData.directLessons.length})
+                        الدروس  ({courseData.directLessons.length})
                       </h3>
                       <div className="space-y-3">
                         {courseData.directLessons.map((lesson, index) => (

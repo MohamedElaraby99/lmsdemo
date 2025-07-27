@@ -120,19 +120,69 @@ export default function Sidebar({ hideBar = false }) {
               </div>
             </li>
 
-            {/* Wallet Balance Display */}
+            {/* Enhanced Wallet Balance Display */}
             {isLoggedIn && role !== "ADMIN" && (
-              <li className="mb-3">
-                <div className="bg-gradient-to-r from-green-400 to-blue-400 rounded-lg p-3 text-white shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <FaWallet className="text-white" size={14} />
-                      <span className="text-xs font-medium">الرصيد</span>
+              <li className="mb-4">
+                <div className="relative group">
+                  {/* Main Balance Card */}
+                  <div className="bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-emerald-400/20">
+                    {/* Animated Background Pattern */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent rounded-xl"></div>
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -translate-y-2 translate-x-2"></div>
+                    <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full translate-y-2 -translate-x-2"></div>
+                    
+                    {/* Header */}
+                    <div className="relative z-10 flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                          <FaWallet className="text-white" size={16} />
+                        </div>
+                        <div>
+                          <span className="text-xs font-medium opacity-90">رصيد المحفظة</span>
+                          <div className="text-xs opacity-75">Wallet Balance</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+                        <span className="text-xs opacity-75">متصل</span>
+                      </div>
+                    </div>
+                    
+                    {/* Balance Amount */}
+                    <div className="relative z-10">
+                      <div className="text-2xl font-bold mb-1">
+                        {balance ? `${balance.toFixed(2)}` : "0.00"}
+                      </div>
+                      <div className="text-sm opacity-90 font-medium">جنيه مصري</div>
+                    </div>
+                    
+                    {/* Quick Actions */}
+                    <div className="relative z-10 flex items-center gap-2 mt-3 pt-3 border-t border-white/20">
+                      <Link 
+                        to="/wallet" 
+                        className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1"
+                        onClick={hideDrawer}
+                      >
+                        <FaWallet size={12} />
+                        إدارة المحفظة
+                      </Link>
+                      <button 
+                        className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-2 text-xs transition-all duration-200"
+                        title="تحديث الرصيد"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
-                  <div className="text-lg font-bold mt-1">
-                    {balance ? `${balance.toFixed(2)} EGP` : "0.00 EGP"}
-                  </div>
+                  
+                  {/* Floating Notification Badge */}
+                  {balance && balance > 0 && (
+                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold animate-bounce">
+                      نشط
+                    </div>
+                  )}
                 </div>
               </li>
             )}
@@ -268,7 +318,7 @@ export default function Sidebar({ hideBar = false }) {
                   size={18}
                   className="text-gray-500 dark:text-slate-100"
                 />
-                جميع الدورات
+                {role === "USER" ? "كورساتي" : "جميع الكورسات"}
               </Link>
             </li>
 

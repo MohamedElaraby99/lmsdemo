@@ -40,6 +40,7 @@ export default function HomePage() {
   const dispatch = useDispatch();
   const { blogs } = useSelector((state) => state.blog);
   const { featuredSubjects } = useSelector((state) => state.subject);
+  const { role } = useSelector((state) => state.auth);
   const [isVisible, setIsVisible] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
@@ -140,9 +141,9 @@ export default function HomePage() {
                 أتقن
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> مهاراتك</span>
                 <br />
-                <span className="text-4xl md:text-6xl">مع الدورات بقيادة الخبراء</span>
+                <span className="text-4xl md:text-6xl">مع الكورسات بقيادة الخبراء</span>
                 <br />
-                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">الدورات</span>
+                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">الكورسات</span>
               </h1>
               
               <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
@@ -163,7 +164,7 @@ export default function HomePage() {
                   <button className="group px-8 py-4 border-2 border-blue-600 text-blue-600 dark:text-blue-400 font-semibold rounded-full text-lg hover:bg-blue-600 hover:text-white transition-all duration-300">
                     <span className="flex items-center gap-2">
                       <FaPlay className="group-hover:scale-110 transition-transform duration-300" />
-                      استكشف الدورات
+                      {role === "USER" ? "كورساتي" : "استكشف الكورسات"}
                     </span>
                   </button>
                 </Link>
@@ -220,7 +221,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              الدورات المميزة
+              الكورسات المميزة
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               اكتشف دوراتنا الأكثر شعبية وأعلى تقييماً
@@ -257,7 +258,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
               <FaArrowRight />
-              عرض جميع الدورات
+              عرض جميع الكورسات
             </Link>
           </div>
         </div>
@@ -391,7 +392,7 @@ export default function HomePage() {
                           هل أنت مستعد لبدء رحلة التعلم؟
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-            Join thousands of learners who have already transformed their careers with our expert-led courses.
+            انضم إلى آلاف المتعلمين الذين نجحوا بالفعل في تغيير حياتهم المهنية من خلال دوراتنا التدريبية التي يقدمها خبراؤنا.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link to="/signup">
@@ -401,7 +402,7 @@ export default function HomePage() {
             </Link>
             <Link to="/subjects">
               <button className="px-8 py-4 border-2 border-white text-white font-semibold rounded-full text-lg hover:bg-white hover:text-blue-600 transition-all duration-300">
-                تصفح الدورات
+                تصفح الكورسات
               </button>
             </Link>
             <Link to="/qa">

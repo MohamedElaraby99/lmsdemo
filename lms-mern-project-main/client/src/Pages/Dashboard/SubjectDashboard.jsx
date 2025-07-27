@@ -219,7 +219,7 @@ export default function SubjectDashboard() {
                 إدارة المواد الدراسية
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
-                إدارة الدورات والمواد الدراسية لمنصتك
+                إدارة الكورسات والمواد الدراسية لمنصتك
               </p>
             </div>
             <button

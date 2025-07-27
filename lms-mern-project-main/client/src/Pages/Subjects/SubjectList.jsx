@@ -15,6 +15,7 @@ import {
 export default function SubjectList() {
   const dispatch = useDispatch();
   const { subjects, loading, totalPages, currentPage, total, categories, levels } = useSelector((state) => state.subject);
+  const { role } = useSelector((state) => state.auth);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [level, setLevel] = useState("");
@@ -58,10 +59,13 @@ export default function SubjectList() {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
-              Available Courses
+              {role === "USER" ? "كورساتي" : "Available Courses"}
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300">
-              Explore our comprehensive collection of courses across various subjects
+              {role === "USER" 
+                ? "استكشف دوراتك الشخصية عبر مختلف المواد" 
+                : "Explore our comprehensive collection of courses across various subjects"
+              }
             </p>
           </div>
 
@@ -73,7 +77,7 @@ export default function SubjectList() {
                   <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search courses..."
+                    placeholder={role === "USER" ? "البحث في كورساتي..." : "Search courses..."}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -125,7 +129,7 @@ export default function SubjectList() {
 
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {total} courses found
+                  {total} {role === "USER" ? "كورسة" : "courses"} found
                 </div>
                 <button
                   type="button"
@@ -142,7 +146,9 @@ export default function SubjectList() {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">Loading courses...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">
+                {role === "USER" ? "جاري تحميل كورساتي..." : "Loading courses..."}
+              </p>
             </div>
           ) : subjects && subjects.length > 0 ? (
             <>
@@ -183,12 +189,12 @@ export default function SubjectList() {
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-                No courses found
+                {role === "USER" ? "لا توجد كورسات" : "No courses found"}
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
                 {search || category || level 
-                  ? "Try adjusting your search criteria" 
-                  : "No courses available at the moment"
+                  ? (role === "USER" ? "حاول تعديل معايير البحث" : "Try adjusting your search criteria")
+                  : (role === "USER" ? "لا توجد كورسات متاحة في الوقت الحالي" : "No courses available at the moment")
                 }
               </p>
               {!search && !category && !level && (
@@ -197,7 +203,7 @@ export default function SubjectList() {
                   className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
                 >
                   <FaSearch />
-                  Browse All Courses
+                  {role === "USER" ? "تصفح جميع كورساتي" : "Browse All Courses"}
                 </button>
               )}
             </div>
