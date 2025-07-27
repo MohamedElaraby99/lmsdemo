@@ -14,10 +14,13 @@ import {
   FaClock,
   FaStar,
   FaUsers,
-  FaEye
+  FaEye,
+  FaDollarSign,
+  FaFolder
 } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import CustomVideoPlayer from './CustomVideoPlayer';
+import TakeExamModal from './TakeExamModal';
 
 const LessonDetailModal = ({ 
   lesson, 
@@ -36,6 +39,8 @@ const LessonDetailModal = ({
   const [activeTab, setActiveTab] = useState('overview');
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [isLoadingPurchaseStatus, setIsLoadingPurchaseStatus] = useState(true);
+  const [showExamModal, setShowExamModal] = useState(false);
+  const [examType, setExamType] = useState('training');
 
   // Check purchase status when modal opens
   useEffect(() => {
@@ -104,15 +109,15 @@ const LessonDetailModal = ({
 
   const handleStartTrainingExam = () => {
     if (hasTrainingExam(lesson)) {
-      toast.success('Training exam feature coming soon!');
-      // TODO: Implement training exam functionality
+      setExamType('training');
+      setShowExamModal(true);
     }
   };
 
   const handleStartFinalExam = () => {
     if (hasFinalExam(lesson)) {
-      toast.success('Final exam feature coming soon!');
-      // TODO: Implement final exam functionality
+      setExamType('final');
+      setShowExamModal(true);
     }
   };
 
@@ -196,69 +201,61 @@ const LessonDetailModal = ({
                             </div>
                           </button>
 
-                          {hasVideo(lesson) && (
-                            <button
-                              onClick={() => setActiveTab('video')}
-                              className={`w-full text-left p-3 rounded-lg transition-colors ${
-                                activeTab === 'video'
-                                  ? 'bg-green-500 text-white'
-                                  : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <FaVideo />
-                                <span>Video Lecture</span>
-                              </div>
-                            </button>
-                          )}
+                          <button
+                            onClick={() => setActiveTab('video')}
+                            className={`w-full text-left p-3 rounded-lg transition-colors ${
+                              activeTab === 'video'
+                                ? 'bg-green-500 text-white'
+                                : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <FaVideo />
+                              <span>Video Lecture</span>
+                            </div>
+                          </button>
 
-                          {hasPdf(lesson) && (
-                            <button
-                              onClick={() => setActiveTab('pdf')}
-                              className={`w-full text-left p-3 rounded-lg transition-colors ${
-                                activeTab === 'pdf'
-                                  ? 'bg-blue-500 text-white'
-                                  : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setActiveTab('pdf')}
+                            className={`w-full text-left p-3 rounded-lg transition-colors ${
+                              activeTab === 'pdf'
+                                ? 'bg-blue-500 text-white'
+                                : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
                                 <FaFilePdf />
                                 <span>Study Material</span>
-                              </div>
-                            </button>
-                          )}
+                            </div>
+                          </button>
 
-                          {hasTrainingExam(lesson) && (
-                            <button
-                              onClick={() => setActiveTab('training')}
-                              className={`w-full text-left p-3 rounded-lg transition-colors ${
-                                activeTab === 'training'
-                                  ? 'bg-purple-500 text-white'
-                                  : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setActiveTab('training')}
+                            className={`w-full text-left p-3 rounded-lg transition-colors ${
+                              activeTab === 'training'
+                                ? 'bg-purple-500 text-white'
+                                : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
                                 <FaClipboardCheck />
                                 <span>Training Exam</span>
-                              </div>
-                            </button>
-                          )}
+                            </div>
+                          </button>
 
-                          {hasFinalExam(lesson) && (
-                            <button
-                              onClick={() => setActiveTab('final')}
-                              className={`w-full text-left p-3 rounded-lg transition-colors ${
-                                activeTab === 'final'
-                                  ? 'bg-red-500 text-white'
-                                  : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setActiveTab('final')}
+                            className={`w-full text-left p-3 rounded-lg transition-colors ${
+                              activeTab === 'final'
+                                ? 'bg-red-500 text-white'
+                                : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
                                 <FaExam />
                                 <span>Final Exam</span>
-                              </div>
-                            </button>
-                          )}
+                            </div>
+                          </button>
                         </div>
                       </>
                     ) : (
@@ -305,13 +302,15 @@ const LessonDetailModal = ({
                         <div className="space-y-6">
                           <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Lesson Overview</h3>
                           
+                          {/* Lesson Description */}
                           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
                             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">About this lesson</h4>
                             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                              {lesson.description || 'This lesson provides comprehensive coverage of the topic with practical examples and hands-on exercises.'}
+                              {lesson.description || 'No description available for this lesson.'}
                             </p>
                           </div>
 
+                          {/* Lesson Details Grid */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                               <div className="flex items-center gap-3 mb-3">
@@ -323,136 +322,231 @@ const LessonDetailModal = ({
 
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                               <div className="flex items-center gap-3 mb-3">
-                                <FaStar className="text-yellow-500" />
-                                <h5 className="font-semibold text-gray-900 dark:text-white">Difficulty</h5>
+                                <FaDollarSign className="text-green-500" />
+                                <h5 className="font-semibold text-gray-900 dark:text-white">Price</h5>
                               </div>
-                              <p className="text-gray-600 dark:text-gray-400">Beginner</p>
+                              <p className="text-gray-600 dark:text-gray-400">{formatPrice(lesson.price || 0)}</p>
+                            </div>
+
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                              <div className="flex items-center gap-3 mb-3">
+                                <FaVideo className="text-blue-500" />
+                                <h5 className="font-semibold text-gray-900 dark:text-white">Video</h5>
+                              </div>
+                              <p className="text-gray-600 dark:text-gray-400">
+                                {hasVideo(lesson) ? 'Available' : 'Not available'}
+                              </p>
+                            </div>
+
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                              <div className="flex items-center gap-3 mb-3">
+                                <FaFilePdf className="text-red-500" />
+                                <h5 className="font-semibold text-gray-900 dark:text-white">Study Material</h5>
+                              </div>
+                              <p className="text-gray-600 dark:text-gray-400">
+                                {hasPdf(lesson) ? 'Available' : 'Not available'}
+                              </p>
+                            </div>
+
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                              <div className="flex items-center gap-3 mb-3">
+                                <FaClipboardCheck className="text-purple-500" />
+                                <h5 className="font-semibold text-gray-900 dark:text-white">Training Exam</h5>
+                              </div>
+                              <p className="text-gray-600 dark:text-gray-400">
+                                {hasTrainingExam(lesson) ? 'Available' : 'Not available'}
+                              </p>
+                            </div>
+
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                              <div className="flex items-center gap-3 mb-3">
+                                <FaExam className="text-red-500" />
+                                <h5 className="font-semibold text-gray-900 dark:text-white">Final Exam</h5>
+                              </div>
+                              <p className="text-gray-600 dark:text-gray-400">
+                                {hasFinalExam(lesson) ? 'Available' : 'Not available'}
+                              </p>
                             </div>
                           </div>
 
-                          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6">
-                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">What you'll learn</h4>
-                            <ul className="space-y-2">
-                              <li className="flex items-start gap-2">
-                                <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
-                                <span className="text-gray-700 dark:text-gray-300">Understand the core concepts</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
-                                <span className="text-gray-700 dark:text-gray-300">Practice with real examples</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
-                                <span className="text-gray-700 dark:text-gray-300">Complete hands-on exercises</span>
-                              </li>
-                            </ul>
-                          </div>
+                          {/* Unit Information */}
+                          {unit && (
+                            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6">
+                              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Unit Information</h4>
+                              <div className="flex items-center gap-3">
+                                <FaFolder className="text-blue-500" />
+                                <div>
+                                  <h5 className="font-medium text-gray-900 dark:text-white">{unit.title}</h5>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {unit.description || 'Unit description not available'}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Course Information */}
+                          {courseData && (
+                            <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg p-6">
+                              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Course Information</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <h5 className="font-medium text-gray-900 dark:text-white">Course Title</h5>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{courseData.title}</p>
+                                </div>
+                                <div>
+                                  <h5 className="font-medium text-gray-900 dark:text-white">Category</h5>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{courseData.category}</p>
+                                </div>
+                                <div>
+                                  <h5 className="font-medium text-gray-900 dark:text-white">Subject</h5>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{courseData.subject?.name || courseData.subject}</p>
+                                </div>
+                                <div>
+                                  <h5 className="font-medium text-gray-900 dark:text-white">Stage</h5>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{courseData.stage}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 
-                      {activeTab === 'video' && hasVideo(lesson) && (
+                      {activeTab === 'video' && (
                         <div className="space-y-4">
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Video Lecture</h3>
-                          <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                            <div className="flex items-center gap-3 mb-4">
-                              <FaVideo className="text-2xl text-blue-500" />
-                              <div>
-                                <h4 className="font-medium text-gray-900 dark:text-white">{lesson.lecture.title || 'Video Lecture'}</h4>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">{lesson.lecture.description || 'Video content'}</p>
+                          {hasVideo(lesson) ? (
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                              <div className="flex items-center gap-3 mb-4">
+                                <FaVideo className="text-2xl text-blue-500" />
+                                <div>
+                                  <h4 className="font-medium text-gray-900 dark:text-white">{lesson.lecture.title || 'Video Lecture'}</h4>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{lesson.lecture.description || 'Video content'}</p>
+                                </div>
                               </div>
+                              <button
+                                onClick={handleWatchVideo}
+                                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+                              >
+                                <FaPlay />
+                                Watch Video
+                              </button>
                             </div>
-                            <button
-                              onClick={handleWatchVideo}
-                              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
-                            >
-                              <FaPlay />
-                              Watch Video
-                            </button>
-                          </div>
+                          ) : (
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-6 text-center">
+                              <FaVideo className="text-4xl text-gray-400 mx-auto mb-4" />
+                              <h4 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Video Available</h4>
+                              <p className="text-sm text-gray-500 dark:text-gray-500">Video content has not been added to this lesson yet.</p>
+                            </div>
+                          )}
                         </div>
                       )}
 
-                      {activeTab === 'pdf' && hasPdf(lesson) && (
+                      {activeTab === 'pdf' && (
                         <div className="space-y-4">
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Study Material</h3>
-                          <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                            <div className="flex items-center gap-3 mb-4">
-                              <FaFilePdf className="text-2xl text-red-500" />
-                              <div>
-                                <h4 className="font-medium text-gray-900 dark:text-white">{lesson.pdf.title || 'Study Material'}</h4>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">PDF Document</p>
+                          {hasPdf(lesson) ? (
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                              <div className="flex items-center gap-3 mb-4">
+                                <FaFilePdf className="text-2xl text-red-500" />
+                                <div>
+                                  <h4 className="font-medium text-gray-900 dark:text-white">{lesson.pdf.title || 'Study Material'}</h4>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">PDF Document</p>
+                                </div>
                               </div>
+                              <button
+                                onClick={handleDownloadPdf}
+                                className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
+                              >
+                                <FaDownload />
+                                Download PDF
+                              </button>
                             </div>
-                            <button
-                              onClick={handleDownloadPdf}
-                              className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
-                            >
-                              <FaDownload />
-                              Download PDF
-                            </button>
-                          </div>
+                          ) : (
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-6 text-center">
+                              <FaFilePdf className="text-4xl text-gray-400 mx-auto mb-4" />
+                              <h4 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Study Material Available</h4>
+                              <p className="text-sm text-gray-500 dark:text-gray-500">PDF study materials have not been added to this lesson yet.</p>
+                            </div>
+                          )}
                         </div>
                       )}
 
-                      {activeTab === 'training' && hasTrainingExam(lesson) && (
+                      {activeTab === 'training' && (
                         <div className="space-y-4">
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Training Exam</h3>
-                          <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                            <div className="flex items-center gap-3 mb-4">
-                              <FaClipboardCheck className="text-2xl text-purple-500" />
-                              <div>
-                                <h4 className="font-medium text-gray-900 dark:text-white">Practice Exam</h4>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">{lesson.trainingExam.questions.length} questions • {lesson.trainingExam.timeLimit} minutes</p>
+                          {hasTrainingExam(lesson) ? (
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                              <div className="flex items-center gap-3 mb-4">
+                                <FaClipboardCheck className="text-2xl text-purple-500" />
+                                <div>
+                                  <h4 className="font-medium text-gray-900 dark:text-white">Practice Exam</h4>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{lesson.trainingExam.questions.length} questions • {lesson.trainingExam.timeLimit} minutes</p>
+                                </div>
                               </div>
+                              <div className="space-y-2 mb-4">
+                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                  <FaClock />
+                                  <span>Time Limit: {lesson.trainingExam.timeLimit} minutes</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                  <FaStar />
+                                  <span>Passing Score: {lesson.trainingExam.passingScore}%</span>
+                                </div>
+                              </div>
+                              <button
+                                onClick={handleStartTrainingExam}
+                                className="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                              >
+                                Start Training Exam
+                              </button>
                             </div>
-                            <div className="space-y-2 mb-4">
-                              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <FaClock />
-                                <span>Time Limit: {lesson.trainingExam.timeLimit} minutes</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <FaStar />
-                                <span>Passing Score: {lesson.trainingExam.passingScore}%</span>
-                              </div>
+                          ) : (
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-6 text-center">
+                              <FaClipboardCheck className="text-4xl text-gray-400 mx-auto mb-4" />
+                              <h4 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Training Exam Available</h4>
+                              <p className="text-sm text-gray-500 dark:text-gray-500">Training exam has not been added to this lesson yet.</p>
                             </div>
-                            <button
-                              onClick={handleStartTrainingExam}
-                              className="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600 transition-colors"
-                            >
-                              Start Training Exam
-                            </button>
-                          </div>
+                          )}
                         </div>
                       )}
 
-                      {activeTab === 'final' && hasFinalExam(lesson) && (
+                      {activeTab === 'final' && (
                         <div className="space-y-4">
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Final Exam</h3>
-                          <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
-                            <div className="flex items-center gap-3 mb-4">
-                              <FaExam className="text-2xl text-red-500" />
-                              <div>
-                                <h4 className="font-medium text-gray-900 dark:text-white">Final Assessment</h4>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">{lesson.finalExam.questions.length} questions • {lesson.finalExam.timeLimit} minutes</p>
+                          {hasFinalExam(lesson) ? (
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                              <div className="flex items-center gap-3 mb-4">
+                                <FaExam className="text-2xl text-red-500" />
+                                <div>
+                                  <h4 className="font-medium text-gray-900 dark:text-white">Final Assessment</h4>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{lesson.finalExam.questions.length} questions • {lesson.finalExam.timeLimit} minutes</p>
+                                </div>
                               </div>
+                              <div className="space-y-2 mb-4">
+                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                  <FaClock />
+                                  <span>Time Limit: {lesson.finalExam.timeLimit} minutes</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                  <FaStar />
+                                  <span>Passing Score: {lesson.finalExam.passingScore}%</span>
+                                </div>
+                              </div>
+                              <button
+                                onClick={handleStartFinalExam}
+                                className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                              >
+                                Start Final Exam
+                              </button>
                             </div>
-                            <div className="space-y-2 mb-4">
-                              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <FaClock />
-                                <span>Time Limit: {lesson.finalExam.timeLimit} minutes</span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <FaStar />
-                                <span>Passing Score: {lesson.finalExam.passingScore}%</span>
-                              </div>
+                          ) : (
+                            <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-6 text-center">
+                              <FaExam className="text-4xl text-gray-400 mx-auto mb-4" />
+                              <h4 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Final Exam Available</h4>
+                              <p className="text-sm text-gray-500 dark:text-gray-500">Final exam has not been added to this lesson yet.</p>
                             </div>
-                            <button
-                              onClick={handleStartFinalExam}
-                              className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors"
-                            >
-                              Start Final Exam
-                            </button>
-                          </div>
+                          )}
                         </div>
                       )}
                     </>
@@ -566,6 +660,18 @@ const LessonDetailModal = ({
           userName="User"
           courseId={courseData?._id}
           showProgress={true}
+        />
+      )}
+
+      {/* Take Exam Modal */}
+      {showExamModal && lesson && (
+        <TakeExamModal
+          isOpen={showExamModal}
+          onClose={() => setShowExamModal(false)}
+          lesson={lesson}
+          courseId={courseData?._id}
+          unitId={unit?._id}
+          examType={examType}
         />
       )}
     </>

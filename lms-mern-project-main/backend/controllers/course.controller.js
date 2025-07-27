@@ -1145,21 +1145,36 @@ const addPdfToLesson = async (req, res, next) => {
             return next(new AppError('Course not found', 404));
         }
 
-        // Upload PDF to cloudinary
-        const result = await cloudinary.v2.uploader.upload(req.file.path, {
-            resource_type: 'raw',
-            folder: 'course-pdfs',
-            format: 'pdf'
-        });
+        let pdfData;
 
-        // Remove file from server
-        fs.unlinkSync(req.file.path);
+        // Check if Cloudinary is properly configured
+        if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' ||
+            process.env.CLOUDINARY_API_KEY === 'placeholder' ||
+            process.env.CLOUDINARY_API_SECRET === 'placeholder') {
+            // Use local file storage when Cloudinary is not configured
+            console.log('Cloudinary not configured, using local file path');
+            pdfData = {
+                public_id: `local-${Date.now()}`,
+                secure_url: `${process.env.BACKEND_URL || 'http://localhost:5000'}/uploads/${req.file.filename}`,
+                title: title || 'Study Material'
+            };
+        } else {
+            // Upload PDF to cloudinary
+            const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                resource_type: 'raw',
+                folder: 'course-pdfs',
+                format: 'pdf'
+            });
 
-        const pdfData = {
-            public_id: result.public_id,
-            secure_url: result.secure_url,
-            title: title || 'Study Material'
-        };
+            // Remove file from server only after successful Cloudinary upload
+            fs.unlinkSync(req.file.path);
+
+            pdfData = {
+                public_id: result.public_id,
+                secure_url: result.secure_url,
+                title: title || 'Study Material'
+            };
+        }
 
         let lesson = null;
         let lessonIndex = -1;

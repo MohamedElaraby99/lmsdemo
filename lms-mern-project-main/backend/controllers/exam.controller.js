@@ -10,7 +10,18 @@ const asyncHandler = (fn) => (req, res, next) => {
 // Take training exam
 const takeTrainingExam = asyncHandler(async (req, res) => {
     const { courseId, lessonId, unitId, answers } = req.body;
-    const userId = req.user._id;
+    
+    console.log('Exam Controller Debug:', {
+        user: req.user,
+        userId: req.user.id,
+        body: req.body
+    });
+    
+    const userId = req.user.id;
+    
+    if (!userId) {
+        throw new AppError("User ID not found in request", 400);
+    }
 
     // Find the course and lesson
     const course = await Course.findById(courseId);
@@ -38,18 +49,6 @@ const takeTrainingExam = asyncHandler(async (req, res) => {
 
     if (!lesson.trainingExam || lesson.trainingExam.questions.length === 0) {
         throw new AppError("No training exam available for this lesson", 400);
-    }
-
-    // Check if user has already taken this exam
-    const existingResult = await ExamResult.findOne({
-        user: userId,
-        course: courseId,
-        lessonId,
-        examType: 'training'
-    });
-
-    if (existingResult) {
-        throw new AppError("You have already taken this training exam", 400);
     }
 
     // Calculate results
@@ -119,7 +118,18 @@ const takeTrainingExam = asyncHandler(async (req, res) => {
 // Take final exam
 const takeFinalExam = asyncHandler(async (req, res) => {
     const { courseId, lessonId, unitId, answers } = req.body;
-    const userId = req.user._id;
+    
+    console.log('Final Exam Controller Debug:', {
+        user: req.user,
+        userId: req.user.id,
+        body: req.body
+    });
+    
+    const userId = req.user.id;
+    
+    if (!userId) {
+        throw new AppError("User ID not found in request", 400);
+    }
 
     // Find the course and lesson
     const course = await Course.findById(courseId);
@@ -147,18 +157,6 @@ const takeFinalExam = asyncHandler(async (req, res) => {
 
     if (!lesson.finalExam || lesson.finalExam.questions.length === 0) {
         throw new AppError("No final exam available for this lesson", 400);
-    }
-
-    // Check if user has already taken this exam
-    const existingResult = await ExamResult.findOne({
-        user: userId,
-        course: courseId,
-        lessonId,
-        examType: 'final'
-    });
-
-    if (existingResult) {
-        throw new AppError("You have already taken this final exam", 400);
     }
 
     // Calculate results
@@ -228,7 +226,7 @@ const takeFinalExam = asyncHandler(async (req, res) => {
 // Get exam results for a lesson
 const getExamResults = asyncHandler(async (req, res) => {
     const { courseId, lessonId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user.id;
 
     const results = await ExamResult.find({
         user: userId,
@@ -244,7 +242,7 @@ const getExamResults = asyncHandler(async (req, res) => {
 
 // Get user's exam history
 const getUserExamHistory = asyncHandler(async (req, res) => {
-    const userId = req.user._id;
+    const userId = req.user.id;
     const { page = 1, limit = 10 } = req.query;
 
     const skip = (page - 1) * limit;
@@ -265,6 +263,31 @@ const getUserExamHistory = asyncHandler(async (req, res) => {
             totalPages: Math.ceil(total / limit),
             totalResults: total,
             resultsPerPage: parseInt(limit)
+        }
+    });
+});
+
+// Check if user has taken an exam
+const checkExamTaken = asyncHandler(async (req, res) => {
+    const { courseId, lessonId, examType } = req.params;
+    const userId = req.user.id;
+    
+    if (!userId) {
+        throw new AppError("User ID not found in request", 400);
+    }
+
+    const existingResult = await ExamResult.findOne({
+        user: userId,
+        course: courseId,
+        lessonId,
+        examType
+    });
+
+    res.status(200).json({
+        success: true,
+        data: {
+            hasTaken: !!existingResult,
+            result: existingResult
         }
     });
 });
@@ -322,5 +345,6 @@ export {
     takeFinalExam,
     getExamResults,
     getUserExamHistory,
-    getExamStatistics
+    getExamStatistics,
+    checkExamTaken
 }; 

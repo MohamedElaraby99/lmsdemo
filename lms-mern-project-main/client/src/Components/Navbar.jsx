@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaSun, FaMoon, FaBars, FaHome, FaUser, FaGraduationCap, FaBlog, FaQuestionCircle, FaSignOutAlt, FaPlus, FaList, FaInfoCircle, FaPhone } from "react-icons/fa";
+import { FaSun, FaMoon, FaBars, FaHome, FaUser, FaGraduationCap, FaBlog, FaQuestionCircle, FaSignOutAlt, FaPlus, FaList, FaInfoCircle, FaPhone, FaHistory } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../Redux/Slices/AuthSlice";
@@ -90,6 +90,7 @@ export default function Navbar() {
     { name: "All Courses", path: "/courses", icon: FaList },
     { name: "Blog", path: "/blogs", icon: FaBlog },
     { name: "Q&A", path: "/qa", icon: FaQuestionCircle },
+    { name: "Exam History", path: "/exam-history", icon: FaHistory },
     { name: "About", path: "/about", icon: FaInfoCircle },
     { name: "Contact", path: "/contact", icon: FaPhone },
   ];

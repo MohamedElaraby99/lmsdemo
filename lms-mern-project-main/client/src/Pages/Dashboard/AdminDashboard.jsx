@@ -39,7 +39,9 @@ import {
   FaPlay,
   FaCalendarAlt,
   FaClock,
-  FaStar
+  FaStar,
+  FaFilePdf,
+  FaClipboardCheck
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -444,6 +446,20 @@ export default function AdminDashboard() {
                 >
                   <FaUsers className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
                   <span className="text-xs lg:text-sm font-medium">User Management</span>
+                </button>
+                <button
+                  onClick={() => navigate("/course/add-pdf")}
+                  className="group p-3 lg:p-4 bg-gradient-to-r from-red-500 to-red-600 rounded-lg lg:rounded-xl text-white hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105"
+                >
+                  <FaFilePdf className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="text-xs lg:text-sm font-medium">Add PDF</span>
+                </button>
+                <button
+                  onClick={() => navigate("/course/add-exam")}
+                  className="group p-3 lg:p-4 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg lg:rounded-xl text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+                >
+                  <FaClipboardCheck className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="text-xs lg:text-sm font-medium">Add Exam</span>
                 </button>
               </div>
             </div>

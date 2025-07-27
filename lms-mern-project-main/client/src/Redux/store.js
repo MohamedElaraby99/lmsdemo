@@ -13,6 +13,7 @@ import AdminUserSliceReducer from "./Slices/AdminUserSlice"
 import WhatsAppServiceSliceReducer from "./Slices/WhatsAppServiceSlice"
 import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
 import LessonPurchaseSliceReducer from "./Slices/LessonPurchaseSlice"
+import ExamSliceReducer from "./Slices/ExamSlice"
 
  const store = configureStore({
     reducer: {
@@ -29,7 +30,8 @@ import LessonPurchaseSliceReducer from "./Slices/LessonPurchaseSlice"
         adminUser: AdminUserSliceReducer,
         whatsappService: WhatsAppServiceSliceReducer,
         videoProgress: VideoProgressSliceReducer,
-        lessonPurchase: LessonPurchaseSliceReducer
+        lessonPurchase: LessonPurchaseSliceReducer,
+        exam: ExamSliceReducer
     },
     devTools: true
 })

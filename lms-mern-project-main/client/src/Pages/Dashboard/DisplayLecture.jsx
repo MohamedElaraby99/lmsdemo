@@ -59,7 +59,7 @@ import PurchaseModal from "../../Components/PurchaseModal";
 import PurchaseSuccess from "../../Components/PurchaseSuccess";
 import LessonDetailModal from "../../Components/LessonDetailModal";
 import { getWalletBalance } from "../../Redux/Slices/WalletSlice";
-import { purchaseLesson, checkLessonPurchase, selectIsLessonPurchased, selectPurchaseLoading, selectPurchaseError, clearPurchaseError } from "../../Redux/Slices/LessonPurchaseSlice";
+import { purchaseLesson, checkLessonPurchase, getUserLessonPurchases, selectIsLessonPurchased, selectPurchaseLoading, selectPurchaseError, clearPurchaseError } from "../../Redux/Slices/LessonPurchaseSlice";
 
 export default function DisplayLecture() {
   const navigate = useNavigate();
@@ -135,34 +135,37 @@ export default function DisplayLecture() {
     // Get wallet balance for users
     if (role === 'USER') {
       dispatch(getWalletBalance());
+    }
+    
+    // Load all user purchases and check lesson purchases for this course
+    if (courseData?._id && role !== 'ADMIN') {
+      // First, load all user purchases
+      dispatch(getUserLessonPurchases());
       
-      // Check lesson purchases for this course
-      if (courseData?._id) {
-        // Check purchases for unit lessons
-        if (courseData.units) {
-          courseData.units.forEach(unit => {
-            if (unit.lessons) {
-              unit.lessons.forEach(lesson => {
-                // Check purchase status for all lessons, not just those with videos
-                dispatch(checkLessonPurchase({ 
-                  courseId: courseData._id, 
-                  lessonId: lesson._id || lesson.id 
-                }));
-              });
-            }
-          });
-        }
-        
-        // Check purchases for direct lessons
-        if (courseData.directLessons) {
-          courseData.directLessons.forEach(lesson => {
-            // Check purchase status for all lessons, not just those with videos
-            dispatch(checkLessonPurchase({ 
-              courseId: courseData._id, 
-              lessonId: lesson._id || lesson.id 
-            }));
-          });
-        }
+      // Check purchases for unit lessons
+      if (courseData.units) {
+        courseData.units.forEach(unit => {
+          if (unit.lessons) {
+            unit.lessons.forEach(lesson => {
+              // Check purchase status for all lessons, not just those with videos
+              dispatch(checkLessonPurchase({ 
+                courseId: courseData._id, 
+                lessonId: lesson._id || lesson.id 
+              }));
+            });
+          }
+        });
+      }
+      
+      // Check purchases for direct lessons
+      if (courseData.directLessons) {
+        courseData.directLessons.forEach(lesson => {
+          // Check purchase status for all lessons, not just those with videos
+          dispatch(checkLessonPurchase({ 
+            courseId: courseData._id, 
+            lessonId: lesson._id || lesson.id 
+          }));
+        });
       }
     }
 
@@ -177,6 +180,13 @@ export default function DisplayLecture() {
       dispatch(clearPurchaseError());
     }
   }, [purchaseError, dispatch]);
+
+  // Load user purchases on component mount for non-admin users
+  useEffect(() => {
+    if (role !== 'ADMIN') {
+      dispatch(getUserLessonPurchases());
+    }
+  }, [role, dispatch]);
 
   // Refresh purchase status when lesson purchase state changes
   useEffect(() => {
@@ -522,7 +532,8 @@ export default function DisplayLecture() {
       purchases: lessonPurchaseState.purchases,
       purchaseIds: lessonPurchaseState.purchases.map(p => p.lessonId),
       isPurchased,
-      role
+      role,
+      totalPurchases: lessonPurchaseState.purchases.length
     });
     
     return isPurchased;

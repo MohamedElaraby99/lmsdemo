@@ -44,6 +44,9 @@ import Profile from "./Pages/User/Profile";
 import DisplayLecture from "./Pages/Dashboard/DisplayLecture";
 import AddLecture from "./Pages/Dashboard/AddLecture";
 import AdminDashboard from "./Pages/Dashboard/AdminDashboard";
+import AddPdfToLesson from "./Pages/Dashboard/AddPdfToLesson";
+import AddExamToLesson from "./Pages/Dashboard/AddExamToLesson";
+import ExamHistory from "./Pages/User/ExamHistory";
 
 function App() {
   // Auto scroll to top on route change
@@ -95,6 +98,9 @@ function App() {
             <Route path="/course/edit" element={<EditCourse />} />
             <Route path="/course/structure" element={<CourseStructure />} />
             <Route path="/course/addlecture" element={<AddLecture />} />
+            <Route path="/course/add-pdf" element={<AddPdfToLesson />} />
+            <Route path="/course/add-exam" element={<AddExamToLesson />} />
+            <Route path="/exam-history" element={<ExamHistory />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/blog-dashboard" element={<BlogDashboard />} />
           <Route path="/admin/qa-dashboard" element={<QADashboard />} />
