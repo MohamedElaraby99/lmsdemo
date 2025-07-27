@@ -135,18 +135,18 @@ export default function WhatsAppServiceDashboard() {
         e.preventDefault();
         
         if (!createForm.name || !createForm.description || !createForm.price) {
-            toast.error("Please fill in all required fields");
+            toast.error("يرجى ملء جميع الحقول المطلوبة");
             return;
         }
 
         if (createForm.whatsappNumbers.some(num => !num.number || !num.name)) {
-            toast.error("Please fill in all WhatsApp number fields");
+            toast.error("يرجى ملء جميع حقول أرقام واتساب");
             return;
         }
 
         try {
             await dispatch(createService(createForm)).unwrap();
-            toast.success("Service created successfully!");
+            toast.success("تم إنشاء الخدمة بنجاح!");
             setShowCreateModal(false);
             setCreateForm({
                 name: "",
@@ -168,13 +168,13 @@ export default function WhatsAppServiceDashboard() {
         e.preventDefault();
         
         if (!editForm.name || !editForm.description || !editForm.price) {
-            toast.error("Please fill in all required fields");
+            toast.error("يرجى ملء جميع الحقول المطلوبة");
             return;
         }
 
         try {
             await dispatch(updateService({ id: selectedService._id, serviceData: editForm })).unwrap();
-            toast.success("Service updated successfully!");
+            toast.success("تم تحديث الخدمة بنجاح!");
             setShowEditModal(false);
             setSelectedService(null);
         } catch (error) {
@@ -183,10 +183,10 @@ export default function WhatsAppServiceDashboard() {
     };
 
     const handleDeleteService = async (serviceId) => {
-        if (window.confirm("Are you sure you want to delete this service?")) {
+        if (window.confirm("هل أنت متأكد من حذف هذه الخدمة؟")) {
             try {
                 await dispatch(deleteService(serviceId)).unwrap();
-                toast.success("Service deleted successfully!");
+                toast.success("تم حذف الخدمة بنجاح!");
             } catch (error) {
                 toast.error(error);
             }
@@ -196,7 +196,7 @@ export default function WhatsAppServiceDashboard() {
     const handleToggleStatus = async (serviceId) => {
         try {
             await dispatch(toggleServiceStatus(serviceId)).unwrap();
-            toast.success("Service status updated successfully!");
+            toast.success("تم تحديث حالة الخدمة بنجاح!");
         } catch (error) {
             toast.error(error);
         }
@@ -206,7 +206,7 @@ export default function WhatsAppServiceDashboard() {
         e.preventDefault();
         
         if (!addNumberForm.number || !addNumberForm.name) {
-            toast.error("Please fill in number and name");
+            toast.error("يرجى ملء الرقم والاسم");
             return;
         }
 
@@ -215,7 +215,7 @@ export default function WhatsAppServiceDashboard() {
                 serviceId: selectedService._id,
                 numberData: addNumberForm
             })).unwrap();
-            toast.success("WhatsApp number added successfully!");
+            toast.success("تم إضافة رقم واتساب بنجاح!");
             setShowAddNumberModal(false);
             setAddNumberForm({ number: "", name: "", workingHours: "24/7" });
         } catch (error) {
@@ -224,7 +224,7 @@ export default function WhatsAppServiceDashboard() {
     };
 
     const handleRemoveWhatsAppNumber = async (serviceId, numberId) => {
-        if (window.confirm("Are you sure you want to remove this WhatsApp number?")) {
+        if (window.confirm("هل أنت متأكد من إزالة رقم واتساب هذا؟")) {
             try {
                 await dispatch(removeWhatsAppNumber({ serviceId, numberId })).unwrap();
                 toast.success("WhatsApp number removed successfully!");
@@ -286,10 +286,10 @@ export default function WhatsAppServiceDashboard() {
                     <div className="flex justify-between items-center mb-8">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                WhatsApp Services Management
+                                إدارة خدمات واتساب
                             </h1>
                             <p className="text-gray-600 dark:text-gray-300 mt-2">
-                                Manage WhatsApp services and contact numbers
+                                إدارة خدمات واتساب وأرقام الاتصال
                             </p>
                         </div>
                         <button
@@ -297,7 +297,7 @@ export default function WhatsAppServiceDashboard() {
                             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors"
                         >
                             <FaPlus />
-                            Add New Service
+                            إضافة خدمة جديدة
                         </button>
                     </div>
 
@@ -308,7 +308,7 @@ export default function WhatsAppServiceDashboard() {
                                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Search services..."
+                                    placeholder="البحث في الخدمات..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -319,7 +319,7 @@ export default function WhatsAppServiceDashboard() {
                                 onChange={(e) => setCategoryFilter(e.target.value)}
                                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             >
-                                <option value="all">All Categories</option>
+                                <option value="all">جميع الفئات</option>
                                 {categories.map(category => (
                                     <option key={category} value={category}>
                                         {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -331,13 +331,13 @@ export default function WhatsAppServiceDashboard() {
                                 onChange={(e) => setSortBy(e.target.value)}
                                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                             >
-                                <option value="createdAt">Latest First</option>
-                                <option value="name">Name A-Z</option>
-                                <option value="price">Price Low-High</option>
-                                <option value="category">Category</option>
+                                <option value="createdAt">الأحدث أولاً</option>
+                                <option value="name">الاسم أ-ي</option>
+                                <option value="price">السعر منخفض-عالي</option>
+                                <option value="category">الفئة</option>
                             </select>
                             <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center justify-center">
-                                {sortedServices.length} services found
+                                {sortedServices.length} خدمة تم العثور عليها
                             </div>
                         </div>
                     </div>
@@ -364,7 +364,7 @@ export default function WhatsAppServiceDashboard() {
                                                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                                             : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                                     }`}>
-                                                        {service.isActive ? 'Active' : 'Inactive'}
+                                                        {service.isActive ? 'نشط' : 'غير نشط'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -372,21 +372,21 @@ export default function WhatsAppServiceDashboard() {
                                                 <button
                                                     onClick={() => handleToggleStatus(service._id)}
                                                     className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                                                    title={service.isActive ? 'Deactivate' : 'Activate'}
+                                                    title={service.isActive ? 'إلغاء التفعيل' : 'تفعيل'}
                                                 >
                                                     {service.isActive ? <FaToggleOn className="text-green-500" /> : <FaToggleOff className="text-gray-400" />}
                                                 </button>
                                                 <button
                                                     onClick={() => openEditModal(service)}
                                                     className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                                                    title="Edit"
+                                                    title="تعديل"
                                                 >
                                                     <FaEdit />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteService(service._id)}
                                                     className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                                                    title="Delete"
+                                                    title="حذف"
                                                 >
                                                     <FaTrash />
                                                 </button>
@@ -411,13 +411,13 @@ export default function WhatsAppServiceDashboard() {
                                         <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    WhatsApp Numbers ({service.whatsappNumbers.length})
+                                                    أرقام واتساب ({service.whatsappNumbers.length})
                                                 </span>
                                                 <button
                                                     onClick={() => openAddNumberModal(service)}
                                                     className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                                                 >
-                                                    Add Number
+                                                    إضافة رقم
                                                 </button>
                                             </div>
                                             <div className="space-y-2">
@@ -437,7 +437,7 @@ export default function WhatsAppServiceDashboard() {
                                                         <button
                                                             onClick={() => handleRemoveWhatsAppNumber(service._id, number._id)}
                                                             className="text-red-500 hover:text-red-700 text-sm"
-                                                            title="Remove"
+                                                            title="إزالة"
                                                         >
                                                             <FaTimes />
                                                         </button>
@@ -454,9 +454,9 @@ export default function WhatsAppServiceDashboard() {
                     {sortedServices.length === 0 && !adminLoading && (
                         <div className="text-center py-12">
                             <FaExclamationTriangle className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No services found</h3>
+                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">لم يتم العثور على خدمات</h3>
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Get started by creating a new WhatsApp service.
+                                ابدأ بإنشاء خدمة واتساب جديدة.
                             </p>
                         </div>
                     )}
@@ -469,7 +469,7 @@ export default function WhatsAppServiceDashboard() {
                             <div className="p-6">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                        Create New WhatsApp Service
+                                        إنشاء خدمة واتساب جديدة
                                     </h2>
                                     <button
                                         onClick={() => setShowCreateModal(false)}
@@ -483,7 +483,7 @@ export default function WhatsAppServiceDashboard() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Service Name *
+                                                اسم الخدمة *
                                             </label>
                                             <input
                                                 type="text"
@@ -496,7 +496,7 @@ export default function WhatsAppServiceDashboard() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Category *
+                                                الفئة *
                                             </label>
                                             <select
                                                 name="category"
@@ -516,7 +516,7 @@ export default function WhatsAppServiceDashboard() {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Description *
+                                            الوصف *
                                         </label>
                                         <textarea
                                             name="description"
@@ -531,7 +531,7 @@ export default function WhatsAppServiceDashboard() {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Price *
+                                                السعر *
                                             </label>
                                             <input
                                                 type="number"
@@ -546,7 +546,7 @@ export default function WhatsAppServiceDashboard() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Currency
+                                                العملة
                                             </label>
                                             <select
                                                 name="currency"
@@ -561,7 +561,7 @@ export default function WhatsAppServiceDashboard() {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                Icon
+                                                الأيقونة
                                             </label>
                                             <input
                                                 type="text"
@@ -575,7 +575,7 @@ export default function WhatsAppServiceDashboard() {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Instructions
+                                            التعليمات
                                         </label>
                                         <textarea
                                             name="instructions"
@@ -588,7 +588,7 @@ export default function WhatsAppServiceDashboard() {
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Estimated Response Time
+                                            وقت الاستجابة المتوقع
                                         </label>
                                         <input
                                             type="text"
@@ -602,14 +602,14 @@ export default function WhatsAppServiceDashboard() {
                                     <div>
                                         <div className="flex justify-between items-center mb-4">
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                WhatsApp Numbers *
+                                                أرقام واتساب *
                                             </label>
                                             <button
                                                 type="button"
                                                 onClick={addWhatsAppNumberField}
                                                 className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                                             >
-                                                + Add Number
+                                                + إضافة رقم
                                             </button>
                                         </div>
                                         <div className="space-y-4">
@@ -617,7 +617,7 @@ export default function WhatsAppServiceDashboard() {
                                                 <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                            Number *
+                                                            الرقم *
                                                         </label>
                                                         <input
                                                             type="text"
@@ -629,7 +629,7 @@ export default function WhatsAppServiceDashboard() {
                                                     </div>
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                            Name *
+                                                            الاسم *
                                                         </label>
                                                         <input
                                                             type="text"
@@ -642,7 +642,7 @@ export default function WhatsAppServiceDashboard() {
                                                     <div className="flex items-end gap-2">
                                                         <div className="flex-1">
                                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                                Working Hours
+                                                                ساعات العمل
                                                             </label>
                                                             <input
                                                                 type="text"
@@ -672,7 +672,7 @@ export default function WhatsAppServiceDashboard() {
                                             onClick={() => setShowCreateModal(false)}
                                             className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                         >
-                                            Cancel
+                                            إلغاء
                                         </button>
                                         <button
                                             type="submit"
@@ -682,12 +682,12 @@ export default function WhatsAppServiceDashboard() {
                                             {createLoading ? (
                                                 <>
                                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                    Creating...
+                                                    جاري الإنشاء...
                                                 </>
                                             ) : (
                                                 <>
                                                     <FaPlus />
-                                                    Create Service
+                                                    إنشاء الخدمة
                                                 </>
                                             )}
                                         </button>

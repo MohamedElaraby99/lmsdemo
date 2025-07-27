@@ -69,11 +69,11 @@ export default function CourseList() {
             {/* Header */}
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-4">
-                Explore Our Courses
+                استكشف دوراتنا
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Discover expertly crafted courses designed by industry professionals. 
-                Start your learning journey today and unlock your potential.
+                اكتشف دورات مصممة بمهارة من قبل متخصصي الصناعة. 
+                ابدأ رحلة التعلم اليوم واطلق إمكانياتك.
               </p>
               
               {/* Stats */}
@@ -82,19 +82,19 @@ export default function CourseList() {
                   <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                     {coursesData?.length || 0}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Courses</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">إجمالي الدورات</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                     {new Set(coursesData?.map(c => c.category)).size || 0}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Categories</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">الفئات</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
                     {new Set(coursesData?.map(c => c.createdBy)).size || 0}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Instructors</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">المدرسون</div>
                 </div>
               </div>
             </div>
@@ -109,7 +109,7 @@ export default function CourseList() {
                   </div>
                   <input
                     type="text"
-                    placeholder="Search courses..."
+                    placeholder="البحث في الدورات..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -128,7 +128,7 @@ export default function CourseList() {
                   >
                     {categories.map(category => (
                       <option key={category} value={category}>
-                        {category === "all" ? "All Categories" : category}
+                        {category === "all" ? "جميع الفئات" : category}
                       </option>
                     ))}
                   </select>
@@ -144,10 +144,10 @@ export default function CourseList() {
                     onChange={(e) => setSortBy(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none"
                   >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="title">Title A-Z</option>
-                    <option value="instructor">Instructor A-Z</option>
+                    <option value="newest">الأحدث أولاً</option>
+                    <option value="oldest">الأقدم أولاً</option>
+                    <option value="title">العنوان أ-ي</option>
+                    <option value="instructor">المدرس أ-ي</option>
                   </select>
                 </div>
 
@@ -183,7 +183,7 @@ export default function CourseList() {
               {/* Results Info */}
               <div className="mt-4 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>
-                  Showing {filteredAndSortedCourses.length} of {coursesData?.length || 0} courses
+                  عرض {filteredAndSortedCourses.length} من {coursesData?.length || 0} دورة
           </span>
                 {(searchTerm || selectedCategory !== "all") && (
                   <button
@@ -193,7 +193,7 @@ export default function CourseList() {
                     }}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    Clear filters
+                    مسح المرشحات
                   </button>
                 )}
               </div>
@@ -214,10 +214,10 @@ export default function CourseList() {
               <div className="text-center py-16">
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">
-                  No courses found
+                  لم يتم العثور على دورات
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  Try adjusting your search terms or filters to find what you're looking for.
+                  حاول تعديل مصطلحات البحث أو المرشحات للعثور على ما تبحث عنه.
                 </p>
                 <button
                   onClick={() => {
@@ -227,7 +227,7 @@ export default function CourseList() {
                   className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200"
                 >
                   <FaSearch className="w-4 h-4" />
-                  Clear Search
+                  مسح البحث
                 </button>
               </div>
             )}
