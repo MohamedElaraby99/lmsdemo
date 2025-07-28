@@ -20,6 +20,8 @@ import {
   FaWhatsapp,
   FaChalkboardTeacher,
   FaGraduationCap,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
 
 export default function Sidebar({ hideBar = false }) {
@@ -27,6 +29,7 @@ export default function Sidebar({ hideBar = false }) {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
   const { isLoggedIn, role, data } = useSelector((state) => state.auth);
   const { balance } = useSelector((state) => state.wallet);
 
@@ -81,6 +84,10 @@ export default function Sidebar({ hideBar = false }) {
     drawerSide[0].classList.remove("drawer-open");
   }
 
+  const toggleAdminDropdown = () => {
+    setAdminDropdownOpen(!adminDropdownOpen);
+  };
+
   return (
     <div className="drawer absolute right-0 z-50 w-fit" key={windowWidth}>
       <input className="drawer-toggle" id="my-drawer" type="checkbox" />
@@ -124,55 +131,55 @@ export default function Sidebar({ hideBar = false }) {
 
             {/* Enhanced Wallet Balance Display */}
             {isLoggedIn && role !== "ADMIN" && (
-              <li className="mb-4">
+              <li className="mb-3">
                 <div className="relative group">
                   {/* Main Balance Card */}
-                  <div className="bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 rounded-xl p-4 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-emerald-400/20">
+                  <div className="bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 rounded-lg p-3 text-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-102 border border-emerald-400/20">
                     {/* Animated Background Pattern */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent rounded-xl"></div>
-                    <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -translate-y-2 translate-x-2"></div>
-                    <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full translate-y-2 -translate-x-2"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent rounded-lg"></div>
+                    <div className="absolute top-0 right-0 w-8 h-8 bg-white/10 rounded-full -translate-y-1 translate-x-1"></div>
+                    <div className="absolute bottom-0 left-0 w-6 h-6 bg-white/10 rounded-full translate-y-1 -translate-x-1"></div>
                     
                     {/* Header */}
-                    <div className="relative z-10 flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                          <FaWallet className="text-white" size={16} />
+                    <div className="relative z-10 flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className="p-1.5 bg-white/20 rounded-md backdrop-blur-sm">
+                          <FaWallet className="text-white" size={12} />
                         </div>
                         <div>
                           <span className="text-xs font-medium opacity-90">رصيد المحفظة</span>
-                          <div className="text-xs opacity-75">Wallet Balance</div>
+                          <div className="text-xs opacity-75">Wallet</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+                        <div className="w-1.5 h-1.5 bg-green-300 rounded-full animate-pulse"></div>
                         <span className="text-xs opacity-75">متصل</span>
                       </div>
                     </div>
                     
                     {/* Balance Amount */}
                     <div className="relative z-10">
-                      <div className="text-2xl font-bold mb-1">
+                      <div className="text-lg font-bold mb-0.5">
                         {balance ? `${balance.toFixed(2)}` : "0.00"}
                       </div>
-                      <div className="text-sm opacity-90 font-medium">جنيه مصري</div>
+                      <div className="text-xs opacity-90 font-medium">جنيه مصري</div>
                     </div>
                     
                     {/* Quick Actions */}
-                    <div className="relative z-10 flex items-center gap-2 mt-3 pt-3 border-t border-white/20">
+                    <div className="relative z-10 flex items-center gap-1.5 mt-2 pt-2 border-t border-white/20">
                       <Link 
                         to="/wallet" 
-                        className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1"
+                        className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-md px-2 py-1.5 text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1"
                         onClick={hideDrawer}
                       >
-                        <FaWallet size={12} />
+                        <FaWallet size={10} />
                         إدارة المحفظة
                       </Link>
                       <button 
-                        className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-2 text-xs transition-all duration-200"
+                        className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-md p-1.5 text-xs transition-all duration-200"
                         title="تحديث الرصيد"
                       >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                       </button>
@@ -181,7 +188,7 @@ export default function Sidebar({ hideBar = false }) {
                   
                   {/* Floating Notification Badge */}
                   {balance && balance > 0 && (
-                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold animate-bounce">
+                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold animate-bounce">
                       نشط
                     </div>
                   )}
@@ -195,26 +202,6 @@ export default function Sidebar({ hideBar = false }) {
                   className="text-gray-500 dark:text-slate-100"
                 />
                 الرئيسية
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/blogs" className="flex gap-4 items-center">
-                <FaBlog
-                  size={18}
-                  className="text-gray-500 dark:text-slate-100"
-                />
-                المدونة
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/qa" className="flex gap-4 items-center">
-                <FaQuestionCircle
-                  size={18}
-                  className="text-gray-500 dark:text-slate-100"
-                />
-                الأسئلة والأجوبة
               </Link>
             </li>
 
@@ -250,30 +237,6 @@ export default function Sidebar({ hideBar = false }) {
                     className="text-gray-500 dark:text-slate-100"
                   />
                   إنشاء دورة جديدة
-                </Link>
-              </li>
-            )}
-
-            {role === "ADMIN" && (
-              <li>
-                <Link to="/admin/blog-dashboard" className="flex gap-4 items-center">
-                  <FaBlog
-                    size={18}
-                    className="text-gray-500 dark:text-slate-100"
-                  />
-                  إدارة المدونة
-                </Link>
-              </li>
-            )}
-
-            {role === "ADMIN" && (
-              <li>
-                <Link to="/admin/qa-dashboard" className="flex gap-4 items-center">
-                  <FaQuestionCircle
-                    size={18}
-                    className="text-gray-500 dark:text-slate-100"
-                  />
-                  إدارة الأسئلة والأجوبة
                 </Link>
               </li>
             )}
@@ -326,15 +289,96 @@ export default function Sidebar({ hideBar = false }) {
               </li>
             )}
 
+            {/* Admin Services Dropdown */}
             {role === "ADMIN" && (
               <li>
-                <Link to="/admin/whatsapp-services" className="flex gap-4 items-center">
-                  <FaWhatsapp
-                    size={18}
-                    className="text-gray-500 dark:text-slate-100"
-                  />
-                  إدارة واتساب
-                </Link>
+                <button 
+                  onClick={toggleAdminDropdown}
+                  className="flex gap-4 items-center justify-between w-full"
+                >
+                  <div className="flex gap-4 items-center">
+                    <FaInfoCircle
+                      size={18}
+                      className="text-gray-500 dark:text-slate-100"
+                    />
+                    خدمات الإدارة
+                  </div>
+                  {adminDropdownOpen ? (
+                    <FaChevronUp size={14} className="text-gray-500 dark:text-slate-100" />
+                  ) : (
+                    <FaChevronDown size={14} className="text-gray-500 dark:text-slate-100" />
+                  )}
+                </button>
+                
+                {adminDropdownOpen && (
+                  <ul className="mt-2 mr-8 space-y-2">
+                    <li>
+                      <Link 
+                        to="/admin/blog-dashboard" 
+                        className="flex gap-4 items-center text-sm"
+                        onClick={hideDrawer}
+                      >
+                        <FaBlog
+                          size={16}
+                          className="text-gray-500 dark:text-slate-100"
+                        />
+                        إدارة المدونة
+                      </Link>
+                    </li>
+                    <li>
+                      <Link 
+                        to="/admin/qa-dashboard" 
+                        className="flex gap-4 items-center text-sm"
+                        onClick={hideDrawer}
+                      >
+                        <FaQuestionCircle
+                          size={16}
+                          className="text-gray-500 dark:text-slate-100"
+                        />
+                        إدارة الأسئلة والأجوبة
+                      </Link>
+                    </li>
+                    <li>
+                      <Link 
+                        to="/admin/whatsapp-services" 
+                        className="flex gap-4 items-center text-sm"
+                        onClick={hideDrawer}
+                      >
+                        <FaWhatsapp
+                          size={16}
+                          className="text-gray-500 dark:text-slate-100"
+                        />
+                        إدارة واتساب
+                      </Link>
+                    </li>
+                    <li>
+                      <Link 
+                        to="/about" 
+                        className="flex gap-4 items-center text-sm"
+                        onClick={hideDrawer}
+                      >
+                        <FaInfoCircle
+                          size={16}
+                          className="text-gray-500 dark:text-slate-100"
+                        />
+                        عننا
+                      </Link>
+                    </li>
+                    <li>
+                      <Link 
+                        to="/contact" 
+                        className="flex gap-4 items-center text-sm"
+                        onClick={hideDrawer}
+                      >
+                        <FaPhone
+                          size={16}
+                          className="text-gray-500 dark:text-slate-100"
+                        />
+                        اتصل بنا
+                      </Link>
+                    </li>
+                  </ul>
+                )}
               </li>
             )}
 
@@ -358,35 +402,60 @@ export default function Sidebar({ hideBar = false }) {
               </Link>
             </li>
 
-            <li>
-              <Link to="/whatsapp-services" className="flex gap-4 items-center">
-                <FaWhatsapp
-                  size={18}
-                  className="text-gray-500 dark:text-slate-100"
-                />
-                خدمات واتساب
-              </Link>
-            </li>
+            {/* Show these links for non-admin users */}
+            {role !== "ADMIN" && (
+              <>
+                <li>
+                  <Link to="/blogs" className="flex gap-4 items-center">
+                    <FaBlog
+                      size={18}
+                      className="text-gray-500 dark:text-slate-100"
+                    />
+                    المدونة
+                  </Link>
+                </li>
 
-            <li>
-              <Link to="/contact" className="flex gap-4 items-center">
-                <FaPhone
-                  size={18}
-                  className="text-gray-500 dark:text-slate-100"
-                />
-                اتصل بنا
-              </Link>
-            </li>
+                <li>
+                  <Link to="/qa" className="flex gap-4 items-center">
+                    <FaQuestionCircle
+                      size={18}
+                      className="text-gray-500 dark:text-slate-100"
+                    />
+                    الأسئلة والأجوبة
+                  </Link>
+                </li>
 
-            <li>
-              <Link to="/about" className="flex gap-4 items-center">
-                <FaInfoCircle
-                  size={18}
-                  className="text-gray-500 dark:text-slate-100"
-                />
-                عننا
-              </Link>
-            </li>
+                <li>
+                  <Link to="/whatsapp-services" className="flex gap-4 items-center">
+                    <FaWhatsapp
+                      size={18}
+                      className="text-gray-500 dark:text-slate-100"
+                    />
+                    خدمات واتساب
+                  </Link>
+                </li>
+
+                <li>
+                  <Link to="/contact" className="flex gap-4 items-center">
+                    <FaPhone
+                      size={18}
+                      className="text-gray-500 dark:text-slate-100"
+                    />
+                    اتصل بنا
+                  </Link>
+                </li>
+
+                <li>
+                  <Link to="/about" className="flex gap-4 items-center">
+                    <FaInfoCircle
+                      size={18}
+                      className="text-gray-500 dark:text-slate-100"
+                    />
+                    عننا
+                  </Link>
+                </li>
+              </>
+            )}
 
             {isLoggedIn ? (
               <li className="absolute bottom-4 w-[90%]">

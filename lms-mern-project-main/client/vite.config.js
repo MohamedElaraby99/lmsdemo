@@ -5,6 +5,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   define: {
-    'import.meta.env.VITE_REACT_APP_API_URL': JSON.stringify('https://lms.fikra.solutions/api/v1')
+    'import.meta.env.VITE_REACT_APP_API_URL': JSON.stringify(
+      process.env.VITE_REACT_APP_API_URL || 'http://localhost:4000/api/v1'
+    )
   }
 })

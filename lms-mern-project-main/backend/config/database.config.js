@@ -6,7 +6,7 @@ mongoose.set('strictQuery', false);
 const dbConfig = {
     // MongoDB Atlas (Recommended for production)
     atlas: {
-        uri: process.env.MONGO_URI_ATLAS || "mongodb+srv://hazem77mostafa90new:M27vAmg3tCOQdM6N@cluster0.8deiv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+        uri: process.env.MONGO_URI_ATLAS || "mongodb://localhost:27017/lms_database",
         options: {
             useNewUrlParser: true,
             useUnifiedTopology: true,
@@ -27,7 +27,7 @@ const dbConfig = {
     
     // MongoDB Community Server
     community: {
-        uri: process.env.MONGO_URI_COMMUNITY || "mongodb+srv://hazem77mostafa90new:M27vAmg3tCOQdM6N@cluster0.8deiv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+        uri: process.env.MONGO_URI_COMMUNITY || "mongodb://localhost:27017/lms_database",
         options: {
             useNewUrlParser: true,
             useUnifiedTopology: true,
