@@ -44,6 +44,7 @@ import {
     FaCheckCircle,
     FaTimesCircle
 } from "react-icons/fa";
+import { axiosInstance } from "../../Helpers/axiosInstance";
 
 export default function AdminUserDashboard() {
     const dispatch = useDispatch();
@@ -64,6 +65,7 @@ export default function AdminUserDashboard() {
     const [filters, setFilters] = useState({
         role: "",
         status: "",
+        stage: "",
         search: ""
     });
     const [selectedUserId, setSelectedUserId] = useState(null);
@@ -71,6 +73,28 @@ export default function AdminUserDashboard() {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
     const [activeTab, setActiveTab] = useState("users");
+    const [stages, setStages] = useState([]);
+
+    // Fetch stages on component mount
+    useEffect(() => {
+        const fetchStages = async () => {
+            try {
+                const response = await axiosInstance.get('/stages');
+                if (response.data.success) {
+                    setStages(response.data.data.stages);
+                }
+            } catch (error) {
+                console.error('Error fetching stages:', error);
+            }
+        };
+
+        fetchStages();
+    }, []);
+
+    // Monitor filter changes
+    useEffect(() => {
+        console.log('Filters changed:', filters);
+    }, [filters]);
 
     useEffect(() => {
         console.log('=== AUTH DEBUG ===');
@@ -84,13 +108,30 @@ export default function AdminUserDashboard() {
         
         if (isLoggedIn && role === "ADMIN") {
             console.log('Dispatching getAllUsers...');
-            dispatch(getAllUsers({ page: 1, limit: 20 }));
+            let roleFilter = "";
+            if (activeTab === "users") {
+                roleFilter = "USER";
+            } else if (activeTab === "admins") {
+                roleFilter = "ADMIN";
+            }
+            
+            console.log('Initial role filter:', roleFilter);
+            console.log('Initial filters:', filters);
+            
+            dispatch(getAllUsers({ 
+                page: 1, 
+                limit: 20, 
+                role: roleFilter,
+                status: filters.status,
+                stage: filters.stage,
+                search: filters.search 
+            }));
         } else {
             console.log('User not admin or not logged in');
             console.log('isLoggedIn:', isLoggedIn);
             console.log('role:', role);
         }
-    }, [dispatch, user, isLoggedIn, role]);
+    }, [dispatch, user, isLoggedIn, role, activeTab]);
 
     useEffect(() => {
         if (error) {
@@ -105,6 +146,7 @@ export default function AdminUserDashboard() {
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
+        console.log('Filter change:', name, value);
         setFilters(prev => ({
             ...prev,
             [name]: value
@@ -112,10 +154,35 @@ export default function AdminUserDashboard() {
     };
 
     const handleApplyFilters = () => {
+        console.log('Applying filters:', filters);
+        console.log('Active tab:', activeTab);
+        
+        let roleFilter = "";
+        if (activeTab === "users") {
+            roleFilter = "USER";
+        } else if (activeTab === "admins") {
+            roleFilter = "ADMIN";
+        } else {
+            roleFilter = filters.role;
+        }
+        
+        console.log('Role filter:', roleFilter);
+        console.log('Final filter params:', { 
+            page: 1, 
+            limit: 20, 
+            role: roleFilter,
+            status: filters.status,
+            stage: filters.stage,
+            search: filters.search 
+        });
+        
         dispatch(getAllUsers({ 
             page: 1, 
             limit: 20, 
-            ...filters 
+            role: roleFilter,
+            status: filters.status,
+            stage: filters.stage,
+            search: filters.search 
         }));
     };
 
@@ -296,21 +363,30 @@ export default function AdminUserDashboard() {
                             }`}
                         >
                             <FaUsers className="inline mr-2" />
+                            المستخدمون العاديون
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("admins")}
+                            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                                activeTab === "admins"
+                                    ? "bg-purple-600 text-white"
+                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            }`}
+                        >
+                            <FaCrown className="inline mr-2" />
+                            المديرون
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("all")}
+                            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                                activeTab === "all"
+                                    ? "bg-green-600 text-white"
+                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            }`}
+                        >
+                            <FaUser className="inline mr-2" />
                             جميع المستخدمين
                         </button>
-                        {selectedUser && (
-                            <button
-                                onClick={() => setActiveTab("details")}
-                                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                                    activeTab === "details"
-                                        ? "bg-indigo-600 text-white"
-                                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                                }`}
-                            >
-                                <FaUser className="inline mr-2" />
-                                تفاصيل المستخدم
-                            </button>
-                        )}
                     </div>
 
                     {/* Tab Content */}
@@ -323,7 +399,7 @@ export default function AdminUserDashboard() {
 
                                 {/* Filters */}
                                 <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 البحث
@@ -337,21 +413,23 @@ export default function AdminUserDashboard() {
                                                 placeholder="البحث بالاسم أو البريد الإلكتروني"
                                             />
                                         </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                                الدور
-                                            </label>
-                                            <select
-                                                name="role"
-                                                value={filters.role}
-                                                onChange={handleFilterChange}
-                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            >
-                                                <option value="">جميع الأدوار</option>
-                                                <option value="USER">مستخدم</option>
-                                                <option value="ADMIN">مدير</option>
-                                            </select>
-                                        </div>
+                                        {activeTab === "all" && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    الدور
+                                                </label>
+                                                <select
+                                                    name="role"
+                                                    value={filters.role}
+                                                    onChange={handleFilterChange}
+                                                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                >
+                                                    <option value="">جميع الأدوار</option>
+                                                    <option value="USER">مستخدم</option>
+                                                    <option value="ADMIN">مدير</option>
+                                                </select>
+                                            </div>
+                                        )}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 الحالة
@@ -367,9 +445,30 @@ export default function AdminUserDashboard() {
                                                 <option value="inactive">غير نشط</option>
                                             </select>
                                         </div>
+                                        {activeTab === "users" && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    المرحلة الدراسية
+                                                </label>
+                                                <select
+                                                    name="stage"
+                                                    value={filters.stage}
+                                                    onChange={handleFilterChange}
+                                                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                >
+                                                    <option value="">جميع المراحل</option>
+                                                    {stages.map(stage => (
+                                                        <option key={stage._id} value={stage._id}>{stage.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
                                         <div className="flex items-end">
                                             <button
-                                                onClick={handleApplyFilters}
+                                                onClick={() => {
+                                                    console.log('Filter button clicked!');
+                                                    handleApplyFilters();
+                                                }}
                                                 className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition-colors"
                                             >
                                                 <FaFilter className="inline mr-2" />
@@ -416,6 +515,9 @@ export default function AdminUserDashboard() {
                                                         </p>
                                                         <p className="text-xs text-gray-400 dark:text-gray-500">
                                                             المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
+                                                            {user.stage && (
+                                                                <span className="ml-2">• المرحلة: {user.stage.name}</span>
+                                                            )}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -486,166 +588,293 @@ export default function AdminUserDashboard() {
                             </div>
                         )}
 
-                        {activeTab === "details" && selectedUser && (
+                        {activeTab === "admins" && (
                             <div className="p-6">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                                    تفاصيل المستخدم: {selectedUser.fullName}
+                                    المديرون
                                 </h3>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                    {/* User Information */}
-                                    <div className="lg:col-span-1">
-                                        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                                المعلومات الشخصية
-                                            </h4>
-                                            <div className="space-y-3">
-                                                <div className="flex items-center space-x-3">
-                                                    <FaUser className="text-gray-400" />
-                                                    <div>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Name</p>
-                                                        <p className="font-medium text-gray-900 dark:text-white">{selectedUser.fullName}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center space-x-3">
-                                                    <FaEnvelope className="text-gray-400" />
-                                                    <div>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                                                        <p className="font-medium text-gray-900 dark:text-white">{selectedUser.email}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center space-x-3">
-                                                    <FaPhone className="text-gray-400" />
-                                                    <div>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
-                                                        <p className="font-medium text-gray-900 dark:text-white">{selectedUser.phoneNumber}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center space-x-3">
-                                                    <FaMapMarkerAlt className="text-gray-400" />
-                                                    <div>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Governorate</p>
-                                                        <p className="font-medium text-gray-900 dark:text-white">{selectedUser.governorate}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center space-x-3">
-                                                    <FaGraduationCap className="text-gray-400" />
-                                                    <div>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Grade</p>
-                                                        <p className="font-medium text-gray-900 dark:text-white">{selectedUser.grade}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center space-x-3">
-                                                    <FaBirthdayCake className="text-gray-400" />
-                                                    <div>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Age</p>
-                                                        <p className="font-medium text-gray-900 dark:text-white">{selectedUser.age}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center space-x-3">
-                                                    <FaCalendarAlt className="text-gray-400" />
-                                                    <div>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">Joined</p>
-                                                        <p className="font-medium text-gray-900 dark:text-white">{formatDate(selectedUser.createdAt)}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                {/* Filters */}
+                                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                البحث
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="search"
+                                                value={filters.search}
+                                                onChange={handleFilterChange}
+                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                placeholder="البحث بالاسم أو البريد الإلكتروني"
+                                            />
                                         </div>
-                                    </div>
-
-                                    {/* User Statistics */}
-                                    <div className="lg:col-span-2">
-                                        {userStats && (
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                                                <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                                                    <div className="flex items-center">
-                                                        <FaWallet className="h-8 w-8 text-green-500" />
-                                                        <div className="ml-3">
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Balance</p>
-                                                            <p className="text-lg font-bold text-gray-900 dark:text-white">{userStats.walletBalance} EGP</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                                                    <div className="flex items-center">
-                                                        <FaHistory className="h-8 w-8 text-blue-500" />
-                                                        <div className="ml-3">
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Transactions</p>
-                                                            <p className="text-lg font-bold text-gray-900 dark:text-white">{userStats.totalTransactions}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                                                    <div className="flex items-center">
-                                                        <FaArrowUp className="h-8 w-8 text-green-500" />
-                                                        <div className="ml-3">
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Recharges</p>
-                                                            <p className="text-lg font-bold text-gray-900 dark:text-white">{userStats.totalRecharges}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
-                                                    <div className="flex items-center">
-                                                        <FaArrowDown className="h-8 w-8 text-red-500" />
-                                                        <div className="ml-3">
-                                                            <p className="text-sm text-gray-500 dark:text-gray-400">Purchases</p>
-                                                            <p className="text-lg font-bold text-gray-900 dark:text-white">{userStats.totalPurchases}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Recent Activities */}
-                                        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                                Recent Activities
-                                            </h4>
-                                            {userActivities.length === 0 ? (
-                                                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                                                    No activities found.
-                                                </p>
-                                            ) : (
-                                                <div className="space-y-3">
-                                                    {userActivities.slice(0, 10).map((activity, index) => (
-                                                        <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
-                                                            <div className="flex items-center space-x-3">
-                                                                <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-600">
-                                                                    {getTransactionIcon(activity.type)}
-                                                                </div>
-                                                                <div>
-                                                                    <p className="font-medium text-gray-900 dark:text-white">
-                                                                        {activity.description}
-                                                                    </p>
-                                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                                        {formatDate(activity.date)}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <p className={`font-bold ${
-                                                                    activity.type === 'recharge' || activity.type === 'refund'
-                                                                        ? 'text-green-600 dark:text-green-400'
-                                                                        : 'text-red-600 dark:text-red-400'
-                                                                }`}>
-                                                                    {activity.type === 'recharge' || activity.type === 'refund' ? '+' : '-'}
-                                                                    {activity.amount} EGP
-                                                                </p>
-                                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                                    activity.status === 'completed'
-                                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                                                                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                                                                }`}>
-                                                                    {activity.status}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                الحالة
+                                            </label>
+                                            <select
+                                                name="status"
+                                                value={filters.status}
+                                                onChange={handleFilterChange}
+                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            >
+                                                <option value="">جميع الحالات</option>
+                                                <option value="active">نشط</option>
+                                                <option value="inactive">غير نشط</option>
+                                            </select>
+                                        </div>
+                                        <div className="flex items-end">
+                                            <button
+                                                onClick={() => {
+                                                    console.log('Filter button clicked (admins)!');
+                                                    handleApplyFilters();
+                                                }}
+                                                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors"
+                                            >
+                                                <FaFilter className="inline mr-2" />
+                                                تطبيق المرشحات
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Admins List */}
+                                {loading ? (
+                                    <div className="flex justify-center items-center py-8">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                                    </div>
+                                ) : users.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <FaCrown className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                                        <p className="text-gray-500 dark:text-gray-400">
+                                            لا يوجد مديرون حالياً
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {users.map((user) => (
+                                            <div
+                                                key={user.id}
+                                                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
+                                            >
+                                                <div className="flex items-center space-x-4">
+                                                    <div className={`p-2 rounded-full ${getStatusColor(user.isActive)}`}>
+                                                        {user.isActive ? <FaUserCheck /> : <FaUserTimes />}
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center space-x-2">
+                                                            <h4 className="font-semibold text-gray-900 dark:text-white">
+                                                                {user.fullName}
+                                                            </h4>
+                                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
+                                                                {user.role}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                            {user.email}
+                                                        </p>
+                                                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                                                            المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        onClick={() => handleViewUser(user.id)}
+                                                        className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                                                        title="عرض التفاصيل"
+                                                    >
+                                                        <FaEye />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleToggleStatus(user.id, user.isActive)}
+                                                        className="p-2 text-gray-500 hover:text-yellow-600 transition-colors"
+                                                        title={user.isActive ? "إلغاء التفعيل" : "تفعيل"}
+                                                    >
+                                                        {user.isActive ? <FaToggleOn /> : <FaToggleOff />}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+                                                        className="p-2 text-gray-500 hover:text-purple-600 transition-colors"
+                                                        title="تغيير الدور"
+                                                    >
+                                                        <FaUserCog />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeTab === "all" && (
+                            <div className="p-6">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                                    جميع المستخدمين
+                                </h3>
+
+                                {/* Filters */}
+                                <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                البحث
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="search"
+                                                value={filters.search}
+                                                onChange={handleFilterChange}
+                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                placeholder="البحث بالاسم أو البريد الإلكتروني"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                الدور
+                                            </label>
+                                            <select
+                                                name="role"
+                                                value={filters.role}
+                                                onChange={handleFilterChange}
+                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            >
+                                                <option value="">جميع الأدوار</option>
+                                                <option value="USER">مستخدم</option>
+                                                <option value="ADMIN">مدير</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                الحالة
+                                            </label>
+                                            <select
+                                                name="status"
+                                                value={filters.status}
+                                                onChange={handleFilterChange}
+                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            >
+                                                <option value="">جميع الحالات</option>
+                                                <option value="active">نشط</option>
+                                                <option value="inactive">غير نشط</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                المرحلة الدراسية
+                                            </label>
+                                            <select
+                                                name="stage"
+                                                value={filters.stage}
+                                                onChange={handleFilterChange}
+                                                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            >
+                                                <option value="">جميع المراحل</option>
+                                                {stages.map(stage => (
+                                                    <option key={stage._id} value={stage._id}>{stage.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="flex items-end">
+                                            <button
+                                                onClick={() => {
+                                                    console.log('Filter button clicked (all)!');
+                                                    handleApplyFilters();
+                                                }}
+                                                className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
+                                            >
+                                                <FaFilter className="inline mr-2" />
+                                                تطبيق المرشحات
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* All Users List */}
+                                {loading ? (
+                                    <div className="flex justify-center items-center py-8">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                                    </div>
+                                ) : users.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <FaUsers className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                                        <p className="text-gray-500 dark:text-gray-400">
+                                            لا يوجد مستخدمون حالياً
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {users.map((user) => (
+                                            <div
+                                                key={user.id}
+                                                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
+                                            >
+                                                <div className="flex items-center space-x-4">
+                                                    <div className={`p-2 rounded-full ${getStatusColor(user.isActive)}`}>
+                                                        {user.isActive ? <FaUserCheck /> : <FaUserTimes />}
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center space-x-2">
+                                                            <h4 className="font-semibold text-gray-900 dark:text-white">
+                                                                {user.fullName}
+                                                            </h4>
+                                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
+                                                                {user.role}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                            {user.email}
+                                                        </p>
+                                                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                                                            المحفظة: {user.walletBalance} جنيه مصري • المعاملات: {user.totalTransactions}
+                                                            {user.stage && (
+                                                                <span className="ml-2">• المرحلة: {user.stage.name}</span>
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        onClick={() => handleViewUser(user.id)}
+                                                        className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                                                        title="عرض التفاصيل"
+                                                    >
+                                                        <FaEye />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleToggleStatus(user.id, user.isActive)}
+                                                        className="p-2 text-gray-500 hover:text-yellow-600 transition-colors"
+                                                        title={user.isActive ? "إلغاء التفعيل" : "تفعيل"}
+                                                    >
+                                                        {user.isActive ? <FaToggleOn /> : <FaToggleOff />}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN')}
+                                                        className="p-2 text-gray-500 hover:text-purple-600 transition-colors"
+                                                        title="تغيير الدور"
+                                                    >
+                                                        <FaUserCog />
+                                                    </button>
+                                                    {user.role !== 'ADMIN' && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setUserToDelete(user.id);
+                                                                setShowDeleteConfirm(true);
+                                                            }}
+                                                            className="p-2 text-gray-500 hover:text-red-600 transition-colors"
+                                                            title="حذف المستخدم"
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

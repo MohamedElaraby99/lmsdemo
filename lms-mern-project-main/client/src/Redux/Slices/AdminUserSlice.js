@@ -4,18 +4,25 @@ import { axiosInstance } from "../../Helpers/axiosInstance";
 // Async thunks
 export const getAllUsers = createAsyncThunk(
     "adminUser/getAll",
-    async ({ page = 1, limit = 20, role, status, search }, { rejectWithValue }) => {
+    async ({ page = 1, limit = 20, role, status, search, stage }, { rejectWithValue }) => {
         try {
+            console.log('getAllUsers called with params:', { page, limit, role, status, search, stage });
+            
             const params = new URLSearchParams({
                 page,
                 limit,
                 ...(role && { role }),
                 ...(status && { status }),
-                ...(search && { search })
+                ...(search && { search }),
+                ...(stage && { stage })
             });
+            
+            console.log('API URL params:', params.toString());
             const response = await axiosInstance.get(`/admin/users/users?${params}`);
+            console.log('API response:', response.data);
             return response.data;
         } catch (error) {
+            console.error('getAllUsers error:', error);
             return rejectWithValue(error.response?.data?.message || "Failed to get users");
         }
     }

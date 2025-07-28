@@ -6,7 +6,9 @@ import { Link, useNavigate } from "react-router-dom";
 import Layout from "../Layout/Layout";
 import { createAccount } from "../Redux/Slices/AuthSlice";
 import InputBox from "../Components/InputBox/InputBox";
-import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUserPlus, FaGraduationCap, FaCamera, FaUpload, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUserPlus, FaGraduationCap, FaCamera, FaUpload, FaPhone, FaMapMarkerAlt, FaBook } from "react-icons/fa";
+import { axiosInstance } from "../Helpers/axiosInstance";
+import { useEffect } from "react";
 
 export default function Signup() {
   const dispatch = useDispatch();
@@ -15,6 +17,7 @@ export default function Signup() {
   const [previewImage, setPreviewImage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [stages, setStages] = useState([]);
   const [signupData, setSignupData] = useState({
     fullName: "",
     username: "",
@@ -24,10 +27,27 @@ export default function Signup() {
     fatherPhoneNumber: "",
     governorate: "",
     grade: "",
+    stage: "",
     age: "",
     avatar: "",
     adminCode: "",
   });
+
+  // Fetch stages on component mount
+  useEffect(() => {
+    const fetchStages = async () => {
+      try {
+        const response = await axiosInstance.get('/stages');
+        if (response.data.success) {
+          setStages(response.data.data.stages);
+        }
+      } catch (error) {
+        console.error('Error fetching stages:', error);
+      }
+    };
+
+    fetchStages();
+  }, []);
 
   function handleUserInput(e) {
     const { name, value } = e.target;
@@ -69,7 +89,7 @@ export default function Signup() {
     
     // For regular users, check all required fields
     if (!isAdminRegistration) {
-      if (!signupData.phoneNumber || !signupData.fatherPhoneNumber || !signupData.governorate || !signupData.grade || !signupData.age) {
+      if (!signupData.phoneNumber || !signupData.fatherPhoneNumber || !signupData.governorate || !signupData.grade || !signupData.stage || !signupData.age) {
         toast.error("Please fill all the required fields");
         return;
       }
@@ -300,160 +320,199 @@ export default function Signup() {
                 </p>
               </div>
 
-              {/* Phone Number Field */}
-              <div>
-                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaPhone className="h-5 w-5 text-gray-400" />
+              {/* Phone Number Field - Only for regular users */}
+              {!signupData.adminCode && (
+                <div>
+                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    رقم الهاتف
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaPhone className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      type="tel"
+                      required={!signupData.adminCode}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      placeholder="أدخل رقم هاتفك"
+                      value={signupData.phoneNumber}
+                      onChange={handleUserInput}
+                    />
                   </div>
-                  <input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    type="tel"
-                    required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your phone number"
-                    value={signupData.phoneNumber}
-                    onChange={handleUserInput}
-                  />
                 </div>
-              </div>
+              )}
 
-              {/* Father's Phone Number Field */}
-              <div>
-                <label htmlFor="fatherPhoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Father's Phone Number
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaPhone className="h-5 w-5 text-gray-400" />
+              {/* Father's Phone Number Field - Only for regular users */}
+              {!signupData.adminCode && (
+                <div>
+                  <label htmlFor="fatherPhoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    رقم هاتف الأب
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaPhone className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="fatherPhoneNumber"
+                      name="fatherPhoneNumber"
+                      type="tel"
+                      required={!signupData.adminCode}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      placeholder="أدخل رقم هاتف الأب"
+                      value={signupData.fatherPhoneNumber}
+                      onChange={handleUserInput}
+                    />
                   </div>
-                  <input
-                    id="fatherPhoneNumber"
-                    name="fatherPhoneNumber"
-                    type="tel"
-                    required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter father's phone number"
-                    value={signupData.fatherPhoneNumber}
-                    onChange={handleUserInput}
-                  />
                 </div>
-              </div>
+              )}
 
-              {/* Governorate Field */}
-              <div>
-                <label htmlFor="governorate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Governorate
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaMapMarkerAlt className="h-5 w-5 text-gray-400" />
+              {/* Governorate Field - Only for regular users */}
+              {!signupData.adminCode && (
+                <div>
+                  <label htmlFor="governorate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    المحافظة
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaMapMarkerAlt className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      id="governorate"
+                      name="governorate"
+                      required={!signupData.adminCode}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      value={signupData.governorate}
+                      onChange={handleUserInput}
+                    >
+                      <option value="">اختر المحافظة</option>
+                      <option value="Cairo">Cairo</option>
+                      <option value="Giza">Giza</option>
+                      <option value="Alexandria">Alexandria</option>
+                      <option value="Dakahlia">Dakahlia</option>
+                      <option value="Red Sea">Red Sea</option>
+                      <option value="Beheira">Beheira</option>
+                      <option value="Fayoum">Fayoum</option>
+                      <option value="Gharbiya">Gharbiya</option>
+                      <option value="Ismailia">Ismailia</option>
+                      <option value="Menofia">Menofia</option>
+                      <option value="Minya">Minya</option>
+                      <option value="Qaliubiya">Qaliubiya</option>
+                      <option value="New Valley">New Valley</option>
+                      <option value="Suez">Suez</option>
+                      <option value="Aswan">Aswan</option>
+                      <option value="Assiut">Assiut</option>
+                      <option value="Beni Suef">Beni Suef</option>
+                      <option value="Port Said">Port Said</option>
+                      <option value="Damietta">Damietta</option>
+                      <option value="Sharkia">Sharkia</option>
+                      <option value="South Sinai">South Sinai</option>
+                      <option value="Kafr Al sheikh">Kafr Al sheikh</option>
+                      <option value="Matrouh">Matrouh</option>
+                      <option value="Luxor">Luxor</option>
+                      <option value="Qena">Qena</option>
+                      <option value="North Sinai">North Sinai</option>
+                      <option value="Sohag">Sohag</option>
+                    </select>
                   </div>
-                  <select
-                    id="governorate"
-                    name="governorate"
-                    required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    value={signupData.governorate}
-                    onChange={handleUserInput}
-                  >
-                    <option value="">Select Governorate</option>
-                    <option value="Cairo">Cairo</option>
-                    <option value="Giza">Giza</option>
-                    <option value="Alexandria">Alexandria</option>
-                    <option value="Dakahlia">Dakahlia</option>
-                    <option value="Red Sea">Red Sea</option>
-                    <option value="Beheira">Beheira</option>
-                    <option value="Fayoum">Fayoum</option>
-                    <option value="Gharbiya">Gharbiya</option>
-                    <option value="Ismailia">Ismailia</option>
-                    <option value="Menofia">Menofia</option>
-                    <option value="Minya">Minya</option>
-                    <option value="Qaliubiya">Qaliubiya</option>
-                    <option value="New Valley">New Valley</option>
-                    <option value="Suez">Suez</option>
-                    <option value="Aswan">Aswan</option>
-                    <option value="Assiut">Assiut</option>
-                    <option value="Beni Suef">Beni Suef</option>
-                    <option value="Port Said">Port Said</option>
-                    <option value="Damietta">Damietta</option>
-                    <option value="Sharkia">Sharkia</option>
-                    <option value="South Sinai">South Sinai</option>
-                    <option value="Kafr Al sheikh">Kafr Al sheikh</option>
-                    <option value="Matrouh">Matrouh</option>
-                    <option value="Luxor">Luxor</option>
-                    <option value="Qena">Qena</option>
-                    <option value="North Sinai">North Sinai</option>
-                    <option value="Sohag">Sohag</option>
-                  </select>
                 </div>
-              </div>
+              )}
 
-              {/* Grade Field */}
-              <div>
-                <label htmlFor="grade" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Grade
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaGraduationCap className="h-5 w-5 text-gray-400" />
+              {/* Grade Field - Only for regular users */}
+              {!signupData.adminCode && (
+                <div>
+                  <label htmlFor="grade" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    الصف الدراسي
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaGraduationCap className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      id="grade"
+                      name="grade"
+                      required={!signupData.adminCode}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      value={signupData.grade}
+                      onChange={handleUserInput}
+                    >
+                      <option value="">اختر الصف الدراسي</option>
+                      <option value="1 ابتدائي">1 ابتدائي</option>
+                      <option value="2 ابتدائي">2 ابتدائي</option>
+                      <option value="3 ابتدائي">3 ابتدائي</option>
+                      <option value="4 ابتدائي">4 ابتدائي</option>
+                      <option value="5 ابتدائي">5 ابتدائي</option>
+                      <option value="6 ابتدائي">6 ابتدائي</option>
+                      <option value="1 إعدادي">1 إعدادي</option>
+                      <option value="2 إعدادي">2 إعدادي</option>
+                      <option value="3 إعدادي">3 إعدادي</option>
+                      <option value="1 ثانوي">1 ثانوي</option>
+                      <option value="2 ثانوي">2 ثانوي</option>
+                      <option value="3 ثانوي">3 ثانوي</option>
+                      <option value="1 جامعة">1 جامعة</option>
+                      <option value="2 جامعة">2 جامعة</option>
+                      <option value="3 جامعة">3 جامعة</option>
+                      <option value="4 جامعة">4 جامعة</option>
+                    </select>
                   </div>
-                  <select
-                    id="grade"
-                    name="grade"
-                    required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    value={signupData.grade}
-                    onChange={handleUserInput}
-                  >
-                    <option value="">Select Grade</option>
-                    <option value="1 ابتدائي">1 ابتدائي</option>
-                    <option value="2 ابتدائي">2 ابتدائي</option>
-                    <option value="3 ابتدائي">3 ابتدائي</option>
-                    <option value="4 ابتدائي">4 ابتدائي</option>
-                    <option value="5 ابتدائي">5 ابتدائي</option>
-                    <option value="6 ابتدائي">6 ابتدائي</option>
-                    <option value="1 إعدادي">1 إعدادي</option>
-                    <option value="2 إعدادي">2 إعدادي</option>
-                    <option value="3 إعدادي">3 إعدادي</option>
-                    <option value="1 ثانوي">1 ثانوي</option>
-                    <option value="2 ثانوي">2 ثانوي</option>
-                    <option value="3 ثانوي">3 ثانوي</option>
-                    <option value="1 جامعة">1 جامعة</option>
-                    <option value="2 جامعة">2 جامعة</option>
-                    <option value="3 جامعة">3 جامعة</option>
-                    <option value="4 جامعة">4 جامعة</option>
-                  </select>
                 </div>
-              </div>
+              )}
 
-              {/* Age Field */}
-              <div>
-                <label htmlFor="age" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Age
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaUser className="h-5 w-5 text-gray-400" />
+              {/* Stage Field - Only for regular users */}
+              {!signupData.adminCode && (
+                <div>
+                  <label htmlFor="stage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    المرحلة الدراسية
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaBook className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <select
+                      id="stage"
+                      name="stage"
+                      required={!signupData.adminCode}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      value={signupData.stage}
+                      onChange={handleUserInput}
+                    >
+                      <option value="">اختر المرحلة الدراسية</option>
+                      {stages.map((stage) => (
+                        <option key={stage._id} value={stage._id}>
+                          {stage.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <input
-                    id="age"
-                    name="age"
-                    type="number"
-                    min="5"
-                    max="100"
-                    required
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your age"
-                    value={signupData.age}
-                    onChange={handleUserInput}
-                  />
                 </div>
-              </div>
+              )}
+
+              {/* Age Field - Only for regular users */}
+              {!signupData.adminCode && (
+                <div>
+                  <label htmlFor="age" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    العمر
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FaUser className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="age"
+                      name="age"
+                      type="number"
+                      min="5"
+                      max="100"
+                      required={!signupData.adminCode}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                      placeholder="أدخل عمرك"
+                      value={signupData.age}
+                      onChange={handleUserInput}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Avatar Upload */}
               <div>

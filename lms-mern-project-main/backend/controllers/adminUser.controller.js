@@ -4,7 +4,7 @@ import AppError from "../utils/error.utils.js";
 // Get all users with pagination and filters
 const getAllUsers = async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, role, status, search } = req.query;
+        const { page = 1, limit = 20, role, status, search, stage } = req.query;
         const skip = (page - 1) * limit;
 
         let query = {};
@@ -17,6 +17,11 @@ const getAllUsers = async (req, res, next) => {
         // Filter by status (active/inactive)
         if (status && status !== 'all') {
             query.isActive = status === 'active';
+        }
+
+        // Filter by stage
+        if (stage && stage !== 'all') {
+            query.stage = stage;
         }
 
         // Search by name or email
@@ -32,6 +37,7 @@ const getAllUsers = async (req, res, next) => {
 
         const users = await userModel.find(query)
             .select('-password -forgotPasswordToken -forgotPasswordExpiry')
+            .populate('stage', 'name')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit));
@@ -68,6 +74,7 @@ const getAllUsers = async (req, res, next) => {
                     isActive: user.isActive !== false, // Default to true if not set
                     governorate: user.governorate,
                     grade: user.grade,
+                    stage: user.stage,
                     age: user.age,
                     walletBalance: user.wallet?.balance || 0,
                     totalTransactions: user.wallet?.transactions?.length || 0,

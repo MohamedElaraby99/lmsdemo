@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../Redux/Slices/AuthSlice";
 import viteLogo from "../assets/images/vite.svg.png";
+import useScrollToTop from "../Helpers/useScrollToTop";
 
 export default function Navbar() {
   const [darkMode, setDarkMode] = useState(
@@ -13,6 +14,9 @@ export default function Navbar() {
   const { user, role } = useSelector((state) => state.auth);
   const location = useLocation();
   const dispatch = useDispatch();
+
+  // Use scroll to top utility
+  useScrollToTop();
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => !prev);
@@ -48,6 +52,11 @@ export default function Navbar() {
   const handleLogout = () => {
     dispatch(logout());
     setIsMenuOpen(false);
+  };
+
+  const handleLogoClick = () => {
+    // Navigate to home page and scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -118,7 +127,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Modern Logo */}
-          <Link to="/" className="flex items-center space-x-4 group logo-hover">
+          <Link to="/" onClick={handleLogoClick} className="flex items-center space-x-4 group logo-hover">
             <div className="relative">
               {/* Animated Logo Container */}
               <div className="relative w-14 h-14 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600 rounded-2xl shadow-lg group-hover:shadow-2xl transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-3">

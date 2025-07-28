@@ -63,6 +63,13 @@ const userSchema = new Schema({
         },
         trim: true
     },
+    stage: {
+        type: Schema.Types.ObjectId,
+        ref: 'Stage',
+        required: function() {
+            return this.role !== 'ADMIN';
+        }
+    },
     age: {
         type: Number,
         required: function() {

@@ -55,12 +55,9 @@ export default function EditCourse() {
   const [expandedUnits, setExpandedUnits] = useState(new Set());
   const [editingUnit, setEditingUnit] = useState(null);
   const [editingLesson, setEditingLesson] = useState(null);
-  const [sectionOrder, setSectionOrder] = useState(['units', 'direct-lessons']);
   const [courseData, setCourseData] = useState(courseDataFromState);
-
-  const swapSectionOrder = () => {
-    setSectionOrder(prev => prev[0] === 'units' ? ['direct-lessons', 'units'] : ['units', 'direct-lessons']);
-  };
+  const [unifiedStructure, setUnifiedStructure] = useState([]);
+  const [structureMode, setStructureMode] = useState('unified');
 
   const toggleAllUnits = () => {
     const allUnitIds = courseStructure.units.map(unit => unit.id || unit._id);
@@ -89,7 +86,7 @@ export default function EditCourse() {
   const [courseStructure, setCourseStructure] = useState({
     units: [],
     directLessons: [],
-    structureType: "direct-lessons"
+    structureType: "unified"
   });
 
   // Fetch course data if not provided or not properly populated
@@ -196,6 +193,24 @@ export default function EditCourse() {
 
     fetchData();
   }, []);
+
+  // Convert structure when mode changes
+  useEffect(() => {
+    if (structureMode === 'unified') {
+      convertToUnifiedStructure();
+    } else {
+      convertToSeparateStructure();
+    }
+  }, [structureMode, courseStructure.units.length, courseStructure.directLessons.length]);
+
+  // Convert structure when course data is loaded
+  useEffect(() => {
+    if (courseData && (courseData.units?.length > 0 || courseData.directLessons?.length > 0)) {
+      if (structureMode === 'unified') {
+        convertToUnifiedStructure();
+      }
+    }
+  }, [courseData, structureMode]);
 
   useEffect(() => {
     if (!courseData) {
@@ -450,13 +465,104 @@ export default function EditCourse() {
   };
 
   const deleteDirectLesson = (lessonId) => {
-    if (!lessonId) return;
-    if (window.confirm("Are you sure you want to delete this lesson?")) {
-      setCourseStructure(prev => ({
-        ...prev,
-        directLessons: prev.directLessons.filter(lesson => (lesson.id || lesson._id) !== lessonId)
-      }));
+    setCourseStructure(prev => ({
+      ...prev,
+      directLessons: prev.directLessons.filter(lesson => lesson.id !== lessonId)
+    }));
+  };
+
+  // Convert separate structure to unified structure
+  const convertToUnifiedStructure = () => {
+    const unified = [];
+    
+    // Add units
+    courseStructure.units.forEach((unit, index) => {
+      const unitId = unit.id || unit._id || `unit-${Date.now()}-${index}`;
+      unified.push({
+        type: 'unit',
+        id: unitId,
+        data: unit,
+        order: unit.order || index
+      });
+    });
+    
+    // Add direct lessons
+    courseStructure.directLessons.forEach((lesson, index) => {
+      const lessonId = lesson.id || lesson._id || `lesson-${Date.now()}-${index}`;
+      unified.push({
+        type: 'lesson',
+        id: lessonId,
+        data: lesson,
+        order: lesson.order || (courseStructure.units.length + index)
+      });
+    });
+    
+    // Sort by order
+    unified.sort((a, b) => a.order - b.order);
+    console.log('Converted to unified structure:', unified.map(item => ({ id: item.id, type: item.type })));
+    setUnifiedStructure(unified);
+  };
+
+  // Convert unified structure back to separate structure
+  const convertToSeparateStructure = () => {
+    const units = [];
+    const directLessons = [];
+    
+    unifiedStructure.forEach((item, index) => {
+      if (item.type === 'unit') {
+        units.push({
+          ...item.data,
+          order: index
+        });
+      } else if (item.type === 'lesson') {
+        directLessons.push({
+          ...item.data,
+          order: index
+        });
+      }
+    });
+    
+    setCourseStructure(prev => ({
+      ...prev,
+      units,
+      directLessons
+    }));
+  };
+
+  // Add item to unified structure
+  const addToUnifiedStructure = (type, data, insertAfterIndex = -1) => {
+    const newItem = {
+      type,
+      id: data.id || data._id || `${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      data,
+      order: unifiedStructure.length
+    };
+    
+    if (insertAfterIndex === -1) {
+      setUnifiedStructure(prev => [...prev, newItem]);
+    } else {
+      setUnifiedStructure(prev => {
+        const newStructure = [...prev];
+        newStructure.splice(insertAfterIndex + 1, 0, newItem);
+        return newStructure.map((item, index) => ({ ...item, order: index }));
+      });
     }
+  };
+
+  // Update item in unified structure
+  const updateUnifiedItem = (itemId, field, value) => {
+    setUnifiedStructure(prev => 
+      prev.map(item => 
+        item.id === itemId 
+          ? { ...item, data: { ...item.data, [field]: value } }
+          : item
+      )
+    );
+  };
+
+  // Delete item from unified structure
+  const deleteUnifiedItem = (itemId) => {
+    setUnifiedStructure(prev => prev.filter(item => item.id !== itemId));
   };
 
   const handleDragEnd = (result) => {
@@ -464,7 +570,14 @@ export default function EditCourse() {
 
     const { source, destination, type } = result;
 
-    if (type === 'section') {
+    if (type === 'unified') {
+      // Handle unified structure drag and drop
+      const reorderedItems = Array.from(unifiedStructure);
+      const [removed] = reorderedItems.splice(source.index, 1);
+      reorderedItems.splice(destination.index, 0, removed);
+
+      setUnifiedStructure(reorderedItems.map((item, index) => ({ ...item, order: index })));
+    } else if (type === 'section') {
       const reorderedSections = Array.from(sectionOrder);
       const [removed] = reorderedSections.splice(source.index, 1);
       reorderedSections.splice(destination.index, 0, removed);
@@ -505,6 +618,22 @@ export default function EditCourse() {
         ...prev,
         directLessons: reorderedDirectLessons.map((lesson, index) => ({ ...lesson, order: index }))
       }));
+    }
+  };
+
+  // Submit form data
+  const submitFormData = async (formData) => {
+    try {
+      const response = await dispatch(updateCourse({ courseId: id, formData })).unwrap();
+      if (response.success) {
+        toast.success("Course updated successfully!");
+        navigate("/admin");
+      }
+    } catch (error) {
+      console.error("Error updating course:", error);
+      toast.error(error.message || "Failed to update course");
+    } finally {
+      setIsUpdatingCourse(false);
     }
   };
 
@@ -556,7 +685,42 @@ export default function EditCourse() {
         price: lesson.price || 10
       }))
     };
-    formData.append("courseStructure", JSON.stringify(structureData));
+
+    // If using unified structure, convert it back to separate structure
+    if (courseStructure.structureType === 'unified') {
+      convertToSeparateStructure();
+      // Wait for the conversion to complete
+      setTimeout(() => {
+        const finalStructureData = {
+          units: courseStructure.units.map(unit => ({
+            title: unit.title,
+            description: unit.description,
+            lessons: unit.lessons.map(lesson => ({
+              title: lesson.title,
+              description: lesson.description,
+              lecture: lesson.lecture,
+              duration: lesson.duration,
+              order: lesson.order,
+              price: lesson.price || 10
+            })),
+            order: unit.order
+          })),
+          directLessons: courseStructure.directLessons.map(lesson => ({
+            title: lesson.title,
+            description: lesson.description,
+            lecture: lesson.lecture,
+            duration: lesson.duration,
+            order: lesson.order,
+            price: lesson.price || 10
+          }))
+        };
+        formData.append("courseStructure", JSON.stringify(finalStructureData));
+        submitFormData(formData);
+      }, 100);
+    } else {
+      formData.append("courseStructure", JSON.stringify(structureData));
+      submitFormData(formData);
+    }
     
     // Only append thumbnail if a new one is selected
     if (userInput.thumbnail) {
@@ -1030,490 +1194,165 @@ export default function EditCourse() {
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <FaFolder className="text-blue-500" />
-                        اختر هيكل الدورة
+                        هيكل الدورة - ترتيب حر للوحدات والدروس
                       </h3>
-                      {(courseStructure.structureType === 'mixed') && (
-                        <button
-                          onClick={swapSectionOrder}
-                          className="flex items-center gap-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
-                          title="تبديل ترتيب الأقسام"
-                        >
-                          <FaExchangeAlt /> تبديل ترتيب الأقسام
-                        </button>
-                      )}
                     </div>
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <button
-                        onClick={() => setCourseStructure(prev => ({ ...prev, structureType: 'direct-lessons' }))}
-                        className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                          courseStructure.structureType === 'direct-lessons'
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-gray-300 dark:border-gray-600 hover:border-blue-300'
-                        }`}
-                      >
-                        <div className="text-center">
-                          <FaPlay className="text-2xl mx-auto mb-2 text-blue-500" />
-                          <h4 className="font-semibold text-gray-900 dark:text-white">الدروس المباشرة</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">قائمة بسيطة من الدروس</p>
+                    <div className="bg-gradient-to-r from-orange-50 to-purple-50 dark:from-orange-900/20 dark:to-purple-900/20 rounded-xl p-6 border-2 border-orange-200 dark:border-orange-700">
+                      <div className="text-center">
+                        <FaGripVertical className="text-3xl text-orange-500 mx-auto mb-4" />
+                        <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">هيكل موحد</h4>
+                        <p className="text-gray-600 dark:text-gray-400 mb-4">
+                          ترتيب حر للوحدات والدروس - يمكنك خلط الوحدات والدروس بأي ترتيب تريده
+                        </p>
+                        <div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center gap-2">
+                            <FaFolder className="text-green-500" />
+                            <span>وحدات</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FaPlay className="text-blue-500" />
+                            <span>دروس</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FaGripVertical className="text-orange-500" />
+                            <span>ترتيب حر</span>
+                          </div>
                         </div>
-                      </button>
-                      
-                      <button
-                        onClick={() => setCourseStructure(prev => ({ ...prev, structureType: 'units' }))}
-                        className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                          courseStructure.structureType === 'units'
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-gray-300 dark:border-gray-600 hover:border-blue-300'
-                        }`}
-                      >
-                        <div className="text-center">
-                          <FaFolder className="text-2xl mx-auto mb-2 text-green-500" />
-                          <h4 className="font-semibold text-gray-900 dark:text-white">وحدات مع دروس</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">منظم في وحدات</p>
-                        </div>
-                      </button>
-                      
-                      <button
-                        onClick={() => setCourseStructure(prev => ({ ...prev, structureType: 'mixed' }))}
-                        className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                          courseStructure.structureType === 'mixed'
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-gray-300 dark:border-gray-600 hover:border-blue-300'
-                        }`}
-                      >
-                        <div className="text-center">
-                          <FaBook className="text-2xl mx-auto mb-2 text-purple-500" />
-                          <h4 className="font-semibold text-gray-900 dark:text-white">هيكل مختلط</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">وحدات ودروس مباشرة</p>
-                        </div>
-                      </button>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Course Sections - Ordered */}
-                  {sectionOrder.map((sectionType, index) => {
-                    if (sectionType === 'units' && (courseStructure.structureType === 'units' || courseStructure.structureType === 'mixed')) {
-                      return (
-                        <div key="units-section" className="space-y-6 mb-8">
-                                              <div className="flex justify-between items-center">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                            <FaFolder className="text-green-500" />
-                            وحدات الدورة ({courseStructure.units.length})
-                          </h3>
-                          <div className="flex items-center gap-2">
-                            {courseStructure.units.length > 0 && (
-                              <button
-                                onClick={toggleAllUnits}
-                                className="flex items-center gap-2 bg-purple-500 text-white px-3 py-2 rounded-lg hover:bg-purple-600 transition-colors text-sm"
-                                title="تبديل جميع الوحدات"
-                              >
-                                                                  <FaExchangeAlt /> تبديل الكل
-                              </button>
-                            )}
-                            <button
-                              onClick={addUnit}
-                              className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-                            >
-                              <FaPlus /> إضافة وحدة
-                            </button>
-                          </div>
-                        </div>
-
-                      {courseStructure.units.length === 0 ? (
-                        <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                          <FaFolder className="text-4xl text-gray-400 mx-auto mb-4" />
-                          <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                            لم يتم إنشاء وحدات بعد
-                          </h4>
-                          <p className="text-gray-500 dark:text-gray-400">
-                            ابدأ بإضافة أول وحدة لتنظيم محتوى دورتك.
-                          </p>
-                        </div>
-                      ) : (
-                        <DragDropContext onDragEnd={handleDragEnd}>
-                          <Droppable droppableId="units" type="unit">
-                            {(provided) => (
-                              <div 
-                                {...provided.droppableProps}
-                                ref={provided.innerRef}
-                                className="space-y-4"
-                              >
-                                                                 {courseStructure.units.map((unit, unitIndex) => {
-                                   const unitId = unit.id || unit._id || `unit-${unitIndex}`;
-                                   return (
-                                   <Draggable key={unitId} draggableId={unitId.toString()} index={unitIndex}>
-                                    {(provided, snapshot) => (
-                                      <div
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        className={`bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-all duration-200 ${
-                                          snapshot.isDragging ? 'shadow-2xl rotate-2' : ''
-                                        }`}
-                                      >
-                                        <div className="p-4 lg:p-6">
-                                          <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                              <div
-                                                {...provided.dragHandleProps}
-                                                className="text-gray-400 hover:text-gray-600 cursor-move"
-                                              >
-                                                <FaGripVertical />
-                                              </div>
-                                              <button
-                                                onClick={() => toggleUnitExpansion(unit.id || unit._id)}
-                                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                              >
-                                                {expandedUnits.has(unit.id || unit._id) ? <FaChevronDown /> : <FaChevronRight />}
-                                              </button>
-                                              <FaFolder className="text-blue-500" />
-                                              <div className="flex-1">
-                                                {editingUnit === (unit.id || unit._id) ? (
-                                                  <div className="space-y-2">
-                                                    <input
-                                                      type="text"
-                                                      value={unit.title}
-                                                      onChange={(e) => updateUnit(unit.id || unit._id, 'title', e.target.value)}
-                                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                      placeholder="Unit title"
-                                                    />
-                                                    <textarea
-                                                      value={unit.description}
-                                                      onChange={(e) => updateUnit(unit.id || unit._id, 'description', e.target.value)}
-                                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                      placeholder="Unit description"
-                                                      rows={2}
-                                                    />
-                                                    <div className="flex gap-2">
-                                                      <button
-                                                        onClick={() => setEditingUnit(null)}
-                                                        className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-                                                      >
-                                                        Save
-                                                      </button>
-                                                      <button
-                                                        onClick={() => setEditingUnit(null)}
-                                                        className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
-                                                      >
-                                                        Cancel
-                                                      </button>
-                                                    </div>
-                                                  </div>
-                                                ) : (
-                                                  <div>
-                                                    <h4 className="font-semibold text-gray-900 dark:text-white">
-                                                      {unit.title || "Untitled Unit"}
-                                                    </h4>
-                                                    {unit.description && (
-                                                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                        {unit.description}
-                                                      </p>
-                                                    )}
-                                                  </div>
-                                                )}
-                                              </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                              <span className="text-sm text-gray-500 dark:text-gray-400">
-                                                {unit.lessons.length} lessons
-                                              </span>
-                                              <button
-                                                onClick={() => addUnitAfter(unit.id || unit._id)}
-                                                className="text-green-500 hover:text-green-700"
-                                                title="Add Unit After This"
-                                              >
-                                                <FaPlus />
-                                              </button>
-                                              <button
-                                                onClick={() => setEditingUnit(unit.id || unit._id)}
-                                                className="text-blue-500 hover:text-blue-700"
-                                              >
-                                                <FaEdit />
-                                              </button>
-                                              <button
-                                                onClick={() => deleteUnit(unit.id || unit._id)}
-                                                className="text-red-500 hover:text-red-700"
-                                              >
-                                                <FaTrash />
-                                              </button>
-                                            </div>
-                                          </div>
-
-                                          {/* Unit Lessons */}
-                                          {expandedUnits.has(unit.id || unit._id) && (
-                                            <div className="mt-4 space-y-3">
-                                              <div className="flex justify-between items-center">
-                                                <h5 className="font-medium text-gray-700 dark:text-gray-300">
-                                                  Lessons in this unit
-                                                </h5>
-                                                <button
-                                                  onClick={() => addLessonToUnit(unit.id || unit._id)}
-                                                  className="flex items-center gap-1 text-sm bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                                                >
-                                                  <FaPlus /> Add Lesson
-                                                </button>
-                                              </div>
-                                              
-                                              {unit.lessons.length === 0 ? (
-                                                <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                                                  No lessons in this unit yet
-                                                </div>
-                                              ) : (
-                                                <Droppable droppableId={(unit.id || unit._id || unitIndex).toString()} type="lesson">
-                                                  {(provided) => (
-                                                    <div 
-                                                      {...provided.droppableProps}
-                                                      ref={provided.innerRef}
-                                                      className="space-y-2"
-                                                    >
-                                                      {unit.lessons.map((lesson, lessonIndex) => {
-                                                        const lessonId = lesson.id || lesson._id || `lesson-${unitId}-${lessonIndex}`;
-                                                        return (
-                                                          <Draggable key={lessonId} draggableId={lessonId.toString()} index={lessonIndex}>
-                                                            {(provided, snapshot) => (
-                                                              <div
-                                                                ref={provided.innerRef}
-                                                                {...provided.draggableProps}
-                                                                className={`flex items-center gap-3 p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 ${
-                                                                  snapshot.isDragging ? 'shadow-lg rotate-1' : ''
-                                                                }`}
-                                                              >
-                                                                <div
-                                                                  {...provided.dragHandleProps}
-                                                                  className="text-gray-400 cursor-move"
-                                                                >
-                                                                  <FaGripVertical />
-                                                                </div>
-                                                                <FaFileAlt className="text-green-500" />
-                                                                <div className="flex-1">
-                                                                  {editingLesson === (lesson.id || lesson._id) ? (
-                                                                    <div className="space-y-2">
-                                                                      <input
-                                                                        type="text"
-                                                                        value={lesson.title}
-                                                                        onChange={(e) => updateLessonInUnit(unit.id || unit._id, lesson.id || lesson._id, 'title', e.target.value)}
-                                                                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                                                        placeholder="Lesson title"
-                                                                      />
-                                                                      <textarea
-                                                                        value={lesson.description}
-                                                                        onChange={(e) => updateLessonInUnit(unit.id || unit._id, lesson.id || lesson._id, 'description', e.target.value)}
-                                                                        className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                                                        placeholder="Lesson description"
-                                                                        rows={2}
-                                                                      />
-                                                                      <div className="flex gap-2">
-                                                                        <button
-                                                                          onClick={() => setEditingLesson(null)}
-                                                                          className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-                                                                        >
-                                                                          Save
-                                                                        </button>
-                                                                        <button
-                                                                          onClick={() => setEditingLesson(null)}
-                                                                          className="px-2 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
-                                                                        >
-                                                                          Cancel
-                                                                        </button>
-                                                                      </div>
-                                                                    </div>
-                                                                  ) : (
-                                                                    <div>
-                                                                      <div className="font-medium text-gray-900 dark:text-white">
-                                                                        {lesson.title || "Untitled Lesson"}
-                                                                      </div>
-                                                                      {lesson.description && (
-                                                                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                                          {lesson.description}
-                                                                        </div>
-                                                                      )}
-                                                                    </div>
-                                                                  )}
-                                                                </div>
-                                                                <div className="flex items-center gap-1">
-                                                                  <button
-                                                                    onClick={() => addLessonAfter(unit.id || unit._id, lesson.id || lesson._id)}
-                                                                    className="text-green-500 hover:text-green-700 text-sm"
-                                                                    title="Add Lesson After This"
-                                                                  >
-                                                                    <FaPlus />
-                                                                  </button>
-                                                                  <button
-                                                                    onClick={() => setEditingLesson(lesson.id || lesson._id)}
-                                                                    className="text-blue-500 hover:text-blue-700 text-sm"
-                                                                  >
-                                                                    <FaEdit />
-                                                                  </button>
-                                                                  <button
-                                                                    onClick={() => deleteLessonFromUnit(unit.id || unit._id, lesson.id || lesson._id)}
-                                                                    className="text-red-500 hover:text-red-700 text-sm"
-                                                                  >
-                                                                    <FaTrash />
-                                                                  </button>
-                                                                </div>
-                                                              </div>
-                                                            )}
-                                                          </Draggable>
-                                                        );
-                                                      })}
-                                                      {provided.placeholder}
-                                                    </div>
-                                                  )}
-                                                </Droppable>
-                                              )}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </Draggable>
-                                );
-                              })}
-                                {provided.placeholder}
-                              </div>
-                            )}
-                          </Droppable>
-                        </DragDropContext>
-                      )}
-                        </div>
-                      );
-                    } else if (sectionType === 'direct-lessons' && (courseStructure.structureType === 'direct-lessons' || courseStructure.structureType === 'mixed')) {
-                      return (
-                        <div key="direct-lessons-section" className="space-y-6 mb-8">
+                  {/* Course Sections - Only Unified Structure */}
+                  {courseStructure.structureType === 'unified' && (
+                    <div className="space-y-6 mb-8">
                       <div className="flex justify-between items-center">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                          <FaPlay className="text-blue-500" />
-                          Direct Lessons ({courseStructure.directLessons.length})
+                          <FaGripVertical className="text-orange-500" />
+                          هيكل موحد - ترتيب حر للوحدات والدروس ({unifiedStructure.length})
                         </h3>
-                        <button
-                          onClick={addDirectLesson}
-                          className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                        >
-                          <FaPlus /> Add Direct Lesson
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => addToUnifiedStructure('unit', { title: 'New Unit', description: '', lessons: [] })}
+                            className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+                          >
+                            <FaPlus /> إضافة وحدة
+                          </button>
+                          <button
+                            onClick={() => addToUnifiedStructure('lesson', { title: 'New Lesson', description: '', lecture: {}, duration: 0, price: 10 })}
+                            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                          >
+                            <FaPlus /> إضافة درس
+                          </button>
+                        </div>
                       </div>
 
-                      {courseStructure.directLessons.length === 0 ? (
+                      {unifiedStructure.length === 0 ? (
                         <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                          <FaPlay className="text-4xl text-gray-400 mx-auto mb-4" />
+                          <FaGripVertical className="text-4xl text-gray-400 mx-auto mb-4" />
                           <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                            No direct lessons created yet
+                            لم يتم إنشاء أي عناصر بعد
                           </h4>
                           <p className="text-gray-500 dark:text-gray-400">
-                            Add lessons that don't belong to any specific unit.
+                            ابدأ بإضافة وحدات أو دروس لإنشاء هيكل الدورة.
                           </p>
                         </div>
                       ) : (
                         <DragDropContext onDragEnd={handleDragEnd}>
-                          <Droppable droppableId="directLessons" type="directLesson">
+                          <Droppable droppableId="unified" type="unified">
                             {(provided) => (
                               <div 
                                 {...provided.droppableProps}
                                 ref={provided.innerRef}
                                 className="space-y-4"
                               >
-                                                                 {courseStructure.directLessons.map((lesson, index) => {
-                                   const directLessonId = lesson.id || lesson._id || `direct-lesson-${index}`;
-                                   return (
-                                   <Draggable key={directLessonId} draggableId={directLessonId.toString()} index={index}>
-                                    {(provided, snapshot) => (
-                                      <div
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        className={`bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 p-4 hover:shadow-lg transition-all duration-200 ${
-                                          snapshot.isDragging ? 'shadow-2xl rotate-2' : ''
-                                        }`}
-                                      >
-                                        <div className="flex items-center gap-3">
-                                          <div
-                                            {...provided.dragHandleProps}
-                                            className="text-gray-400 cursor-move"
-                                          >
-                                            <FaGripVertical />
-                                          </div>
-                                          <FaFileAlt className="text-green-500" />
-                                          <div className="flex-1">
-                                            {editingLesson === (lesson.id || lesson._id) ? (
-                                              <div className="space-y-2">
-                                                <input
-                                                  type="text"
-                                                  value={lesson.title}
-                                                  onChange={(e) => updateDirectLesson(lesson.id || lesson._id, 'title', e.target.value)}
-                                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                  placeholder="Lesson title"
-                                                />
-                                                <textarea
-                                                  value={lesson.description}
-                                                  onChange={(e) => updateDirectLesson(lesson.id || lesson._id, 'description', e.target.value)}
-                                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                  placeholder="Lesson description"
-                                                  rows={2}
-                                                />
-                                                <div className="flex gap-2">
-                                                  <button
-                                                    onClick={() => setEditingLesson(null)}
-                                                    className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
-                                                  >
-                                                    Save
-                                                  </button>
-                                                  <button
-                                                    onClick={() => setEditingLesson(null)}
-                                                    className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
-                                                  >
-                                                    Cancel
-                                                  </button>
+                                {unifiedStructure.map((item, index) => {
+                                  const itemId = item.id || `unified-${item.type}-${index}-${Date.now()}`;
+                                  return (
+                                    <Draggable key={itemId} draggableId={itemId.toString()} index={index}>
+                                      {(provided, snapshot) => (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          className={`bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-all duration-200 ${
+                                            snapshot.isDragging ? 'shadow-2xl rotate-2' : ''
+                                          }`}
+                                        >
+                                          <div className="p-4 lg:p-6">
+                                            <div className="flex items-center justify-between">
+                                              <div className="flex items-center gap-4">
+                                                <div
+                                                  {...provided.dragHandleProps}
+                                                  className="text-gray-400 hover:text-gray-600 cursor-move"
+                                                >
+                                                  <FaGripVertical />
                                                 </div>
-                                              </div>
-                                            ) : (
-                                              <div>
-                                                <h4 className="font-semibold text-gray-900 dark:text-white">
-                                                  {lesson.title || "Untitled Lesson"}
-                                                </h4>
-                                                {lesson.description && (
-                                                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                                                    {lesson.description}
-                                                  </div>
+                                                {item.type === 'unit' ? (
+                                                  <>
+                                                    <FaFolder className="text-green-500" />
+                                                    <div className="flex-1">
+                                                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                                                        {item.data.title || "Untitled Unit"}
+                                                      </h4>
+                                                      {item.data.description && (
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                          {item.data.description}
+                                                        </p>
+                                                      )}
+                                                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                        {item.data.lessons?.length || 0} lessons
+                                                      </p>
+                                                    </div>
+                                                  </>
+                                                ) : (
+                                                  <>
+                                                    <FaPlay className="text-blue-500" />
+                                                    <div className="flex-1">
+                                                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                                                        {item.data.title || "Untitled Lesson"}
+                                                      </h4>
+                                                      {item.data.description && (
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                          {item.data.description}
+                                                        </p>
+                                                      )}
+                                                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                        {item.data.duration || 0} minutes
+                                                      </p>
+                                                    </div>
+                                                  </>
                                                 )}
                                               </div>
-                                            )}
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <button
-                                              onClick={() => addDirectLessonAfter(lesson.id || lesson._id)}
-                                              className="text-green-500 hover:text-green-700"
-                                              title="Add Lesson After This"
-                                            >
-                                              <FaPlus />
-                                            </button>
-                                            <button
-                                              onClick={() => setEditingLesson(lesson.id || lesson._id)}
-                                              className="text-blue-500 hover:text-blue-700"
-                                            >
-                                              <FaEdit />
-                                            </button>
-                                            <button
-                                              onClick={() => deleteDirectLesson(lesson.id || lesson._id)}
-                                              className="text-red-500 hover:text-red-700"
-                                            >
-                                              <FaTrash />
-                                            </button>
+                                              <div className="flex items-center gap-2">
+                                                <button
+                                                  onClick={() => updateUnifiedItem(itemId, 'title', prompt('Enter new title:', item.data.title))}
+                                                  className="text-blue-500 hover:text-blue-700"
+                                                  title="Edit"
+                                                >
+                                                  <FaEdit />
+                                                </button>
+                                                <button
+                                                  onClick={() => deleteUnifiedItem(itemId)}
+                                                  className="text-red-500 hover:text-red-700"
+                                                  title="Delete"
+                                                >
+                                                  <FaTrash />
+                                                </button>
+                                              </div>
+                                            </div>
                                           </div>
                                         </div>
-                                      </div>
-                                    )}
-                                  </Draggable>
-                                );
-                              })}
+                                      )}
+                                    </Draggable>
+                                  );
+                                })}
                                 {provided.placeholder}
                               </div>
                             )}
                           </Droppable>
                         </DragDropContext>
                       )}
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
+                    </div>
+                  )}
 
                   {/* Course Summary */}
                   <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 mb-8">
@@ -1523,20 +1362,22 @@ export default function EditCourse() {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div className="flex items-center gap-2">
-                        <FaFolder className="text-orange-500" />
+                        <FaGripVertical className="text-orange-500" />
+                        <span className="text-gray-700 dark:text-gray-300">Total Items:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{unifiedStructure.length}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaFolder className="text-green-500" />
                         <span className="text-gray-700 dark:text-gray-300">Units:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{courseStructure.units.length}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaPlay className="text-red-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Direct Lessons:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{courseStructure.directLessons.length}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaStar className="text-yellow-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Total Lessons:</span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {courseStructure.units.reduce((sum, unit) => sum + unit.lessons.length, 0) + courseStructure.directLessons.length}
+                          {unifiedStructure.filter(item => item.type === 'unit').length}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FaPlay className="text-blue-500" />
+                        <span className="text-gray-700 dark:text-gray-300">Lessons:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {unifiedStructure.filter(item => item.type === 'lesson').length}
                         </span>
                       </div>
                     </div>

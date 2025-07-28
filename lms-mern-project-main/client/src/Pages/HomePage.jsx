@@ -334,7 +334,6 @@ export default function HomePage() {
                         </span>
                       </div>
                     </div>
-                    
                     <Link to="/courses/description" state={{ ...course }}>
                       <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
                         <FaEye className="w-4 h-4" />

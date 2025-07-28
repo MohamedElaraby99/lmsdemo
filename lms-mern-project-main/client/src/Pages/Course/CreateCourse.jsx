@@ -501,15 +501,6 @@ export default function CreateCourse() {
                               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                             />
                           </div>
-
-                          <InputBox
-                            label="الفئة"
-                            name="category"
-                            type="text"
-                            placeholder="أدخل فئة الدورة"
-                            onChange={handleCourseInput}
-                            value={courseData.category}
-                          />
                         </div>
                       </div>
 
@@ -635,42 +626,6 @@ export default function CreateCourse() {
                             name="thumbnail"
                             onChange={handleImageUpload}
                           />
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                          <FaStar className="text-yellow-500" />
-                          التسعير
-                        </h3>
-                        
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <InputBox
-                              label="السعر (جنيه مصري)"
-                              name="price"
-                              type="number"
-                              placeholder="0"
-                              onChange={handleCourseInput}
-                              value={courseData.price}
-                              min="0"
-                            />
-                            <div className="flex items-end">
-                              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                <input
-                                  type="checkbox"
-                                  name="isPaid"
-                                  checked={courseData.isPaid}
-                                  onChange={(e) => setCourseData(prev => ({
-                                    ...prev,
-                                    isPaid: e.target.checked
-                                  }))}
-                                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                دورة مدفوعة
-                              </label>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>

@@ -18,7 +18,7 @@ const cookieOptions = {
 // Register  
 const register = async (req, res, next) => {
     try {
-        const { fullName, username, email, password, phoneNumber, fatherPhoneNumber, governorate, grade, age, adminCode } = req.body;
+        const { fullName, username, email, password, phoneNumber, fatherPhoneNumber, governorate, grade, stage, age, adminCode } = req.body;
 
         // Determine user role based on admin code
         let userRole = 'USER';
@@ -33,7 +33,7 @@ const register = async (req, res, next) => {
 
         // For regular users, check all required fields
         if (userRole === 'USER') {
-            if (!phoneNumber || !fatherPhoneNumber || !governorate || !grade || !age) {
+            if (!phoneNumber || !fatherPhoneNumber || !governorate || !grade || !stage || !age) {
                 return next(new AppError("All fields are required for regular users", 400));
             }
         }
@@ -70,6 +70,7 @@ const register = async (req, res, next) => {
             userData.fatherPhoneNumber = fatherPhoneNumber;
             userData.governorate = governorate;
             userData.grade = grade;
+            userData.stage = stage;
             userData.age = parseInt(age);
         }
 

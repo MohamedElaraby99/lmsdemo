@@ -241,7 +241,7 @@ const LessonDetailModal = ({
                 </h2>
                 {unit && (
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
-                    Unit: {unit.title}
+                    Unit: {typeof unit === 'object' && unit.title ? unit.title : unit}
                   </p>
                 )}
               </div>
@@ -472,9 +472,9 @@ const LessonDetailModal = ({
                               <div className="flex items-center gap-3">
                                 <FaFolder className="text-blue-500" />
                                 <div>
-                                  <h5 className="font-medium text-gray-900 dark:text-white">{unit.title}</h5>
+                                  <h5 className="font-medium text-gray-900 dark:text-white">{typeof unit === 'object' && unit.title ? unit.title : unit}</h5>
                                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {unit.description || 'Unit description not available'}
+                                    {typeof unit === 'object' && unit.description ? unit.description : 'Unit description not available'}
                                   </p>
                                 </div>
                               </div>
@@ -500,7 +500,7 @@ const LessonDetailModal = ({
                                 </div>
                                 <div>
                                   <h5 className="font-medium text-gray-900 dark:text-white">Stage</h5>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">{courseData.stage}</p>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{typeof courseData.stage === 'object' && courseData.stage.name ? courseData.stage.name : courseData.stage}</p>
                                 </div>
                               </div>
                             </div>
