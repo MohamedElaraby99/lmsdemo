@@ -1,1 +1,1 @@
-VITE_REACT_APP_API_URL=<API_BASE_URL>
+VITE_REACT_APP_API_URL=<https://lms.fikra.solutions/> 
