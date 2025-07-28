@@ -94,7 +94,8 @@ const getLecturesByCourseId = async (req, res, next) => {
         const filteredCourse = {
             ...course.toObject(),
             units: filteredUnits,
-            directLessons: filteredDirectLessons
+            directLessons: filteredDirectLessons,
+            unifiedStructure: course.unifiedStructure || []
         };
 
         res.status(200).json({
@@ -193,18 +194,44 @@ const createCourse = async (req, res, next) => {
         // Parse course structure if provided
         let units = [];
         let directLessons = [];
+        let unifiedStructure = [];
         let totalLessons = numberOfLectures || 0;
 
         if (courseStructure) {
             try {
                 const structure = JSON.parse(courseStructure);
-                units = structure.units || [];
-                directLessons = structure.directLessons || [];
                 
-                // Recalculate total lessons from structure
-                const totalUnitLessons = units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
-                const totalDirectLessons = directLessons.length;
-                totalLessons = totalUnitLessons + totalDirectLessons;
+                if (structure.structureType === 'unified') {
+                    // Handle unified structure
+                    unifiedStructure = structure.unifiedStructure || [];
+                    
+                    // Convert unified structure to separate structure for backward compatibility
+                    unifiedStructure.forEach((item, index) => {
+                        if (item.type === 'unit') {
+                            units.push({
+                                ...item.data,
+                                order: index
+                            });
+                        } else if (item.type === 'lesson') {
+                            directLessons.push({
+                                ...item.data,
+                                order: index
+                            });
+                        }
+                    });
+                    
+                    // Calculate total lessons from unified structure
+                    totalLessons = unifiedStructure.filter(item => item.type === 'lesson').length;
+                } else {
+                    // Handle legacy structure
+                    units = structure.units || [];
+                    directLessons = structure.directLessons || [];
+                    
+                    // Recalculate total lessons from structure
+                    const totalUnitLessons = units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
+                    const totalDirectLessons = directLessons.length;
+                    totalLessons = totalUnitLessons + totalDirectLessons;
+                }
             } catch (error) {
                 console.log('Error parsing course structure:', error);
             }
@@ -219,11 +246,12 @@ const createCourse = async (req, res, next) => {
             createdBy: createdBy || 'Admin',
             units: units,
             directLessons: directLessons,
+            unifiedStructure: unifiedStructure, // Add unified structure
             numberOfLectures: totalLessons,
             price: price || 0,
             currency: currency || 'EGP',
             isPaid: isPaid || false,
-            structureType: structureType || 'direct-lessons',
+            structureType: structureType || 'unified',
             status: 'draft'
         })
 
@@ -308,13 +336,44 @@ const updateCourse = async (req, res, next) => {
         if (courseStructure) {
             try {
                 const structure = JSON.parse(courseStructure);
-                course.units = structure.units || [];
-                course.directLessons = structure.directLessons || [];
                 
-                // Recalculate total lessons from structure
-                const totalUnitLessons = course.units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
-                const totalDirectLessons = course.directLessons.length;
-                course.numberOfLectures = totalUnitLessons + totalDirectLessons;
+                if (structure.structureType === 'unified') {
+                    // Handle unified structure
+                    course.unifiedStructure = structure.unifiedStructure || [];
+                    
+                    // Convert unified structure to separate structure for backward compatibility
+                    const units = [];
+                    const directLessons = [];
+                    
+                    course.unifiedStructure.forEach((item, index) => {
+                        if (item.type === 'unit') {
+                            units.push({
+                                ...item.data,
+                                order: index
+                            });
+                        } else if (item.type === 'lesson') {
+                            directLessons.push({
+                                ...item.data,
+                                order: index
+                            });
+                        }
+                    });
+                    
+                    course.units = units;
+                    course.directLessons = directLessons;
+                    
+                    // Calculate total lessons from unified structure
+                    course.numberOfLectures = course.unifiedStructure.filter(item => item.type === 'lesson').length;
+                } else {
+                    // Handle legacy structure
+                    course.units = structure.units || [];
+                    course.directLessons = structure.directLessons || [];
+                    
+                    // Recalculate total lessons from structure
+                    const totalUnitLessons = course.units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
+                    const totalDirectLessons = course.directLessons.length;
+                    course.numberOfLectures = totalUnitLessons + totalDirectLessons;
+                }
             } catch (error) {
                 console.log('Error parsing course structure:', error);
             }

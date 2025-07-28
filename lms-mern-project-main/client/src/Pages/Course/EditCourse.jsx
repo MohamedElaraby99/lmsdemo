@@ -58,6 +58,17 @@ export default function EditCourse() {
   const [courseData, setCourseData] = useState(courseDataFromState);
   const [unifiedStructure, setUnifiedStructure] = useState([]);
   const [structureMode, setStructureMode] = useState('unified');
+  const [currentStage, setCurrentStage] = useState(1);
+  const [courseInfo, setCourseInfo] = useState({
+    title: "",
+    subject: "",
+    stage: "",
+    createdBy: "",
+    instructor: "",
+    description: "",
+    thumbnail: null,
+    previewImage: "",
+  });
 
   const toggleAllUnits = () => {
     const allUnitIds = courseStructure.units.map(unit => unit.id || unit._id);
@@ -131,6 +142,8 @@ export default function EditCourse() {
   // Update userInput when courseData changes
   useEffect(() => {
     if (courseData) {
+      console.log('EditCourse: Setting course data:', courseData);
+      
       setUserInput({
         title: courseData.title || "",
         subject: courseData.subject?._id || courseData.subject || "",
@@ -142,21 +155,43 @@ export default function EditCourse() {
         previewImage: courseData.thumbnail?.secure_url || "",
       });
 
-      setCourseStructure({
-        units: (courseData.units || []).map(unit => ({
-          ...unit,
-          id: unit.id || unit._id || Date.now() + Math.random(),
-          lessons: (unit.lessons || []).map(lesson => ({
+      // Handle unified structure if available
+      if (courseData.unifiedStructure && courseData.unifiedStructure.length > 0) {
+        console.log('Loading unified structure from course data:', courseData.unifiedStructure);
+        setUnifiedStructure(courseData.unifiedStructure);
+        setStructureMode('unified');
+        setCourseStructure({
+          units: [],
+          directLessons: [],
+          structureType: "unified"
+        });
+      } else {
+        // Fallback to legacy structure
+        console.log('Loading legacy structure from course data:', {
+          units: courseData.units,
+          directLessons: courseData.directLessons
+        });
+        
+        setCourseStructure({
+          units: (courseData.units || []).map(unit => ({
+            ...unit,
+            id: unit.id || unit._id || Date.now() + Math.random(),
+            lessons: (unit.lessons || []).map(lesson => ({
+              ...lesson,
+              id: lesson.id || lesson._id || Date.now() + Math.random()
+            }))
+          })),
+          directLessons: (courseData.directLessons || []).map(lesson => ({
             ...lesson,
             id: lesson.id || lesson._id || Date.now() + Math.random()
-          }))
-        })),
-        directLessons: (courseData.directLessons || []).map(lesson => ({
-          ...lesson,
-          id: lesson.id || lesson._id || Date.now() + Math.random()
-        })),
-        structureType: courseData.structureType || "direct-lessons"
-      });
+          })),
+          structureType: courseData.structureType || "direct-lessons"
+        });
+        
+        // Also set unified structure to empty if not available
+        setUnifiedStructure([]);
+        setStructureMode('legacy');
+      }
     }
   }, [courseData]);
 
@@ -645,98 +680,38 @@ export default function EditCourse() {
       return;
     }
 
-    setIsUpdatingCourse(true);
-    const formData = new FormData();
-    formData.append("title", userInput.title);
-    formData.append("description", userInput.description);
-    formData.append("subject", userInput.subject);
-    formData.append("stage", userInput.stage);
-    formData.append("createdBy", userInput.createdBy);
-    formData.append("instructor", userInput.instructor);
-    formData.append("structureType", courseStructure.structureType);
-    
-    // Calculate total lessons
-    const totalUnitLessons = courseStructure.units.reduce((sum, unit) => sum + unit.lessons.length, 0);
-    const totalDirectLessons = courseStructure.directLessons.length;
-    const totalLessons = totalUnitLessons + totalDirectLessons;
-    formData.append("numberOfLectures", totalLessons);
-    
-    // Add course structure data
-    const structureData = {
-      units: courseStructure.units.map(unit => ({
-        title: unit.title,
-        description: unit.description,
-        lessons: unit.lessons.map(lesson => ({
-          title: lesson.title,
-          description: lesson.description,
-          lecture: lesson.lecture,
-          duration: lesson.duration,
-          order: lesson.order,
-          price: lesson.price || 10
-        })),
-        order: unit.order
-      })),
-      directLessons: courseStructure.directLessons.map(lesson => ({
-        title: lesson.title,
-        description: lesson.description,
-        lecture: lesson.lecture,
-        duration: lesson.duration,
-        order: lesson.order,
-        price: lesson.price || 10
-      }))
-    };
+    // Save course info and navigate to structure page
+    setCourseInfo({
+      title: userInput.title,
+      description: userInput.description,
+      subject: userInput.subject,
+      stage: userInput.stage,
+      createdBy: userInput.createdBy,
+      instructor: userInput.instructor,
+      thumbnail: userInput.thumbnail,
+      previewImage: userInput.previewImage,
+    });
 
-    // If using unified structure, convert it back to separate structure
-    if (courseStructure.structureType === 'unified') {
-      convertToSeparateStructure();
-      // Wait for the conversion to complete
-      setTimeout(() => {
-        const finalStructureData = {
-          units: courseStructure.units.map(unit => ({
-            title: unit.title,
-            description: unit.description,
-            lessons: unit.lessons.map(lesson => ({
-              title: lesson.title,
-              description: lesson.description,
-              lecture: lesson.lecture,
-              duration: lesson.duration,
-              order: lesson.order,
-              price: lesson.price || 10
-            })),
-            order: unit.order
-          })),
-          directLessons: courseStructure.directLessons.map(lesson => ({
-            title: lesson.title,
-            description: lesson.description,
-            lecture: lesson.lecture,
-            duration: lesson.duration,
-            order: lesson.order,
-            price: lesson.price || 10
-          }))
-        };
-        formData.append("courseStructure", JSON.stringify(finalStructureData));
-        submitFormData(formData);
-      }, 100);
-    } else {
-      formData.append("courseStructure", JSON.stringify(structureData));
-      submitFormData(formData);
-    }
-    
-    // Only append thumbnail if a new one is selected
-    if (userInput.thumbnail) {
-      formData.append("thumbnail", userInput.thumbnail);
-    }
-
-    try {
-      const response = await dispatch(updateCourse({ id: courseData._id, formData }));
-      if (response?.payload?.success) {
-        toast.success("تم تحديث الدورة بنجاح!");
-        navigate("/admin/dashboard");
+    // Navigate to structure page with course data
+    navigate(`/course/structure/edit/${id}`, {
+      state: {
+        courseData: {
+          ...courseData,
+          title: userInput.title,
+          description: userInput.description,
+          subject: userInput.subject,
+          stage: userInput.stage,
+          createdBy: userInput.createdBy,
+          instructor: userInput.instructor,
+          thumbnail: userInput.thumbnail,
+          previewImage: userInput.previewImage,
+          unifiedStructure: unifiedStructure,
+          units: courseStructure.units,
+          directLessons: courseStructure.directLessons,
+          structureType: structureMode === 'unified' ? 'unified' : 'legacy'
+        }
       }
-    } catch (error) {
-      toast.error("فشل في تحديث الدورة");
-    }
-    setIsUpdatingCourse(false);
+    });
   }
 
   if (loading) {
@@ -827,23 +802,12 @@ export default function EditCourse() {
               >
                 المعلومات الأساسية
               </button>
-              <button
-                onClick={() => setActiveTab("course-structure")}
-                className={`px-4 py-2 font-medium rounded-t-lg transition-colors ${
-                  activeTab === "course-structure"
-                    ? "bg-blue-500 text-white"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
-                }`}
-              >
-                هيكل الدورة ({courseStructure.units.length + courseStructure.directLessons.length})
-              </button>
             </div>
 
             {/* Main Form */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden">
               {/* Basic Information Tab */}
-              {activeTab === "basic-info" && (
-                <form onSubmit={onFormSubmit} autoComplete="off" noValidate className="p-6 lg:p-8">
+              <form onSubmit={onFormSubmit} autoComplete="off" noValidate className="p-6 lg:p-8">
                 <div className="grid lg:grid-cols-2 gap-8">
                   {/* Left Column - Basic Info */}
                   <div className="space-y-6">
@@ -894,41 +858,27 @@ export default function EditCourse() {
                             name="instructor"
                             value={userInput.instructor}
                             onChange={handleUserInput}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                             required
                           >
                             <option value="">اختر المدرس</option>
-                            {instructors?.map((instructor) => (
+                            {instructors.map((instructor) => (
                               <option key={instructor._id} value={instructor._id}>
-                                {instructor.name} - {instructor.specialization}
+                                {instructor.name}
                               </option>
                             ))}
                           </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            اسم المدرس (للعرض)
-                          </label>
-                          <input
-                            type="text"
-                            name="createdBy"
-                            placeholder="أدخل اسم المدرس للعرض"
-                        onChange={handleUserInput}
-                        value={userInput.createdBy}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right Column - Subject, Stage & Image */}
+                  {/* Right Column - Course Details */}
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                        <FaTag className="text-purple-500" />
-                        المادة والمرحلة
+                        <FaTag className="text-blue-500" />
+                        تفاصيل الدورة
                       </h3>
                       
                       <div className="space-y-4">
@@ -940,11 +890,11 @@ export default function EditCourse() {
                             name="subject"
                             value={userInput.subject}
                             onChange={handleUserInput}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                             required
                           >
-                            <option value="">اختر مادة دراسية</option>
-                            {subjects?.map((subject) => (
+                            <option value="">اختر المادة</option>
+                            {subjects.map((subject) => (
                               <option key={subject._id} value={subject._id}>
                                 {subject.title}
                               </option>
@@ -960,11 +910,11 @@ export default function EditCourse() {
                             name="stage"
                             value={userInput.stage}
                             onChange={handleUserInput}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                             required
                           >
                             <option value="">اختر المرحلة</option>
-                            {stages?.map((stage) => (
+                            {stages.map((stage) => (
                               <option key={stage._id} value={stage._id}>
                                 {stage.name}
                               </option>
@@ -976,435 +926,81 @@ export default function EditCourse() {
 
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                        <FaImage className="text-orange-500" />
-                        صورة مصغرة للدورة
+                        <FaImage className="text-blue-500" />
+                        صورة الدورة
                       </h3>
                       
-                      {/* Image Upload Area */}
-                      <div className="relative">
-                        <label htmlFor="image_uploads" className="cursor-pointer block">
-                          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 hover:border-blue-400 dark:hover:border-blue-400 transition-colors duration-200">
-                            {userInput.previewImage ? (
-                              <div className="relative">
-                                <img
-                                  className="w-full h-48 lg:h-56 object-cover rounded-lg"
-                                  src={userInput.previewImage}
-                                  alt="course thumbnail"
-                                />
-                                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 rounded-lg flex items-center justify-center">
-                                  <div className="opacity-0 hover:opacity-100 transition-opacity duration-200">
-                                    <FaUpload className="text-white text-2xl" />
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="text-center py-8">
-                                <FaImage className="text-gray-400 text-4xl mx-auto mb-4" />
-                                <p className="text-gray-600 dark:text-gray-400 font-medium">
-                                  انقر لرفع صورة مصغرة
-                                </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                                  JPG، PNG حتى 5 ميجابايت
-                                </p>
-                              </div>
-                            )}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          {userInput.previewImage ? (
+                            <div className="relative">
+                              <img
+                                src={userInput.previewImage}
+                                alt="Course thumbnail"
+                                className="w-32 h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+                              />
+                              <button
+                                type="button"
+                                onClick={removeImage}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+                              >
+                                <FaTimes className="text-xs" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="w-32 h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
+                              <FaImage className="text-gray-400 text-2xl" />
+                            </div>
+                          )}
+                          
+                          <div className="flex-1">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              صورة الدورة
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                            />
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              PNG, JPG, JPEG حتى 5MB
+                            </p>
                           </div>
-                        </label>
-                        
-                        {/* Image Actions */}
-                        {userInput.previewImage && (
-                          <div className="flex items-center gap-2 mt-3">
-                            <button
-                              type="button"
-                              onClick={() => document.getElementById('image_uploads').click()}
-                              className="flex items-center gap-2 px-3 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm"
-                            >
-                              <FaEdit className="text-xs" />
-                              تغيير
-                            </button>
-                            <button
-                              type="button"
-                              onClick={removeImage}
-                              className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 text-sm"
-                            >
-                              <FaTrash className="text-xs" />
-                              إزالة
-                            </button>
-                          </div>
-                        )}
-                        
-                        <input
-                          className="hidden"
-                          type="file"
-                          id="image_uploads"
-                          accept=".jpg, .jpeg, .png"
-                          name="thumbnail"
-                          onChange={handleImageUpload}
-                        />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Course Information Summary */}
-                <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-4 flex items-center gap-2">
-                    <FaInfo className="text-blue-500" />
-                    ملخص معلومات الدورة
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <FaBook className="text-blue-500" />
-                      <span className="text-gray-700 dark:text-gray-300">العنوان:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{userInput.title || 'Not set'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaTag className="text-green-500" />
-                      <span className="text-gray-700 dark:text-gray-300">المادة:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {subjects.find(s => s._id === userInput.subject)?.title || 'Not selected'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaUsers className="text-purple-500" />
-                      <span className="text-gray-700 dark:text-gray-300">المرحلة:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {userInput.stage ? 
-                          (() => {
-                            const selectedStage = stages?.find(s => s._id === userInput.stage);
-                            return selectedStage ? selectedStage.name : 'Not selected';
-                          })() 
-                          : 'Not selected'
-                        }
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaUser className="text-orange-500" />
-                      <span className="text-gray-700 dark:text-gray-300">المدرس:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {userInput.instructor ? 
-                          (() => {
-                            const selectedInstructor = instructors?.find(i => i._id === userInput.instructor);
-                            return selectedInstructor ? `${selectedInstructor.name} - ${selectedInstructor.specialization}` : 'Not selected';
-                          })() 
-                          : 'Not selected'
-                        }
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaUser className="text-blue-500" />
-                      <span className="text-gray-700 dark:text-gray-300">اسم العرض:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{userInput.createdBy || 'Not set'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaGraduationCap className="text-red-500" />
-                      <span className="text-gray-700 dark:text-gray-300">الحالة:</span>
-                      <span className="font-medium text-green-600 dark:text-green-400">Active</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Form Validation */}
-                <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
-                    <FaCheck className="text-blue-500" />
-                    الحقول المطلوبة
-                  </h4>
-                  <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
-                    <li className="flex items-center gap-2">
-                      {userInput.title ? (
-                        <FaCheck className="text-green-500" />
-                      ) : (
-                        <FaTimes className="text-red-500" />
-                      )}
-                      عنوان الدورة
-                    </li>
-                    <li className="flex items-center gap-2">
-                      {userInput.description ? (
-                        <FaCheck className="text-green-500" />
-                      ) : (
-                        <FaTimes className="text-red-500" />
-                      )}
-                      وصف الدورة
-                    </li>
-                    <li className="flex items-center gap-2">
-                      {userInput.subject ? (
-                        <FaCheck className="text-green-500" />
-                      ) : (
-                        <FaTimes className="text-red-500" />
-                      )}
-                      المادة
-                    </li>
-                    <li className="flex items-center gap-2">
-                      {userInput.stage ? (
-                        <FaCheck className="text-green-500" />
-                      ) : (
-                        <FaTimes className="text-red-500" />
-                      )}
-                      المرحلة
-                    </li>
-                    <li className="flex items-center gap-2">
-                      {userInput.instructor ? (
-                        <FaCheck className="text-green-500" />
-                      ) : (
-                        <FaTimes className="text-red-500" />
-                      )}
-                      المدرس
-                    </li>
-                  </ul>
-                </div>
-
                 {/* Submit Button */}
-                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/admin/dashboard")}
+                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    إلغاء
+                  </button>
                   <button
                     type="submit"
-                    disabled={isUpdatingCourse || !userInput.title || !userInput.description || !userInput.subject || !userInput.stage || !userInput.instructor}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                    disabled={isUpdatingCourse}
+                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isUpdatingCourse ? (
                       <>
                         <FaSpinner className="animate-spin" />
-                        جاري تحديث الدورة...
+                        جاري التحديث...
                       </>
                     ) : (
                       <>
                         <FaSave />
-                        تحديث الدورة
+                        التالي - تعديل هيكل الدورة
                       </>
                     )}
                   </button>
                 </div>
               </form>
-              )}
-
-              {/* Course Structure Tab */}
-              {activeTab === "course-structure" && (
-                <div className="p-6 lg:p-8">
-                  <div className="text-center mb-8">
-                    <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      هيكل الدورة
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-300">
-                                              نظم محتوى دورتك بالوحدات والدروس
-                    </p>
-                  </div>
-
-                  {/* Structure Type Selection */}
-                  <div className="mb-8">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                        <FaFolder className="text-blue-500" />
-                        هيكل الدورة - ترتيب حر للوحدات والدروس
-                      </h3>
-                    </div>
-                    <div className="bg-gradient-to-r from-orange-50 to-purple-50 dark:from-orange-900/20 dark:to-purple-900/20 rounded-xl p-6 border-2 border-orange-200 dark:border-orange-700">
-                      <div className="text-center">
-                        <FaGripVertical className="text-3xl text-orange-500 mx-auto mb-4" />
-                        <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">هيكل موحد</h4>
-                        <p className="text-gray-600 dark:text-gray-400 mb-4">
-                          ترتيب حر للوحدات والدروس - يمكنك خلط الوحدات والدروس بأي ترتيب تريده
-                        </p>
-                        <div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                          <div className="flex items-center gap-2">
-                            <FaFolder className="text-green-500" />
-                            <span>وحدات</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <FaPlay className="text-blue-500" />
-                            <span>دروس</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <FaGripVertical className="text-orange-500" />
-                            <span>ترتيب حر</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Course Sections - Only Unified Structure */}
-                  {courseStructure.structureType === 'unified' && (
-                    <div className="space-y-6 mb-8">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                          <FaGripVertical className="text-orange-500" />
-                          هيكل موحد - ترتيب حر للوحدات والدروس ({unifiedStructure.length})
-                        </h3>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => addToUnifiedStructure('unit', { title: 'New Unit', description: '', lessons: [] })}
-                            className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-                          >
-                            <FaPlus /> إضافة وحدة
-                          </button>
-                          <button
-                            onClick={() => addToUnifiedStructure('lesson', { title: 'New Lesson', description: '', lecture: {}, duration: 0, price: 10 })}
-                            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                          >
-                            <FaPlus /> إضافة درس
-                          </button>
-                        </div>
-                      </div>
-
-                      {unifiedStructure.length === 0 ? (
-                        <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                          <FaGripVertical className="text-4xl text-gray-400 mx-auto mb-4" />
-                          <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                            لم يتم إنشاء أي عناصر بعد
-                          </h4>
-                          <p className="text-gray-500 dark:text-gray-400">
-                            ابدأ بإضافة وحدات أو دروس لإنشاء هيكل الدورة.
-                          </p>
-                        </div>
-                      ) : (
-                        <DragDropContext onDragEnd={handleDragEnd}>
-                          <Droppable droppableId="unified" type="unified">
-                            {(provided) => (
-                              <div 
-                                {...provided.droppableProps}
-                                ref={provided.innerRef}
-                                className="space-y-4"
-                              >
-                                {unifiedStructure.map((item, index) => {
-                                  const itemId = item.id || `unified-${item.type}-${index}-${Date.now()}`;
-                                  return (
-                                    <Draggable key={itemId} draggableId={itemId.toString()} index={index}>
-                                      {(provided, snapshot) => (
-                                        <div
-                                          ref={provided.innerRef}
-                                          {...provided.draggableProps}
-                                          className={`bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-all duration-200 ${
-                                            snapshot.isDragging ? 'shadow-2xl rotate-2' : ''
-                                          }`}
-                                        >
-                                          <div className="p-4 lg:p-6">
-                                            <div className="flex items-center justify-between">
-                                              <div className="flex items-center gap-4">
-                                                <div
-                                                  {...provided.dragHandleProps}
-                                                  className="text-gray-400 hover:text-gray-600 cursor-move"
-                                                >
-                                                  <FaGripVertical />
-                                                </div>
-                                                {item.type === 'unit' ? (
-                                                  <>
-                                                    <FaFolder className="text-green-500" />
-                                                    <div className="flex-1">
-                                                      <h4 className="font-semibold text-gray-900 dark:text-white">
-                                                        {item.data.title || "Untitled Unit"}
-                                                      </h4>
-                                                      {item.data.description && (
-                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                          {item.data.description}
-                                                        </p>
-                                                      )}
-                                                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                        {item.data.lessons?.length || 0} lessons
-                                                      </p>
-                                                    </div>
-                                                  </>
-                                                ) : (
-                                                  <>
-                                                    <FaPlay className="text-blue-500" />
-                                                    <div className="flex-1">
-                                                      <h4 className="font-semibold text-gray-900 dark:text-white">
-                                                        {item.data.title || "Untitled Lesson"}
-                                                      </h4>
-                                                      {item.data.description && (
-                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                                          {item.data.description}
-                                                        </p>
-                                                      )}
-                                                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                        {item.data.duration || 0} minutes
-                                                      </p>
-                                                    </div>
-                                                  </>
-                                                )}
-                                              </div>
-                                              <div className="flex items-center gap-2">
-                                                <button
-                                                  onClick={() => updateUnifiedItem(itemId, 'title', prompt('Enter new title:', item.data.title))}
-                                                  className="text-blue-500 hover:text-blue-700"
-                                                  title="Edit"
-                                                >
-                                                  <FaEdit />
-                                                </button>
-                                                <button
-                                                  onClick={() => deleteUnifiedItem(itemId)}
-                                                  className="text-red-500 hover:text-red-700"
-                                                  title="Delete"
-                                                >
-                                                  <FaTrash />
-                                                </button>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </Draggable>
-                                  );
-                                })}
-                                {provided.placeholder}
-                              </div>
-                            )}
-                          </Droppable>
-                        </DragDropContext>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Course Summary */}
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 mb-8">
-                    <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-4 flex items-center gap-2">
-                      <FaInfo className="text-blue-500" />
-                      Course Structure Summary
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <FaGripVertical className="text-orange-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Total Items:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">{unifiedStructure.length}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaFolder className="text-green-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Units:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {unifiedStructure.filter(item => item.type === 'unit').length}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <FaPlay className="text-blue-500" />
-                        <span className="text-gray-700 dark:text-gray-300">Lessons:</span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {unifiedStructure.filter(item => item.type === 'lesson').length}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Save Button */}
-                  <div className="flex justify-center">
-                    <button
-                      onClick={onFormSubmit}
-                      disabled={isUpdatingCourse}
-                      className="bg-gradient-to-r from-green-500 to-blue-600 text-white py-3 px-8 rounded-xl font-semibold hover:from-green-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2"
-                    >
-                      {isUpdatingCourse ? (
-                        <>
-                          <FaSpinner className="animate-spin" />
-                          Updating Course...
-                        </>
-                      ) : (
-                        <>
-                          <FaSave />
-                          Save Course Structure
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </section>

@@ -41,8 +41,8 @@ import InstructorDetail from "./Pages/InstructorDetail";
 
 import RequireAuth from "./Components/auth/RequireAuth";
 import CreateCourse from "./Pages/Course/CreateCourse";
-import EditCourse from "./Pages/Course/EditCourse";
 import CourseStructure from "./Pages/Course/CourseStructure";
+import EditCourse from "./Pages/Course/EditCourse";
 import Profile from "./Pages/User/Profile";
 
 import DisplayLecture from "./Pages/Dashboard/DisplayLecture";
@@ -102,19 +102,20 @@ function App() {
         <Route path="/subjects" element={<SubjectList />} />
 
                   <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
-            <Route path="/course/create" element={<CreateCourse />} />
-            <Route path="/course/edit/:id" element={<EditCourse />} />
-            <Route path="/course/structure" element={<CourseStructure />} />
-            <Route path="/course/addlecture" element={<AddLecture />} />
-            <Route path="/course/add-pdf" element={<AddPdfToLesson />} />
-            <Route path="/course/add-exam" element={<AddExamToLesson />} />
-            <Route path="/exam-history" element={<ExamHistory />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/blog-dashboard" element={<BlogDashboard />} />
-          <Route path="/admin/qa-dashboard" element={<QADashboard />} />
-          <Route path="/admin/qa-pending" element={<QAPendingQuestions />} />
-          <Route path="/admin/subject-dashboard" element={<SubjectDashboard />} />
-        </Route>
+                    <Route path="/course/create" element={<CreateCourse />} />
+                    <Route path="/course/structure/edit/:id" element={<CourseStructure />} />
+                    <Route path="/course/structure" element={<CourseStructure />} />
+                    <Route path="/course/edit/:id" element={<EditCourse />} />
+                    <Route path="/course/addlecture" element={<AddLecture />} />
+                    <Route path="/course/add-pdf" element={<AddPdfToLesson />} />
+                    <Route path="/course/add-exam" element={<AddExamToLesson />} />
+                    <Route path="/exam-history" element={<ExamHistory />} />
+                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                    <Route path="/admin/blog-dashboard" element={<BlogDashboard />} />
+                    <Route path="/admin/qa-dashboard" element={<QADashboard />} />
+                    <Route path="/admin/qa-pending" element={<QAPendingQuestions />} />
+                    <Route path="/admin/subject-dashboard" element={<SubjectDashboard />} />
+                  </Route>
 
         <Route element={<RequireAuth allowedRoles={["USER", "ADMIN"]} />}>
           <Route path="/user/profile" element={<Profile />} />
@@ -123,7 +124,7 @@ function App() {
             element={<ChangePassword />}
           />
           
-          <Route path="/course/displaylectures" element={<DisplayLecture />} />
+          <Route path="/course/displaylectures/:id" element={<DisplayLecture />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

@@ -57,6 +57,38 @@ const LessonDetailModal = ({
   const [trainingExamResult, setTrainingExamResult] = useState(null);
   const [finalExamResult, setFinalExamResult] = useState(null);
 
+  // Helper function to safely get lesson title
+  const getLessonTitle = (lesson) => {
+    if (!lesson) return 'Untitled Lesson';
+    if (typeof lesson.title === 'string') return lesson.title;
+    if (lesson.title && typeof lesson.title === 'object' && lesson.title.title) return lesson.title.title;
+    return lesson.title || 'Untitled Lesson';
+  };
+
+  // Helper function to safely get lesson description
+  const getLessonDescription = (lesson) => {
+    if (!lesson) return 'No description available for this lesson.';
+    if (typeof lesson.description === 'string') return lesson.description;
+    if (lesson.description && typeof lesson.description === 'object' && lesson.description.description) return lesson.description.description;
+    return lesson.description || 'No description available for this lesson.';
+  };
+
+  // Helper function to safely get lesson duration
+  const getLessonDuration = (lesson) => {
+    if (!lesson) return '0';
+    if (typeof lesson.duration === 'number') return lesson.duration.toString();
+    if (lesson.duration && typeof lesson.duration === 'object' && lesson.duration.duration) return lesson.duration.duration.toString();
+    return (lesson.duration || '0').toString();
+  };
+
+  // Helper function to safely get lesson price
+  const getLessonPrice = (lesson) => {
+    if (!lesson) return 0;
+    if (typeof lesson.price === 'number') return lesson.price;
+    if (lesson.price && typeof lesson.price === 'object' && lesson.price.price) return lesson.price.price;
+    return lesson.price || 0;
+  };
+
   // Check purchase status and exam status when modal opens
   useEffect(() => {
     if (isOpen && lesson && courseData) {
@@ -237,7 +269,7 @@ const LessonDetailModal = ({
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white truncate">
-                  {lesson.title}
+                  {getLessonTitle(lesson)}
                 </h2>
                 {unit && (
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
@@ -374,7 +406,7 @@ const LessonDetailModal = ({
                           </div>
                           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                             <FaClock className="text-sm sm:text-base" />
-                            <span>Duration: {lesson.duration || '0'} minutes</span>
+                            <span>Duration: {getLessonDuration(lesson)} minutes</span>
                           </div>
                           {hasVideo(lesson) && (
                             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
@@ -402,7 +434,7 @@ const LessonDetailModal = ({
                           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 sm:p-6">
                             <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">About this lesson</h4>
                             <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
-                              {lesson.description || 'No description available for this lesson.'}
+                              {getLessonDescription(lesson)}
                             </p>
                           </div>
 
@@ -413,7 +445,7 @@ const LessonDetailModal = ({
                                 <FaClock className="text-blue-500 text-sm sm:text-base" />
                                 <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Duration</h5>
                               </div>
-                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{lesson.duration || '0'} minutes</p>
+                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{getLessonDuration(lesson)} minutes</p>
                             </div>
 
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600">
@@ -421,7 +453,7 @@ const LessonDetailModal = ({
                                 <FaDollarSign className="text-green-500 text-sm sm:text-base" />
                                 <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Price</h5>
                               </div>
-                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{formatPrice(lesson.price || 0)}</p>
+                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{formatPrice(getLessonPrice(lesson))}</p>
                             </div>
 
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600">
@@ -884,7 +916,7 @@ const LessonDetailModal = ({
           video={lesson.lecture}
           isOpen={showVideoModal}
           onClose={() => setShowVideoModal(false)}
-          courseTitle={courseData?.title || lesson.title || "Lesson Video"}
+          courseTitle={courseData?.title || getLessonTitle(lesson) || "Lesson Video"}
           userName="User"
           courseId={courseData?._id}
           showProgress={true}
@@ -916,7 +948,7 @@ const LessonDetailModal = ({
                     Exam History
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {lesson.title} • {examHistory.examType === 'training' ? 'Training' : 'Final'} Exam
+                    {getLessonTitle(lesson)} • {examHistory.examType === 'training' ? 'Training' : 'Final'} Exam
                   </p>
                 </div>
               </div>

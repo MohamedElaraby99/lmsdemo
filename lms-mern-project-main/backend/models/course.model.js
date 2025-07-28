@@ -306,6 +306,33 @@ const courseSchema = new Schema({
             order: {
                 type: Number,
                 default: 0
+            },
+            price: {
+                type: Number,
+                default: 10, // Default price for individual lessons
+                min: 0
+            }
+        }
+    ],
+    // Unified structure for flexible course organization
+    unifiedStructure: [
+        {
+            id: {
+                type: String,
+                required: true
+            },
+            type: {
+                type: String,
+                enum: ['unit', 'lesson'],
+                required: true
+            },
+            data: {
+                type: Schema.Types.Mixed,
+                required: true
+            },
+            order: {
+                type: Number,
+                default: 0
             }
         }
     ],
@@ -341,8 +368,8 @@ const courseSchema = new Schema({
     // Course structure type
     structureType: {
         type: String,
-        enum: ['units', 'direct-lessons', 'mixed'],
-        default: 'direct-lessons'
+        enum: ['units', 'direct-lessons', 'mixed', 'unified'],
+        default: 'unified'
     },
     // Course status
     status: {

@@ -151,7 +151,7 @@ export default function CourseDescription() {
                   {/* Price and Action */}
             <div className="space-y-4">
                     <button
-                      onClick={() => navigate("/course/displaylectures", { state: { ...state } })}
+                      onClick={() => navigate(`/course/displaylectures/${state._id}`, { state: { ...state } })}
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2"
                     >
                       <FaPlay className="w-4 h-4" />

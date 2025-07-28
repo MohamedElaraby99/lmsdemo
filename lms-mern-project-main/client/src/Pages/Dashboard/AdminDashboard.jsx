@@ -609,7 +609,7 @@ export default function AdminDashboard() {
 
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         <button
-                          onClick={() => navigate("/course/displaylectures", { state: { ...course } })}
+                          onClick={() => navigate(`/course/displaylectures/${course._id}`, { state: { ...course } })}
                           className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 px-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center justify-center gap-2 text-xs lg:text-sm"
                         >
                           <FaEye className="w-3 h-3 lg:w-4 lg:h-4" />
