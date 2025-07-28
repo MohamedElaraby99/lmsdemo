@@ -351,7 +351,7 @@ export default function BlogDashboard() {
                             <img
                               src={(() => {
                                 const imageUrl = blog.image?.secure_url?.startsWith('/uploads/') 
-                                  ? `http://localhost:5000${blog.image.secure_url}` 
+                                  ? `http://localhost:4000${blog.image.secure_url}` 
                                   : blog.image?.secure_url || placeholderImages.blogSmall;
                                 console.log('Generated image URL:', imageUrl);
                                 return imageUrl;

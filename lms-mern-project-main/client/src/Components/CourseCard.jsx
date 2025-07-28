@@ -15,6 +15,7 @@ export default function CourseCard({ data, viewMode = "grid" }) {
       <div 
         className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-200 dark:border-gray-700"
         onClick={handleClick}
+        dir="rtl"
       >
         <div className="flex flex-col md:flex-row">
           {/* Image */}
@@ -27,12 +28,12 @@ export default function CourseCard({ data, viewMode = "grid" }) {
                 e.target.src = placeholderImages.course;
               }}
             />
-            <div className="absolute top-3 right-3 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg">
+            <div className="absolute top-3 left-3 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg">
               <FaPlay className="text-blue-600 dark:text-blue-400 text-sm" />
             </div>
-            <div className="absolute bottom-3 left-3">
+            <div className="absolute bottom-3 right-3">
               <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium">
-                {data?.category || "Course"}
+                {data?.subject?.title || "Course"}
               </span>
             </div>
           </div>
@@ -42,10 +43,10 @@ export default function CourseCard({ data, viewMode = "grid" }) {
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 text-right">
                   {data?.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-4">
+                <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-4 text-right">
                   {data?.description}
                 </p>
               </div>
@@ -54,19 +55,19 @@ export default function CourseCard({ data, viewMode = "grid" }) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <FaUser className="text-blue-500" />
-                  <span>{data?.createdBy || "Instructor"}</span>
+                  <span className="text-right">{data?.createdBy || "Instructor"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <FaBook className="text-purple-500" />
-                  <span>{data?.numberoflectures || 0} lectures</span>
+                  <span className="text-right">{data?.numberoflectures || 0} محاضرة</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <FaClock className="text-green-500" />
-                  <span>Self-paced</span>
+                  <span className="text-right">ذاتي التقدم</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                   <FaStar className="text-yellow-500" />
-                  <span>4.5 (120)</span>
+                  <span className="text-right">4.5 (120)</span>
                 </div>
               </div>
 
@@ -88,6 +89,7 @@ export default function CourseCard({ data, viewMode = "grid" }) {
     <div 
       className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-200 dark:border-gray-700 transform hover:-translate-y-1"
       onClick={handleClick}
+      dir="rtl"
     >
       {/* Image Container */}
       <div className="relative overflow-hidden">
@@ -101,14 +103,14 @@ export default function CourseCard({ data, viewMode = "grid" }) {
         />
         
         {/* Play Button */}
-        <div className="absolute top-3 right-3 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="absolute top-3 left-3 p-2 bg-white dark:bg-gray-800 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <FaPlay className="text-blue-600 dark:text-blue-400 text-sm" />
         </div>
         
         {/* Category Badge */}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 right-3">
           <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium">
-            {data?.category || "Course"}
+            {data?.subject?.title || "Course"}
           </span>
         </div>
         
@@ -119,12 +121,12 @@ export default function CourseCard({ data, viewMode = "grid" }) {
       {/* Content */}
       <div className="p-5">
         {/* Title */}
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 line-clamp-2">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 line-clamp-2 text-right">
           {data?.title}
         </h3>
         
         {/* Description */}
-        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2 text-right">
           {data?.description}
         </p>
 
@@ -132,11 +134,11 @@ export default function CourseCard({ data, viewMode = "grid" }) {
         <div className="space-y-2 mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <FaUser className="text-blue-500" />
-            <span className="truncate">{data?.createdBy || "Instructor"}</span>
+            <span className="truncate text-right">{data?.createdBy || "Instructor"}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <FaBook className="text-purple-500" />
-            <span>{data?.numberoflectures || 0} lectures</span>
+            <span className="text-right">{data?.numberoflectures || 0} محاضرة</span>
           </div>
         </div>
 
@@ -150,7 +152,7 @@ export default function CourseCard({ data, viewMode = "grid" }) {
               />
             ))}
           </div>
-          <span className="text-sm text-gray-600 dark:text-gray-400">(120 reviews)</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400 text-right">(120 تقييم)</span>
         </div>
 
         {/* Action Button */}

@@ -7,14 +7,22 @@ export const createInstructor = createAsyncThunk(
   'instructor/createInstructor',
   async (instructorData, { rejectWithValue }) => {
     try {
-      const formData = new FormData();
-      Object.keys(instructorData).forEach(key => {
-        if (key === 'socialLinks') {
-          formData.append(key, JSON.stringify(instructorData[key]));
-        } else {
-          formData.append(key, instructorData[key]);
-        }
-      });
+      let formData;
+      
+      // If instructorData is already FormData, use it directly
+      if (instructorData instanceof FormData) {
+        formData = instructorData;
+      } else {
+        // Otherwise, create FormData from object
+        formData = new FormData();
+        Object.keys(instructorData).forEach(key => {
+          if (key === 'socialLinks') {
+            formData.append(key, JSON.stringify(instructorData[key]));
+          } else {
+            formData.append(key, instructorData[key]);
+          }
+        });
+      }
 
       const response = await axiosInstance.post('/instructors', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -71,14 +79,22 @@ export const updateInstructor = createAsyncThunk(
   'instructor/updateInstructor',
   async ({ id, instructorData }, { rejectWithValue }) => {
     try {
-      const formData = new FormData();
-      Object.keys(instructorData).forEach(key => {
-        if (key === 'socialLinks') {
-          formData.append(key, JSON.stringify(instructorData[key]));
-        } else {
-          formData.append(key, instructorData[key]);
-        }
-      });
+      let formData;
+      
+      // If instructorData is already FormData, use it directly
+      if (instructorData instanceof FormData) {
+        formData = instructorData;
+      } else {
+        // Otherwise, create FormData from object
+        formData = new FormData();
+        Object.keys(instructorData).forEach(key => {
+          if (key === 'socialLinks') {
+            formData.append(key, JSON.stringify(instructorData[key]));
+          } else {
+            formData.append(key, instructorData[key]);
+          }
+        });
+      }
 
       const response = await axiosInstance.put(`/instructors/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }

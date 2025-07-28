@@ -117,8 +117,8 @@ export default function BlogDetail() {
           <div className="mb-8">
             <img
                         src={currentBlog.image?.secure_url?.startsWith('/uploads/') 
-            ? `http://localhost:5000${currentBlog.image.secure_url}` 
-            : currentBlog.image?.secure_url || placeholderImages.blogLarge}
+                  ? `http://localhost:4000${currentBlog.image.secure_url}` 
+                  : currentBlog.image?.secure_url || placeholderImages.blog}
               alt={currentBlog.title}
               className="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg"
               onError={(e) => {

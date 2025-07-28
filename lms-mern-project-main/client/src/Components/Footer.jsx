@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BsFacebook, BsLinkedin } from "react-icons/bs";
 import { FaShieldAlt, FaUnlock } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import { disableProtection, enableProtection, isProtectionDisabled } from "../utils/deviceDetection";
 
 export default function Footer() {
@@ -71,6 +72,25 @@ export default function Footer() {
           >
             <BsLinkedin />
           </a>
+        </div>
+      </div>
+      
+      {/* Legal Links */}
+      <div className="flex justify-center items-center mb-6">
+        <div className="flex gap-6 text-sm">
+          <Link 
+            to="/terms" 
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-300 font-medium"
+          >
+            شروط الخدمة
+          </Link>
+          <span className="text-gray-400 dark:text-gray-600">|</span>
+          <Link 
+            to="/privacy" 
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-300 font-medium"
+          >
+            سياسة الخصوصية
+          </Link>
         </div>
       </div>
       

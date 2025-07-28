@@ -27,17 +27,32 @@ const createInstructor = async (req, res, next) => {
     }
 
     // Handle profile image upload
-    let profileImage = {};
+    let profileImage = {
+      public_id: 'placeholder',
+      secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjE1MCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIEluc3RydWN0b3IgQXZhdGFyCiAgPC90ZXh0Pgo8L3N2Zz4K'
+    };
     if (req.file) {
-      const result = await cloudinary.v2.uploader.upload(req.file.path, {
-        folder: 'instructors',
-        width: 300,
-        crop: 'scale'
-      });
-      profileImage = {
-        public_id: result.public_id,
-        secure_url: result.secure_url
-      };
+      // Check if Cloudinary is properly configured
+      if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' ||
+          process.env.CLOUDINARY_API_KEY === 'placeholder' ||
+          process.env.CLOUDINARY_API_SECRET === 'placeholder') {
+        // Use local file storage when Cloudinary is not configured
+        console.log('Cloudinary not configured, using local file path');
+        profileImage = {
+          public_id: 'local',
+          secure_url: `${process.env.BACKEND_URL || 'http://localhost:4000'}/uploads/${req.file.filename}`
+        };
+      } else {
+        const result = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: 'instructors',
+          width: 300,
+          crop: 'scale'
+        });
+        profileImage = {
+          public_id: result.public_id,
+          secure_url: result.secure_url
+        };
+      }
     }
 
     const instructor = new Instructor({
@@ -193,6 +208,11 @@ const getInstructorById = async (req, res, next) => {
 // Update instructor
 const updateInstructor = async (req, res, next) => {
   try {
+    console.log('=== Update Instructor Debug ===');
+    console.log('Request params:', req.params);
+    console.log('Request body:', req.body);
+    console.log('Request file:', req.file);
+    
     const { id } = req.params;
     const {
       name,
@@ -206,13 +226,20 @@ const updateInstructor = async (req, res, next) => {
       isActive
     } = req.body;
 
+    console.log('Extracted data:', {
+      name, email, bio, specialization, experience, education, socialLinks, featured, isActive
+    });
+
     const instructor = await Instructor.findById(id);
     if (!instructor) {
+      console.log('Instructor not found:', id);
       return res.status(404).json({
         success: false,
         message: 'Instructor not found'
       });
     }
+
+    console.log('Found instructor:', instructor.name);
 
     // Check if email is being changed and if it already exists
     if (email && email.toLowerCase() !== instructor.email) {
@@ -221,6 +248,7 @@ const updateInstructor = async (req, res, next) => {
         _id: { $ne: id } 
       });
       if (existingInstructor) {
+        console.log('Email already exists:', email);
         return res.status(400).json({
           success: false,
           message: 'Instructor with this email already exists'
@@ -231,20 +259,56 @@ const updateInstructor = async (req, res, next) => {
     // Handle profile image upload
     let profileImage = instructor.profileImage;
     if (req.file) {
-      // Delete old image if exists
-      if (instructor.profileImage.public_id) {
-        await cloudinary.v2.uploader.destroy(instructor.profileImage.public_id);
+      console.log('Processing file upload:', req.file);
+      // Delete old image if exists and not placeholder
+      if (instructor.profileImage && instructor.profileImage.public_id && instructor.profileImage.public_id !== 'placeholder') {
+        try {
+          console.log('Deleting old image:', instructor.profileImage.public_id);
+          await cloudinary.v2.uploader.destroy(instructor.profileImage.public_id);
+        } catch (cloudinaryError) {
+          console.error('Error deleting old image:', cloudinaryError);
+        }
       }
       
-      const result = await cloudinary.v2.uploader.upload(req.file.path, {
-        folder: 'instructors',
-        width: 300,
-        crop: 'scale'
-      });
-      profileImage = {
-        public_id: result.public_id,
-        secure_url: result.secure_url
-      };
+      // Check if Cloudinary is properly configured
+      if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' ||
+          process.env.CLOUDINARY_API_KEY === 'placeholder' ||
+          process.env.CLOUDINARY_API_SECRET === 'placeholder') {
+        // Use local file storage when Cloudinary is not configured
+        console.log('Cloudinary not configured, using local file path');
+        profileImage = {
+          public_id: 'local',
+          secure_url: `${process.env.BACKEND_URL || 'http://localhost:4000'}/uploads/${req.file.filename}`
+        };
+      } else {
+        console.log('Uploading to cloudinary...');
+        const result = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: 'instructors',
+          width: 300,
+          crop: 'scale'
+        });
+        profileImage = {
+          public_id: result.public_id,
+          secure_url: result.secure_url
+        };
+        console.log('Upload successful:', result.public_id);
+      }
+    }
+
+    // Parse socialLinks if it's a JSON string
+    let parsedSocialLinks = socialLinks;
+    if (typeof socialLinks === 'string') {
+      try {
+        parsedSocialLinks = JSON.parse(socialLinks);
+        console.log('Parsed socialLinks:', parsedSocialLinks);
+      } catch (error) {
+        console.error('Error parsing socialLinks:', error);
+        parsedSocialLinks = {
+          linkedin: '',
+          twitter: '',
+          website: ''
+        };
+      }
     }
 
     // Update instructor
@@ -255,16 +319,20 @@ const updateInstructor = async (req, res, next) => {
     if (specialization !== undefined) updateData.specialization = specialization?.trim() || '';
     if (experience !== undefined) updateData.experience = experience;
     if (education !== undefined) updateData.education = education?.trim() || '';
-    if (socialLinks !== undefined) updateData.socialLinks = socialLinks;
+    if (parsedSocialLinks !== undefined) updateData.socialLinks = parsedSocialLinks;
     if (featured !== undefined) updateData.featured = featured;
     if (isActive !== undefined) updateData.isActive = isActive;
     if (req.file) updateData.profileImage = profileImage;
+
+    console.log('Update data:', updateData);
 
     const updatedInstructor = await Instructor.findByIdAndUpdate(
       id,
       updateData,
       { new: true, runValidators: true }
     ).populate('courses', 'title description thumbnail');
+
+    console.log('Update successful:', updatedInstructor.name);
 
     return res.status(200).json({
       success: true,
@@ -275,7 +343,8 @@ const updateInstructor = async (req, res, next) => {
     console.error('Error updating instructor:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to update instructor'
+      message: 'Failed to update instructor',
+      error: error.message
     });
   }
 };
@@ -285,29 +354,61 @@ const deleteInstructor = async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    console.log('Attempting to delete instructor:', id);
+
     const instructor = await Instructor.findById(id);
     if (!instructor) {
+      console.log('Instructor not found:', id);
       return res.status(404).json({
         success: false,
         message: 'Instructor not found'
       });
     }
 
+    console.log('Found instructor:', instructor.name);
+
     // Check if instructor has associated courses
-    if (instructor.courses.length > 0) {
+    if (instructor.courses && instructor.courses.length > 0) {
+      console.log('Instructor has courses:', instructor.courses.length);
       return res.status(400).json({
         success: false,
         message: 'Cannot delete instructor with associated courses. Please remove courses first.'
       });
     }
 
-    // Delete profile image if exists
-    if (instructor.profileImage.public_id) {
-      await cloudinary.v2.uploader.destroy(instructor.profileImage.public_id);
+    // Check if instructor has associated subjects
+    try {
+      const Subject = await import('../models/subject.model.js');
+      const associatedSubjects = await Subject.default.countDocuments({ instructor: id });
+      
+      console.log('Associated subjects:', associatedSubjects);
+      
+      if (associatedSubjects > 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot delete instructor with associated subjects. Please remove subjects first.'
+        });
+      }
+    } catch (subjectError) {
+      console.error('Error checking subjects:', subjectError);
+      // Continue with deletion even if subject check fails
     }
 
+    // Delete profile image if exists
+    if (instructor.profileImage && instructor.profileImage.public_id && instructor.profileImage.public_id !== 'placeholder' && instructor.profileImage.public_id !== 'local') {
+      try {
+        console.log('Deleting cloudinary image:', instructor.profileImage.public_id);
+        await cloudinary.v2.uploader.destroy(instructor.profileImage.public_id);
+      } catch (cloudinaryError) {
+        console.error('Error deleting cloudinary image:', cloudinaryError);
+        // Continue with deletion even if cloudinary fails
+      }
+    }
+
+    console.log('Deleting instructor from database');
     await Instructor.findByIdAndDelete(id);
 
+    console.log('Instructor deleted successfully');
     return res.status(200).json({
       success: true,
       message: 'Instructor deleted successfully'
@@ -316,7 +417,8 @@ const deleteInstructor = async (req, res, next) => {
     console.error('Error deleting instructor:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to delete instructor'
+      message: 'Failed to delete instructor',
+      error: error.message
     });
   }
 };

@@ -19,6 +19,10 @@ router.route('/:id')
     .delete(isLoggedIn, authorisedRoles('ADMIN'), removeCourse)
     .post(isLoggedIn, authorisedRoles("ADMIN"), upload.single("lecture"), addLectureToCourseById);
 
+// Admin route for getting course data (without subscriber authorization)
+router.route('/admin/:id')
+    .get(isLoggedIn, authorisedRoles("ADMIN"), getLecturesByCourseId);
+
 // Complete course structure update route
 router.route('/:courseId/structure/update')
     .put(isLoggedIn, authorisedRoles("ADMIN"), updateCourseStructure);

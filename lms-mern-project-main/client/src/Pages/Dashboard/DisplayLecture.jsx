@@ -1105,7 +1105,7 @@ export default function DisplayLecture() {
                     {role === "ADMIN" && (
                       <>
                         <button
-                          onClick={() => navigate("/course/edit", { state: { ...courseData } })}
+                          onClick={() => navigate(`/course/edit/${courseData._id}`, { state: { ...courseData } })}
                           className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors flex items-center gap-2"
                         >
                           <FaEdit />
@@ -1378,7 +1378,7 @@ export default function DisplayLecture() {
                                     <p className="text-gray-500 dark:text-gray-400">لا توجد دروس في هذه الوحدة بعد</p>
                                     {role === "ADMIN" && (
                                       <button
-                                        onClick={() => navigate("/course/edit", { state: { ...courseData } })}
+                                        onClick={() => navigate(`/course/edit/${courseData._id}`, { state: { ...courseData } })}
                                         className="mt-3 px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
                                       >
                                         إضافة الدروس
@@ -1521,7 +1521,7 @@ export default function DisplayLecture() {
                         </p>
                         {role === "ADMIN" && (
                           <button
-                          onClick={() => navigate("/course/edit", { state: { ...courseData } })}
+                          onClick={() => navigate(`/course/edit/${courseData._id}`, { state: { ...courseData } })}
                           className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 mx-auto"
                         >
                           <FaPlus />

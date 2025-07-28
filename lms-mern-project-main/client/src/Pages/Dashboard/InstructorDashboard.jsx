@@ -56,7 +56,8 @@ const InstructorDashboard = () => {
       twitter: '',
       website: ''
     },
-    featured: false
+    featured: false,
+    photo: null
   });
 
   useEffect(() => {
@@ -68,14 +69,32 @@ const InstructorDashboard = () => {
     e.preventDefault();
     
     try {
+      let instructorData = formData;
+      
+      // If there's a photo file, create FormData
+      if (formData.photo) {
+        const formDataToSend = new FormData();
+        formDataToSend.append('profileImage', formData.photo);
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('bio', formData.bio);
+        formDataToSend.append('specialization', formData.specialization);
+        formDataToSend.append('experience', formData.experience);
+        formDataToSend.append('education', formData.education);
+        formDataToSend.append('socialLinks', JSON.stringify(formData.socialLinks));
+        formDataToSend.append('featured', formData.featured);
+        
+        instructorData = formDataToSend;
+      }
+      
       if (editingInstructor) {
         await dispatch(updateInstructor({ 
           id: editingInstructor._id, 
-          instructorData: formData 
+          instructorData: instructorData 
         })).unwrap();
         toast.success('تم تحديث المدرس بنجاح');
       } else {
-        await dispatch(createInstructor(formData)).unwrap();
+        await dispatch(createInstructor(instructorData)).unwrap();
         toast.success('تم إنشاء المدرس بنجاح');
       }
       
@@ -163,7 +182,8 @@ const InstructorDashboard = () => {
         twitter: '',
         website: ''
       },
-      featured: false
+      featured: false,
+      photo: null
     });
   };
 
@@ -206,7 +226,7 @@ const InstructorDashboard = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
@@ -236,13 +256,13 @@ const InstructorDashboard = () => {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder="البحث في المدرسين..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  className="w-full pr-10 pl-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 />
               </div>
             </div>
@@ -275,16 +295,20 @@ const InstructorDashboard = () => {
                       <img
                         src={instructor.profileImage.secure_url}
                         alt={instructor.name}
-                        className="w-12 h-12 rounded-full border-2 border-white"
+                        className="w-12 h-12 rounded-full border-2 border-white object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
                       />
                     ) : (
                       <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                         <FaGraduationCap className="text-white text-xl" />
                       </div>
                     )}
-                    <div className="ml-3">
-                      <h3 className="text-white font-semibold">{instructor.name}</h3>
-                      <p className="text-white/80 text-sm">{instructor.specialization}</p>
+                    <div className="mr-3">
+                      <h3 className="text-white font-semibold text-right">{instructor.name}</h3>
+                      <p className="text-white/80 text-sm text-right">{instructor.specialization}</p>
                     </div>
                   </div>
                   {instructor.featured && (
@@ -309,25 +333,25 @@ const InstructorDashboard = () => {
                   </div>
                 </div>
 
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2 text-right">
                   {instructor.bio}
                 </p>
 
                 {/* Stats */}
                 <div className="flex items-center justify-between mb-4 text-sm">
                   <div className="flex items-center text-gray-600 dark:text-gray-400">
-                    <FaUsers className="mr-1" />
+                    <FaUsers className="ml-1" />
                     <span>{instructor.totalStudents} طالب</span>
                   </div>
                   <div className="flex items-center text-gray-600 dark:text-gray-400">
-                    <FaGraduationCap className="mr-1" />
+                    <FaGraduationCap className="ml-1" />
                     <span>{instructor.courses?.length || 0} دورة</span>
                   </div>
                 </div>
 
                 {/* Social Links */}
                 {(instructor.socialLinks?.linkedin || instructor.socialLinks?.twitter || instructor.socialLinks?.website) && (
-                  <div className="flex items-center justify-center space-x-4 mb-4">
+                  <div className="flex items-center justify-center space-x-4 space-x-reverse mb-4">
                     {instructor.socialLinks?.linkedin && (
                       <a
                         href={instructor.socialLinks.linkedin}
@@ -394,13 +418,13 @@ const InstructorDashboard = () => {
                 {/* Courses List */}
                 {instructor.courses && instructor.courses.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h4 className="text-sm font-semibold text-gray-800 dark:text-white mb-2">
+                    <h4 className="text-sm font-semibold text-gray-800 dark:text-white mb-2 text-right">
                       الدورات:
                     </h4>
                     <div className="space-y-2">
                       {instructor.courses.map((course) => (
                         <div key={course._id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
-                          <span className="text-sm text-gray-600 dark:text-gray-300">
+                          <span className="text-sm text-gray-600 dark:text-gray-300 text-right">
                             {course.title}
                           </span>
                           <button
@@ -436,7 +460,7 @@ const InstructorDashboard = () => {
       {/* Add/Edit Instructor Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" dir="rtl">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -457,83 +481,145 @@ const InstructorDashboard = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
                       الاسم
                     </label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
                       البريد الإلكتروني
                     </label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
                       required
                     />
                   </div>
                 </div>
 
+                {/* Photo Upload */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
+                    صورة الملف الشخصي
+                  </label>
+                  <div className="flex items-center space-x-4 space-x-reverse">
+                    {/* Current Photo Preview */}
+                    {editingInstructor && editingInstructor.profileImage?.secure_url && !formData.photo && (
+                      <div className="relative">
+                        <img
+                          src={editingInstructor.profileImage.secure_url}
+                          alt="Current photo"
+                          className="w-16 h-16 rounded-full object-cover border-2 border-gray-300"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center hidden">
+                          <FaGraduationCap className="text-gray-400" />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* New Photo Preview */}
+                    {formData.photo && (
+                      <div className="relative">
+                        <img
+                          src={URL.createObjectURL(formData.photo)}
+                          alt="New photo"
+                          className="w-16 h-16 rounded-full object-cover border-2 border-blue-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, photo: null })}
+                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    )}
+                    
+                    {/* File Input */}
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setFormData({ ...formData, photo: file });
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white file:ml-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 text-right">
+                    {editingInstructor ? 'اختر صورة جديدة لتحديث الصورة الحالية' : 'اختر صورة للملف الشخصي'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
                     التخصص
                   </label>
                   <input
                     type="text"
                     value={formData.specialization}
                     onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
                       سنوات الخبرة
                     </label>
                     <input
                       type="number"
                       value={formData.experience}
                       onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
                       المؤهل العلمي
                     </label>
                     <input
                       type="text"
                       value={formData.education}
                       onChange={(e) => setFormData({ ...formData, education: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
                     السيرة الذاتية
                   </label>
                   <textarea
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                     rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
                   />
                 </div>
 
                 {/* Social Links */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
                     روابط التواصل الاجتماعي
                   </label>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -545,7 +631,7 @@ const InstructorDashboard = () => {
                         ...formData,
                         socialLinks: { ...formData.socialLinks, linkedin: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
                     />
                     <input
                       type="url"
@@ -555,7 +641,7 @@ const InstructorDashboard = () => {
                         ...formData,
                         socialLinks: { ...formData.socialLinks, twitter: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
                     />
                     <input
                       type="url"
@@ -565,7 +651,7 @@ const InstructorDashboard = () => {
                         ...formData,
                         socialLinks: { ...formData.socialLinks, website: e.target.value }
                       })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
                     />
                   </div>
                 </div>
@@ -611,7 +697,7 @@ const InstructorDashboard = () => {
       {/* Add Course Modal */}
       {showCourseModal && selectedInstructor && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4" dir="rtl">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-800 dark:text-white">
@@ -630,13 +716,13 @@ const InstructorDashboard = () => {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
                   اختر الدورة
                 </label>
                 <select
                   value={selectedCourse}
                   onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
                 >
                   <option value="">اختر دورة...</option>
                   {courses

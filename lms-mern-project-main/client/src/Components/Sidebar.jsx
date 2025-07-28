@@ -298,7 +298,7 @@ export default function Sidebar({ hideBar = false }) {
                 >
                   <div className="flex gap-4 items-center">
                     <FaInfoCircle
-                      size={18}
+                    size={18}
                       className="text-gray-500 dark:text-slate-100"
                     />
                     خدمات الإدارة
@@ -346,10 +346,10 @@ export default function Sidebar({ hideBar = false }) {
                       >
                         <FaWhatsapp
                           size={16}
-                          className="text-gray-500 dark:text-slate-100"
-                        />
-                        إدارة واتساب
-                      </Link>
+                    className="text-gray-500 dark:text-slate-100"
+                  />
+                  إدارة واتساب
+                </Link>
                     </li>
                     <li>
                       <Link 
@@ -422,38 +422,38 @@ export default function Sidebar({ hideBar = false }) {
                       className="text-gray-500 dark:text-slate-100"
                     />
                     الأسئلة والأجوبة
-                  </Link>
-                </li>
+              </Link>
+            </li>
 
-                <li>
-                  <Link to="/whatsapp-services" className="flex gap-4 items-center">
-                    <FaWhatsapp
-                      size={18}
-                      className="text-gray-500 dark:text-slate-100"
-                    />
-                    خدمات واتساب
-                  </Link>
-                </li>
+            <li>
+              <Link to="/whatsapp-services" className="flex gap-4 items-center">
+                <FaWhatsapp
+                  size={18}
+                  className="text-gray-500 dark:text-slate-100"
+                />
+                خدمات واتساب
+              </Link>
+            </li>
 
-                <li>
-                  <Link to="/contact" className="flex gap-4 items-center">
-                    <FaPhone
-                      size={18}
-                      className="text-gray-500 dark:text-slate-100"
-                    />
-                    اتصل بنا
-                  </Link>
-                </li>
+            <li>
+              <Link to="/contact" className="flex gap-4 items-center">
+                <FaPhone
+                  size={18}
+                  className="text-gray-500 dark:text-slate-100"
+                />
+                اتصل بنا
+              </Link>
+            </li>
 
-                <li>
-                  <Link to="/about" className="flex gap-4 items-center">
-                    <FaInfoCircle
-                      size={18}
-                      className="text-gray-500 dark:text-slate-100"
-                    />
-                    عننا
-                  </Link>
-                </li>
+            <li>
+              <Link to="/about" className="flex gap-4 items-center">
+                <FaInfoCircle
+                  size={18}
+                  className="text-gray-500 dark:text-slate-100"
+                />
+                عننا
+              </Link>
+            </li>
               </>
             )}
 

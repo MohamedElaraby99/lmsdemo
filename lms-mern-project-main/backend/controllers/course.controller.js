@@ -23,7 +23,10 @@ const extractYouTubeVideoId = (url) => {
 // get all courses
 const getAllCourses = async (req, res, next) => {
     try {
-        const courses = await courseModel.find({}).select('-lectures');
+        const courses = await courseModel.find({})
+            .select('-lectures')
+            .populate('subject', 'title')
+            .populate('stage', 'name');
 
         res.status(200).json({
             success: true,
@@ -42,6 +45,8 @@ const getLecturesByCourseId = async (req, res, next) => {
         const { role } = req.user || {}; // Get user role if available
 
         const course = await courseModel.findById(id)
+            .populate('subject', 'title')
+            .populate('stage', 'name');
         if (!course) {
             return next(new AppError('course not found', 500));
         }
@@ -235,7 +240,7 @@ const createCourse = async (req, res, next) => {
                     process.env.CLOUDINARY_API_SECRET === 'placeholder') {
                     // Use local file storage when Cloudinary is not configured
                     course.thumbnail.public_id = req.file.filename;
-                    course.thumbnail.secure_url = `${process.env.BACKEND_URL || 'http://localhost:5000'}/uploads/${req.file.filename}`;
+                    course.thumbnail.secure_url = `${process.env.BACKEND_URL || 'http://localhost:4000'}/uploads/${req.file.filename}`;
                 } else {
                     const result = await cloudinary.v2.uploader.upload(req.file.path, {
                         folder: 'Learning-Management-System'
@@ -261,10 +266,15 @@ const createCourse = async (req, res, next) => {
 
         await course.save();
 
+        // Populate the fields before sending response
+        const createdCourse = await courseModel.findById(course._id)
+            .populate('subject', 'title')
+            .populate('stage', 'name');
+
         res.status(200).json({
             success: true,
             message: 'Course successfully created',
-            course
+            course: createdCourse
         })
 
     } catch (e) {
@@ -329,7 +339,7 @@ const updateCourse = async (req, res, next) => {
                     }
                     
                     course.thumbnail.public_id = req.file.filename;
-                    course.thumbnail.secure_url = `${process.env.BACKEND_URL || 'http://localhost:5000'}/uploads/${req.file.filename}`;
+                    course.thumbnail.secure_url = `${process.env.BACKEND_URL || 'http://localhost:4000'}/uploads/${req.file.filename}`;
                 } else {
                     // Only destroy if we have a valid public_id
                     if (course.thumbnail.public_id && course.thumbnail.public_id !== 'placeholder') {
@@ -359,10 +369,15 @@ const updateCourse = async (req, res, next) => {
 
         await course.save();
 
+        // Populate the fields before sending response
+        const updatedCourse = await courseModel.findById(id)
+            .populate('subject', 'title')
+            .populate('stage', 'name');
+
         res.status(200).json({
             success: true,
             message: 'Course updated successfully',
-            course
+            course: updatedCourse
         })
     } catch (e) {
         return next(new AppError(e.message, 500));
@@ -1155,7 +1170,7 @@ const addPdfToLesson = async (req, res, next) => {
             console.log('Cloudinary not configured, using local file path');
             pdfData = {
                 public_id: `local-${Date.now()}`,
-                secure_url: `${process.env.BACKEND_URL || 'http://localhost:5000'}/uploads/${req.file.filename}`,
+                secure_url: `${process.env.BACKEND_URL || 'http://localhost:4000'}/uploads/${req.file.filename}`,
                 title: title || 'Study Material'
             };
         } else {

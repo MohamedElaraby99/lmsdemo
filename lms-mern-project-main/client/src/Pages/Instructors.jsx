@@ -73,7 +73,7 @@ export default function Instructors() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
         {/* Hero Section */}
         <section className="py-16">
           <div className="container mx-auto px-4">
@@ -91,13 +91,13 @@ export default function Instructors() {
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1">
                   <div className="relative">
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <input
                       type="text"
                       placeholder="البحث في المدرسين..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      className="w-full pr-10 pl-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -130,16 +130,20 @@ export default function Instructors() {
                           <img
                             src={instructor.profileImage.secure_url}
                             alt={instructor.name}
-                            className="w-12 h-12 rounded-full border-2 border-white"
+                            className="w-12 h-12 rounded-full border-2 border-white object-cover"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
                           />
                         ) : (
                           <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                             <FaGraduationCap className="text-white text-xl" />
                           </div>
                         )}
-                        <div className="ml-3">
-                          <h3 className="text-white font-semibold">{instructor.name}</h3>
-                          <p className="text-white/80 text-sm">{instructor.specialization}</p>
+                        <div className="mr-3">
+                          <h3 className="text-white font-semibold text-right">{instructor.name}</h3>
+                          <p className="text-white/80 text-sm text-right">{instructor.specialization}</p>
                         </div>
                       </div>
                       {instructor.featured && (
@@ -154,7 +158,7 @@ export default function Instructors() {
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
-                        <div className="flex items-center mr-2">
+                        <div className="flex items-center ml-2">
                           {renderStars(instructor.rating || 0)}
                         </div>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -162,17 +166,17 @@ export default function Instructors() {
                         </span>
                       </div>
                       <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                        <FaUsers className="mr-1" />
+                        <FaUsers className="ml-1" />
                         {instructor.totalStudents || 0} طالب
                       </div>
                     </div>
 
-                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3 text-right">
                       {instructor.bio || 'لا يوجد وصف متاح'}
                     </p>
 
                     {instructor.experience && (
-                      <div className="mb-3">
+                      <div className="mb-3 text-right">
                         <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                           الخبرة:
                         </span>
@@ -184,7 +188,7 @@ export default function Instructors() {
 
                     {/* Social Links */}
                     {(instructor.socialLinks?.linkedin || instructor.socialLinks?.twitter || instructor.socialLinks?.website) && (
-                      <div className="flex items-center gap-2 mb-4">
+                      <div className="flex items-center gap-2 mb-4 justify-center">
                         {instructor.socialLinks?.linkedin && (
                           <a
                             href={instructor.socialLinks.linkedin}
@@ -218,22 +222,14 @@ export default function Instructors() {
                       </div>
                     )}
 
-                    {/* View Details Button */}
-                    <div className="flex gap-2">
+                    <div className="flex justify-center">
                       <button
                         onClick={() => handleViewDetails(instructor)}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                       >
                         <FaEye />
                         عرض التفاصيل
                       </button>
-                      <Link
-                        to={`/instructors/${instructor._id}`}
-                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-                      >
-                        <FaGraduationCap />
-                        الملف الشخصي
-                      </Link>
                     </div>
                   </div>
                 </div>
@@ -253,7 +249,7 @@ export default function Instructors() {
         {/* Instructor Details Modal */}
         {showModal && selectedInstructor && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" dir="rtl">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
@@ -292,20 +288,20 @@ export default function Instructors() {
                   <div className="md:col-span-2">
                     <div className="space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 text-right">
                           التخصص
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-300">
+                        <p className="text-gray-600 dark:text-gray-300 text-right">
                           {selectedInstructor.specialization || 'غير محدد'}
                         </p>
                       </div>
 
                       {selectedInstructor.bio && (
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 text-right">
                             نبذة
                           </h3>
-                          <p className="text-gray-600 dark:text-gray-300">
+                          <p className="text-gray-600 dark:text-gray-300 text-right">
                             {selectedInstructor.bio}
                           </p>
                         </div>
@@ -313,10 +309,10 @@ export default function Instructors() {
 
                       {selectedInstructor.experience && (
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 text-right">
                             الخبرة
                           </h3>
-                          <p className="text-gray-600 dark:text-gray-300">
+                          <p className="text-gray-600 dark:text-gray-300 text-right">
                             {selectedInstructor.experience} سنة
                           </p>
                         </div>
@@ -324,10 +320,10 @@ export default function Instructors() {
 
                       {selectedInstructor.education && (
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 text-right">
                             التعليم
                           </h3>
-                          <p className="text-gray-600 dark:text-gray-300">
+                          <p className="text-gray-600 dark:text-gray-300 text-right">
                             {selectedInstructor.education}
                           </p>
                         </div>
@@ -335,10 +331,10 @@ export default function Instructors() {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 text-right">
                             التقييم
                           </h3>
-                          <div className="flex items-center">
+                          <div className="flex items-center justify-end">
                             {renderStars(selectedInstructor.rating || 0)}
                             <span className="mr-2 text-gray-600 dark:text-gray-300">
                               ({selectedInstructor.rating || 0})
@@ -347,10 +343,10 @@ export default function Instructors() {
                         </div>
 
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 text-right">
                             عدد الطلاب
                           </h3>
-                          <p className="text-gray-600 dark:text-gray-300">
+                          <p className="text-gray-600 dark:text-gray-300 text-right">
                             {selectedInstructor.totalStudents || 0} طالب
                           </p>
                         </div>
@@ -359,10 +355,10 @@ export default function Instructors() {
                       {/* Social Links */}
                       {(selectedInstructor.socialLinks?.linkedin || selectedInstructor.socialLinks?.twitter || selectedInstructor.socialLinks?.website) && (
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 text-right">
                             روابط التواصل
                           </h3>
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-4 justify-end">
                             {selectedInstructor.socialLinks?.linkedin && (
                               <a
                                 href={selectedInstructor.socialLinks.linkedin}

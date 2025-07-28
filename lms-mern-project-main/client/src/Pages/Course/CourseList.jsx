@@ -12,8 +12,7 @@ export default function CourseList() {
   
   // State for search and filtering
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState("title");
   const [viewMode, setViewMode] = useState("grid"); // grid or list
 
   async function fetchCourses() {
@@ -24,47 +23,27 @@ export default function CourseList() {
     fetchCourses();
   }, []);
 
-  // Get unique categories
-  const categories = ["all", ...new Set(coursesData?.map(course => course.category).filter(Boolean))];
-
   // Filter and sort courses
-  const filteredAndSortedCourses = coursesData
-    ?.filter(course => {
-      const matchesSearch = course.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredCourses = coursesData?.filter(course => {
+    const matchesSearch = 
+      course.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            course.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           course.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            course.createdBy?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesCategory = selectedCategory === "all" || course.category === selectedCategory;
-      
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-        case "oldest":
-          return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
-        case "title":
-          return (a.title || "").localeCompare(b.title || "");
-        case "instructor":
-          return (a.createdBy || "").localeCompare(b.createdBy || "");
-        default:
-          return 0;
-      }
+    return matchesSearch;
     }) || [];
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
         {/* Hero Section */}
         <section className="relative py-16 px-4 overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
           
           {/* Floating Elements */}
-          <div className="absolute top-20 left-10 w-20 h-20 bg-blue-200 dark:bg-blue-800 rounded-full opacity-20 animate-bounce"></div>
-          <div className="absolute top-40 right-20 w-16 h-16 bg-purple-200 dark:bg-purple-800 rounded-full opacity-20 animate-pulse"></div>
+          <div className="absolute top-20 right-10 w-20 h-20 bg-blue-200 dark:bg-blue-800 rounded-full opacity-20 animate-bounce"></div>
+          <div className="absolute top-40 left-20 w-16 h-16 bg-purple-200 dark:bg-purple-800 rounded-full opacity-20 animate-pulse"></div>
           
           <div className="relative z-10 container mx-auto">
             {/* Header */}
@@ -107,7 +86,7 @@ export default function CourseList() {
               <div className="grid md:grid-cols-4 gap-4">
                 {/* Search */}
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <FaSearch className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -115,37 +94,19 @@ export default function CourseList() {
                     placeholder="البحث في الكورسات..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full pr-10 pl-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right"
                   />
-                </div>
-
-                {/* Category Filter */}
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaFilter className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none"
-                  >
-                    {categories.map(category => (
-                      <option key={category} value={category}>
-                        {category === "all" ? "جميع الفئات" : category}
-                      </option>
-                    ))}
-                  </select>
                 </div>
 
                 {/* Sort */}
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <FaSort className="h-5 w-5 text-gray-400" />
                   </div>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none"
+                    className="w-full pr-10 pl-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none text-right"
                   >
                     <option value="newest">الأحدث أولاً</option>
                     <option value="oldest">الأقدم أولاً</option>
@@ -186,26 +147,25 @@ export default function CourseList() {
               {/* Results Info */}
               <div className="mt-4 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>
-                  عرض {filteredAndSortedCourses.length} من {coursesData?.length || 0} دورة
+                  عرض {filteredCourses.length} من {coursesData?.length || 0} دورة
           </span>
-                {(searchTerm || selectedCategory !== "all") && (
+                {searchTerm && (
                   <button
                     onClick={() => {
                       setSearchTerm("");
-                      setSelectedCategory("all");
                     }}
                     className="text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    مسح المرشحات
+                    مسح البحث
                   </button>
                 )}
               </div>
             </div>
 
             {/* Courses Grid/List */}
-            {filteredAndSortedCourses.length > 0 ? (
+            {filteredCourses.length > 0 ? (
               <div className={viewMode === "grid" ? "grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}>
-                {filteredAndSortedCourses.map((course) => (
+                {filteredCourses.map((course) => (
                   <CourseCard 
                     key={course._id} 
                     data={course} 
@@ -225,7 +185,6 @@ export default function CourseList() {
                 <button
                   onClick={() => {
                     setSearchTerm("");
-                    setSelectedCategory("all");
                   }}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200"
                 >

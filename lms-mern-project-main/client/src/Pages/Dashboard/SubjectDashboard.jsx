@@ -8,6 +8,8 @@ import {
   toggleFeatured,
   updateSubjectStatus
 } from "../../Redux/Slices/SubjectSlice";
+import { getAllStages } from "../../Redux/Slices/StageSlice";
+import { getAllInstructors } from "../../Redux/Slices/InstructorSlice";
 import Layout from "../../Layout/Layout";
 import SubjectCard from "../../Components/SubjectCard";
 import { 
@@ -24,6 +26,8 @@ import {
 export default function SubjectDashboard() {
   const dispatch = useDispatch();
   const { subjects, loading, categories } = useSelector((state) => state.subject);
+  const { stages } = useSelector((state) => state.stage);
+  const { instructors } = useSelector((state) => state.instructor);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -34,7 +38,6 @@ export default function SubjectDashboard() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "",
     instructor: "",
     stage: "",
     featured: false,
@@ -43,16 +46,11 @@ export default function SubjectDashboard() {
 
   const [errors, setErrors] = useState({});
 
-  const stages = [
-    "1 ابتدائي", "2 ابتدائي", "3 ابتدائي", "4 ابتدائي", "5 ابتدائي", "6 ابتدائي",
-    "1 إعدادي", "2 إعدادي", "3 إعدادي",
-    "1 ثانوي", "2 ثانوي", "3 ثانوي",
-    "1 جامعة", "2 جامعة", "3 جامعة", "4 جامعة"
-  ];
-
   useEffect(() => {
     dispatch(getAllSubjects({ page: 1, limit: 100 }));
-  }, []);
+    dispatch(getAllStages({ page: 1, limit: 100 }));
+    dispatch(getAllInstructors({ page: 1, limit: 100 }));
+  }, [dispatch]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -65,11 +63,7 @@ export default function SubjectDashboard() {
       newErrors.description = "الوصف مطلوب";
     }
 
-    if (!formData.category) {
-      newErrors.category = "الفئة مطلوبة";
-    }
-
-    if (!formData.instructor.trim()) {
+    if (!formData.instructor) {
       newErrors.instructor = "المدرس مطلوب";
     }
 
@@ -77,7 +71,8 @@ export default function SubjectDashboard() {
       newErrors.stage = "المرحلة مطلوبة";
     }
 
-    if (!formData.image) {
+    // Only require image for new subjects, not for editing
+    if (!showEditModal && !formData.image) {
       newErrors.image = "الصورة مطلوبة";
     }
 
@@ -167,7 +162,6 @@ export default function SubjectDashboard() {
     setFormData({
       title: subject.title,
       description: subject.description,
-      category: subject.category,
       instructor: subject.instructor,
       stage: subject.stage,
       featured: subject.featured,
@@ -180,7 +174,6 @@ export default function SubjectDashboard() {
     setFormData({
       title: "",
       description: "",
-      category: "",
       instructor: "",
       stage: "",
       featured: false,
@@ -215,7 +208,7 @@ export default function SubjectDashboard() {
 
   return (
     <Layout>
-      <section className="min-h-screen py-8 px-4 lg:px-20">
+      <section className="min-h-screen py-8 px-4 lg:px-20" dir="rtl">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
@@ -240,13 +233,13 @@ export default function SubjectDashboard() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder="البحث في المواد الدراسية..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  className="w-full pr-10 pl-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 />
               </div>
 
@@ -321,7 +314,6 @@ export default function SubjectDashboard() {
               </div>
 
               <form onSubmit={handleCreateSubject} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       العنوان *
@@ -331,10 +323,10 @@ export default function SubjectDashboard() {
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-right ${
                         errors.title ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
-                      placeholder="Course title"
+                    placeholder="عنوان المادة الدراسية"
                     />
                     {errors.title && (
                       <p className="text-red-500 text-sm mt-1">{errors.title}</p>
@@ -343,40 +335,17 @@ export default function SubjectDashboard() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Category *
-                    </label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
-                        errors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                    >
-                      <option value="">Select category</option>
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                    {errors.category && (
-                      <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Description *
+                    الوصف *
                   </label>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     rows="3"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-right ${
                       errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
-                    placeholder="Course description"
+                    placeholder="وصف المادة الدراسية"
                   />
                   {errors.description && (
                     <p className="text-red-500 text-sm mt-1">{errors.description}</p>
@@ -388,16 +357,19 @@ export default function SubjectDashboard() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Instructor *
                     </label>
-                    <input
-                      type="text"
+                    <select
                       name="instructor"
                       value={formData.instructor}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
                         errors.instructor ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
-                      placeholder="Instructor name"
-                    />
+                    >
+                      <option value="">Select instructor</option>
+                      {instructors.map((instructor) => (
+                        <option key={instructor._id} value={instructor._id}>{instructor.name}</option>
+                      ))}
+                    </select>
                     {errors.instructor && (
                       <p className="text-red-500 text-sm mt-1">{errors.instructor}</p>
                     )}
@@ -417,7 +389,7 @@ export default function SubjectDashboard() {
                     >
                       <option value="">اختر المرحلة</option>
                       {stages.map((stage) => (
-                        <option key={stage} value={stage}>{stage}</option>
+                        <option key={stage._id} value={stage._id}>{stage.name}</option>
                       ))}
                     </select>
                     {errors.stage && (
@@ -508,20 +480,19 @@ export default function SubjectDashboard() {
 
               <form onSubmit={handleEditSubject} className="space-y-4">
                 {/* Same form fields as create modal */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Title *
+                    العنوان *
                     </label>
                     <input
                       type="text"
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-right ${
                         errors.title ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
-                      placeholder="Course title"
+                    placeholder="عنوان المادة الدراسية"
                     />
                     {errors.title && (
                       <p className="text-red-500 text-sm mt-1">{errors.title}</p>
@@ -530,40 +501,17 @@ export default function SubjectDashboard() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Category *
-                    </label>
-                    <select
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
-                        errors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                    >
-                      <option value="">Select category</option>
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                    {errors.category && (
-                      <p className="text-red-500 text-sm mt-1">{errors.category}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Description *
+                    الوصف *
                   </label>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     rows="3"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-right ${
                       errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
-                    placeholder="Course description"
+                    placeholder="وصف المادة الدراسية"
                   />
                   {errors.description && (
                     <p className="text-red-500 text-sm mt-1">{errors.description}</p>
@@ -575,20 +523,116 @@ export default function SubjectDashboard() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Instructor *
                     </label>
-                    <input
-                      type="text"
+                    <select
                       name="instructor"
                       value={formData.instructor}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
                         errors.instructor ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
-                      placeholder="Instructor name"
-                    />
+                    >
+                      <option value="">Select instructor</option>
+                      {instructors.map((instructor) => (
+                        <option key={instructor._id} value={instructor._id}>{instructor.name}</option>
+                      ))}
+                    </select>
                     {errors.instructor && (
                       <p className="text-red-500 text-sm mt-1">{errors.instructor}</p>
                     )}
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Stage *
+                    </label>
+                    <select
+                      name="stage"
+                      value={formData.stage}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                        errors.stage ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                      }`}
+                    >
+                      <option value="">اختر المرحلة</option>
+                      {stages.map((stage) => (
+                        <option key={stage._id} value={stage._id}>{stage.name}</option>
+                      ))}
+                    </select>
+                    {errors.stage && (
+                      <p className="text-red-500 text-sm mt-1">{errors.stage}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Image Upload Section */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    صورة المادة الدراسية
+                  </label>
+                  
+                  {/* Current Image Preview */}
+                  {selectedSubject?.image?.secure_url && !formData.image && (
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">الصورة الحالية:</p>
+                      <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
+                        <img
+                          src={selectedSubject.image.secure_url}
+                          alt="Current subject image"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-600 flex items-center justify-center" style={{ display: 'none' }}>
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">صورة</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* New Image Preview */}
+                  {formData.image && (
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">الصورة الجديدة:</p>
+                      <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
+                        <img
+                          src={URL.createObjectURL(formData.image)}
+                          alt="New subject image"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({ ...prev, image: null }));
+                          }}
+                          className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* File Input */}
+                  <input
+                    type="file"
+                    name="image"
+                    onChange={handleInputChange}
+                    accept="image/*"
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                      errors.image ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                  />
+                  {errors.image && (
+                    <p className="text-red-500 text-sm mt-1">{errors.image}</p>
+                  )}
+                  {formData.image && (
+                    <p className="text-green-600 text-sm mt-1">تم اختيار الملف: {formData.image.name}</p>
+                  )}
+                  <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
+                    اترك الحقل فارغاً للاحتفاظ بالصورة الحالية
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">

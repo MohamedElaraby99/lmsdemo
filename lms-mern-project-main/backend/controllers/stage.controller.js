@@ -20,7 +20,7 @@ export const getAllStages = async (req, res, next) => {
         }
         
         const stages = await stageModel.find(query)
-            .sort({ order: 1, createdAt: -1 })
+            .sort({ createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
             .exec();
@@ -69,10 +69,10 @@ export const getStageById = async (req, res, next) => {
 // Create new stage
 export const createStage = async (req, res, next) => {
     try {
-        const { name, description, order, color, status } = req.body;
+        const { name, status } = req.body;
         
-        if (!name || !description || !order) {
-            return next(new AppError('Name, description, and order are required', 400));
+        if (!name) {
+            return next(new AppError('Name is required', 400));
         }
         
         // Check if stage name already exists
@@ -81,17 +81,8 @@ export const createStage = async (req, res, next) => {
             return next(new AppError('Stage name already exists', 400));
         }
         
-        // Check if order already exists
-        const existingOrder = await stageModel.findOne({ order });
-        if (existingOrder) {
-            return next(new AppError('Stage order already exists', 400));
-        }
-        
         const stageData = {
             name,
-            description,
-            order: parseInt(order),
-            color: color || '#3B82F6',
             status: status || 'active'
         };
         
@@ -111,7 +102,7 @@ export const createStage = async (req, res, next) => {
 export const updateStage = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, description, order, color, status } = req.body;
+        const { name, status } = req.body;
         
         const stage = await stageModel.findById(id);
         
@@ -130,18 +121,6 @@ export const updateStage = async (req, res, next) => {
             updateData.name = name;
         }
         
-        if (description) updateData.description = description;
-        
-        if (order) {
-            // Check if new order already exists (excluding current stage)
-            const existingOrder = await stageModel.findOne({ order: parseInt(order), _id: { $ne: id } });
-            if (existingOrder) {
-                return next(new AppError('Stage order already exists', 400));
-            }
-            updateData.order = parseInt(order);
-        }
-        
-        if (color) updateData.color = color;
         if (status) updateData.status = status;
         
         const updatedStage = await stageModel.findByIdAndUpdate(
@@ -231,13 +210,13 @@ export const getStageStats = async (req, res, next) => {
 // Get all stages with statistics
 export const getAllStagesWithStats = async (req, res, next) => {
     try {
-        const stages = await stageModel.find().sort({ order: 1 });
+        const stages = await stageModel.find().sort({ createdAt: -1 });
         
         // Get statistics for each stage
         const stagesWithStats = await Promise.all(
             stages.map(async (stage) => {
-                const subjectsCount = await subjectModel.countDocuments({ stage: stage.name });
-                const subjects = await subjectModel.find({ stage: stage.name });
+                const subjectsCount = await subjectModel.countDocuments({ stage: stage._id });
+                const subjects = await subjectModel.find({ stage: stage._id });
                 const totalStudents = subjects.reduce((sum, subject) => sum + (subject.studentsEnrolled || 0), 0);
                 
                 return {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaStar, FaUsers, FaClock, FaTag, FaPlay } from "react-icons/fa";
+import { FaStar, FaUsers, FaClock, FaTag, FaPlay, FaGraduationCap } from "react-icons/fa";
 
 const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleFeatured, onUpdateStatus }) => {
   const getLevelColor = (level) => {
@@ -21,27 +21,12 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
     }
   };
 
-  const getCategoryColor = (category) => {
-    const colors = {
-      'Programming': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      'Design': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-      'Business': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      'Marketing': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-      'Technology': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
-      'Science': 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
-      'Arts': 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
-      'Other': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-    };
-    return colors[category] || colors['Other'];
-  };
-
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-      {/* Image */}
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300" dir="rtl">
       <div className="relative h-48 overflow-hidden">
         <img
           src={subject.image?.secure_url?.startsWith('/uploads/') 
-            ? `http://localhost:5000${subject.image.secure_url}` 
+            ? `http://localhost:4000${subject.image.secure_url}` 
             : subject.image?.secure_url || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE1MCAxMDAgMTUwIDEwMCAxNTAgMTAwWiIgZmlsbD0iI0QxRDFEMSIvPgo8L3N2Zz4K'}
           alt={subject.title}
           className="w-full h-full object-cover"
@@ -52,22 +37,20 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
         
         {/* Featured Badge */}
         {subject.featured && (
-          <div className="absolute top-2 left-2">
+          <div className="absolute top-2 right-2">
             <span className="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
               مميز
             </span>
           </div>
         )}
-        
         {/* Status Badge */}
         {showActions && (
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-2 left-2">
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(subject.status)}`}>
               {subject.status}
             </span>
           </div>
         )}
-        
         {/* Play Button Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
           <div className="bg-white bg-opacity-90 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-300">
@@ -75,82 +58,41 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
           </div>
         </div>
       </div>
-
       {/* Content */}
       <div className="p-6">
-        {/* Category and Level */}
+        {/* Stage Badge */}
         <div className="flex items-center gap-2 mb-3">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(subject.category)}`}>
-            {subject.category}
-          </span>
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(subject.level)}`}>
-            {subject.level}
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            <FaGraduationCap className="inline ml-1" />
+            {subject.stage?.name || 'مرحلة غير محددة'}
           </span>
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 text-right">
           {subject.title}
         </h3>
-
         {/* Description */}
-        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2 text-right">
           {subject.description}
         </p>
 
         {/* Instructor */}
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-          بواسطة {subject.instructor}
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 text-right">
+          بواسطة {subject.instructor?.name || 'مدرس غير محدد'}
         </p>
 
         {/* Meta Info */}
-        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">
-              <FaClock />
-              {subject.duration}
-            </span>
-            <span className="flex items-center gap-1">
-              <FaUsers />
-              {subject.studentsEnrolled} طالب
-            </span>
-            <span className="flex items-center gap-1">
-              <FaPlay />
-              {subject.lessons} درس
-            </span>
-          </div>
-          
+        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">   
           {/* Rating */}
           <div className="flex items-center gap-1">
             <FaStar className="text-yellow-500" />
-            <span>{subject.rating.toFixed(1)}</span>
+            <span>{(subject.rating || 5).toFixed(1)}</span>
           </div>
         </div>
-
-        {/* Tags */}
-        {subject.tags && subject.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
-            {subject.tags.slice(0, 3).map((tag, index) => (
-              <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                <FaTag className="mr-1" />
-                {tag}
-              </span>
-            ))}
-            {subject.tags.length > 3 && (
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                +{subject.tags.length - 3} المزيد
-              </span>
-            )}
-          </div>
-        )}
-
         {/* Price and Actions */}
-        <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            ${subject.price}
-          </div>
-          
-          {showActions ? (
+        {showActions && (
+          <div className="flex items-center justify-between">        
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(subject)}
@@ -175,16 +117,8 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
                 حذف
               </button>
             </div>
-          ) : (
-            <Link
-              to={`/subjects/${subject._id}`}
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-            >
-              <FaPlay />
-              عرض الدورة
-            </Link>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

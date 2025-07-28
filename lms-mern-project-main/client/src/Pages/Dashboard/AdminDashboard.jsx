@@ -616,7 +616,7 @@ export default function AdminDashboard() {
                           <span className="font-medium">عرض</span>
                         </button>
                           <button
-                          onClick={() => navigate("/course/edit", { state: { ...course } })}
+                          onClick={() => navigate(`/course/edit/${course._id}`, { state: { ...course } })}
                           className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 text-xs lg:text-sm"
                         >
                           <FaEdit className="w-3 h-3 lg:w-4 lg:h-4" />

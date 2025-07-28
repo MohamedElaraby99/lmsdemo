@@ -6,14 +6,9 @@ import fs from 'fs';
 // Get all subjects
 export const getAllSubjects = async (req, res, next) => {
     try {
-        const { page = 1, limit = 12, category, search, status, featured } = req.query;
+        const { page = 1, limit = 12, search, status, featured } = req.query;
         
         let query = {};
-        
-        // Filter by category
-        if (category) {
-            query.category = category;
-        }
         
         // Filter by status
         if (status) {
@@ -31,6 +26,8 @@ export const getAllSubjects = async (req, res, next) => {
         }
         
         const subjects = await subjectModel.find(query)
+            .populate('instructor', 'name specialization')
+            .populate('stage', 'name description')
             .sort({ featured: -1, createdAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit)
@@ -56,7 +53,9 @@ export const getSubjectById = async (req, res, next) => {
     try {
         const { id } = req.params;
         
-        const subject = await subjectModel.findById(id);
+        const subject = await subjectModel.findById(id)
+            .populate('instructor', 'name specialization bio')
+            .populate('stage', 'name description');
         
         if (!subject) {
             return next(new AppError('Subject not found', 404));
@@ -78,14 +77,13 @@ export const createSubject = async (req, res, next) => {
         const { 
             title, 
             description, 
-            category, 
             instructor, 
             stage,
             featured,
             grade
         } = req.body;
         
-        if (!title || !description || !category || !instructor || !stage) {
+        if (!title || !description || !instructor || !stage) {
             return next(new AppError('All required fields must be provided', 400));
         }
         
@@ -96,7 +94,6 @@ export const createSubject = async (req, res, next) => {
         const subjectData = {
             title,
             description,
-            category,
             instructor,
             stage,
             featured: featured === 'true',
@@ -129,6 +126,10 @@ export const createSubject = async (req, res, next) => {
         }
         
         const subject = await subjectModel.create(subjectData);
+        
+        // Populate instructor and stage data
+        await subject.populate('instructor', 'name specialization');
+        await subject.populate('stage', 'name description');
         
         res.status(201).json({
             success: true,

@@ -43,7 +43,7 @@ export default function CourseDescription() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
         {/* Hero Section */}
         <section className="relative py-16 px-4 overflow-hidden">
           {/* Background Pattern */}
@@ -97,23 +97,30 @@ export default function CourseDescription() {
                               className={`w-4 h-4 ${star <= 5 ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} 
                             />
                           ))}
-                          <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">(5)</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400 mr-1">(5)</span>
                         </div>
                       </div>
                       
-                      <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3 text-right">
                         {state?.title}
                       </h1>
                       
-                      <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+                      <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed mb-4 text-right">
                         {state?.description}
                       </p>
 
-                      {/* Course Stats */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                          <FaBook className="text-blue-500" />
-                          <span>{state?.numberOfLectures || 0} دروس</span>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <FaUser className="text-blue-500" />
+                          <span className="text-right">{state?.createdBy || "Instructor"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <FaBook className="text-purple-500" />
+                          <span className="text-right">{state?.numberoflectures || 0} محاضرة</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <FaClock className="text-green-500" />
+                          <span className="text-right">ذاتي التقدم</span>
                         </div>
                       </div>
                     </div>
@@ -155,7 +162,7 @@ export default function CourseDescription() {
 
                 {/* Instructor Card */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2 text-right">
                     <FaUser className="text-blue-500" />
                     المدرس
                   </h3>
@@ -165,31 +172,31 @@ export default function CourseDescription() {
                       {state?.createdBy?.charAt(0)?.toUpperCase() || "I"}
                     </div>
                     <div>
-                      <div className="font-semibold text-gray-900 dark:text-white">
+                      <div className="font-semibold text-gray-900 dark:text-white text-right">
                         {state?.createdBy || "المدرس"}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 text-right">
                                                   خبير في المجال
               </div>
             </div>
           </div>
 
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 text-right">
                     محترف ذو خبرة مع سنوات من المعرفة في المجال وشغف بالتدريس.
                   </p>
                   
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <FaStar className="text-yellow-400" />
-                      <span className="text-gray-600 dark:text-gray-400">4.8</span>
+                      <span className="text-gray-600 dark:text-gray-400 text-right">4.8</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <FaUsers className="text-blue-500" />
-                      <span className="text-gray-600 dark:text-gray-400">2.5 ألف طالب</span>
+                      <span className="text-gray-600 dark:text-gray-400 text-right">2.5 ألف طالب</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <FaBook className="text-purple-500" />
-                      <span className="text-gray-600 dark:text-gray-400">5 دورات</span>
+                      <span className="text-gray-600 dark:text-gray-400 text-right">5 دورات</span>
                     </div>
                   </div>
                 </div>

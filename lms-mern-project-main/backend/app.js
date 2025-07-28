@@ -31,9 +31,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan('dev'));
-app.use(cors({ 
-  origin: [process.env.CLIENT_URL, 'http://localhost:5173', 'http://localhost:5000'], 
-  credentials: true 
+app.use(cors({
+    origin: [process.env.CLIENT_URL, 'http://localhost:5173', 'http://localhost:4000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
 }));
 
 // Serve uploaded files

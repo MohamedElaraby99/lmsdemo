@@ -5,6 +5,7 @@ import Layout from "../Layout/Layout";
 import heroPng from "../assets/images/hero.png";
 import { getAllBlogs } from "../Redux/Slices/BlogSlice";
 import { getFeaturedSubjects } from "../Redux/Slices/SubjectSlice";
+import { getAllCourses } from "../Redux/Slices/CourseSlice";
 import { 
   FaEye, 
   FaHeart, 
@@ -42,6 +43,7 @@ export default function HomePage() {
   const dispatch = useDispatch();
   const { blogs } = useSelector((state) => state.blog);
   const { featuredSubjects } = useSelector((state) => state.subject);
+  const { coursesData } = useSelector((state) => state.course);
   const { role } = useSelector((state) => state.auth);
   const [isVisible, setIsVisible] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -51,6 +53,8 @@ export default function HomePage() {
     dispatch(getAllBlogs({ page: 1, limit: 3 }));
     // Fetch featured subjects for homepage
     dispatch(getFeaturedSubjects());
+    // Fetch featured courses for homepage
+    dispatch(getAllCourses({ page: 1, limit: 3 }));
     
     // Trigger animations
     setIsVisible(true);
@@ -155,7 +159,7 @@ export default function HomePage() {
               
               {/* Description */}
               <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl text-right">
-                اكتشف آلاف الكورسات المميزة بقيادة خبراء الصناعة. طور مهاراتك وابدأ مسيرتك المهنية من خلال منصتنا التعليمية المتطورة.
+                اكتشف آلاف المواد بقيادة خبراء الصناعة. طور مهاراتك وابدأ مسيرتك المهنية من خلال منصتنا التعليمية المتطورة.
               </p>
 
               {/* CTA Buttons */}
@@ -231,11 +235,11 @@ export default function HomePage() {
       </section>
 
       {/* Featured Courses Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+      <section className="py-20 bg-gray-50 dark:bg-gray-900" dir="rtl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              الكورسات المميزة
+              المواد الدراسية
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               اكتشف دوراتنا الأكثر شعبية وأعلى تقييماً
@@ -265,52 +269,106 @@ export default function HomePage() {
               </p>
             </div>
           )}
+        </div>
+      </section>
+      {/* Courses Section */}
+      <section className="py-20 bg-white dark:bg-gray-800" dir="rtl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              الدورات التدريبية
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              اكتشف دوراتنا المميزة المصممة خصيصاً لمساعدتك في تحقيق أهدافك التعليمية
+            </p>
+          </div>
+
+          {coursesData && coursesData.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {coursesData.slice(0, 6).map((course, index) => (
+                <div 
+                  key={course._id} 
+                  className="bg-white dark:bg-gray-700 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="h-48 overflow-hidden">
+                    <img
+                      src={course.thumbnail?.secure_url?.startsWith('/uploads/') 
+                        ? `http://localhost:4000${course.thumbnail.secure_url}` 
+                        : course.thumbnail?.secure_url || placeholderImages.course}
+                      alt={course.title}
+                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                      onError={(e) => {
+                        e.target.src = placeholderImages.course;
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full">
+                        {course.subject?.title || 'عام'}
+                      </span>
+                      <span className="px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-200 text-xs font-medium rounded-full">
+                        {course.stage?.name || 'جميع المراحل'}
+                      </span>
+                    </div>
+                    
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2 text-right">
+                      {course.title}
+                    </h3>
+                    
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 text-right">
+                      {course.description}
+                    </p>
+                    
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <FaPlay />
+                          {course.numberOfLectures || 0} محاضرة
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FaUser />
+                          {course.createdBy || 'Admin'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <Link to="/courses/description" state={{ ...course }}>
+                      <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
+                        <FaEye className="w-4 h-4" />
+                        عرض الدورة
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4 animate-bounce">📚</div>
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+                لا توجد دورات متاحة حالياً
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                عد قريباً لدورات رائعة!
+              </p>
+            </div>
+          )}
 
           <div className="text-center mt-12">
-            <Link
-              to="/subjects"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-full font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg"
-            >
-              <FaArrowRight />
-              عرض جميع الكورسات
+            <Link to="/courses">
+              <button className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2 mx-auto">
+                <FaBookOpen className="w-5 h-5" />
+                عرض جميع الدورات
+              </button>
             </Link>
           </div>
         </div>
       </section>
-
       {/* Instructor Section */}
       <InstructorSection />
-
-      {/* Course Categories Section */}
-      <section className="py-20 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              استكشف حسب الفئة
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              ابحث عن الدورة المثالية في مجال اهتمامك
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {categories.map((category, index) => (
-              <div 
-                key={index}
-                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
-              >
-                <div className={`inline-flex items-center justify-center w-16 h-16 ${category.color} text-white rounded-full mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                  <category.icon className="text-2xl" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{category.name}</h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">{category.count}</p>
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-purple-600/0 group-hover:from-blue-600/10 group-hover:to-purple-600/10 transition-all duration-300"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Latest Blogs Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-900" dir="rtl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -334,7 +392,7 @@ export default function HomePage() {
                   <div className="h-48 overflow-hidden">
                     <img
                       src={blog.image?.secure_url?.startsWith('/uploads/') 
-                        ? `http://localhost:5000${blog.image.secure_url}` 
+                        ? `http://localhost:4000${blog.image.secure_url}` 
                         : blog.image?.secure_url || placeholderImages.blog}
                       alt={blog.title}
                       className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"

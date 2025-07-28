@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { updateCourse } from "../../Redux/Slices/CourseSlice";
 import Layout from "../../Layout/Layout";
 import toast from "react-hot-toast";
@@ -43,16 +43,20 @@ export default function EditCourse() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const courseData = location.state;
+  const { id } = useParams(); // Get course ID from URL params
+  const courseDataFromState = location.state;
 
   const [isUpdatingCourse, setIsUpdatingCourse] = useState(false);
   const [subjects, setSubjects] = useState([]);
+  const [instructors, setInstructors] = useState([]);
+  const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("basic-info");
   const [expandedUnits, setExpandedUnits] = useState(new Set());
   const [editingUnit, setEditingUnit] = useState(null);
   const [editingLesson, setEditingLesson] = useState(null);
   const [sectionOrder, setSectionOrder] = useState(['units', 'direct-lessons']);
+  const [courseData, setCourseData] = useState(courseDataFromState);
 
   const swapSectionOrder = () => {
     setSectionOrder(prev => prev[0] === 'units' ? ['direct-lessons', 'units'] : ['units', 'direct-lessons']);
@@ -70,49 +74,127 @@ export default function EditCourse() {
       setExpandedUnits(new Set(allUnitIds));
     }
   };
+
   const [userInput, setUserInput] = useState({
-    title: courseData?.title || "",
-    category: courseData?.category || "",
-    subject: courseData?.subject || "",
-    stage: courseData?.stage || "1 ابتدائي",
-    createdBy: courseData?.createdBy || "",
-    description: courseData?.description || "",
+    title: "",
+    subject: "",
+    stage: "",
+    createdBy: "",
+    instructor: "",
+    description: "",
     thumbnail: null,
-    previewImage: courseData?.thumbnail?.secure_url || "",
+    previewImage: "",
   });
+
   const [courseStructure, setCourseStructure] = useState({
-    units: (courseData?.units || []).map(unit => ({
-      ...unit,
-      id: unit.id || unit._id || Date.now() + Math.random(),
-      lessons: (unit.lessons || []).map(lesson => ({
-        ...lesson,
-        id: lesson.id || lesson._id || Date.now() + Math.random()
-      }))
-    })),
-    directLessons: (courseData?.directLessons || []).map(lesson => ({
-      ...lesson,
-      id: lesson.id || lesson._id || Date.now() + Math.random()
-    })),
-    structureType: courseData?.structureType || "direct-lessons"
+    units: [],
+    directLessons: [],
+    structureType: "direct-lessons"
   });
+
+  // Fetch course data if not provided or not properly populated
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      console.log('EditCourse: Fetching course data for ID:', id);
+      console.log('EditCourse: Course data from state:', courseDataFromState);
+      
+      if (!courseData || !courseData.subject?.title || !courseData.stage?.name) {
+        try {
+          console.log('EditCourse: Fetching from API...');
+          const response = await axiosInstance.get(`/courses/admin/${id}`);
+          console.log('EditCourse: API response:', response.data);
+          if (response.data.success) {
+            setCourseData(response.data.course);
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error('Error fetching course data:', error);
+          toast.error('فشل في تحميل بيانات الدورة');
+          setLoading(false);
+          // Navigate back if course not found
+          if (error.response?.status === 404) {
+            navigate("/admin/dashboard");
+          }
+        }
+      } else {
+        console.log('EditCourse: Using course data from state');
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchCourseData();
+    } else {
+      console.error('EditCourse: No course ID provided');
+      toast.error('معرف الدورة مطلوب');
+      navigate("/admin/dashboard");
+    }
+  }, [id, courseData, navigate]);
+
+  // Update userInput when courseData changes
+  useEffect(() => {
+    if (courseData) {
+      setUserInput({
+        title: courseData.title || "",
+        subject: courseData.subject?._id || courseData.subject || "",
+        stage: courseData.stage?._id || courseData.stage || "",
+        createdBy: courseData.createdBy || "",
+        instructor: courseData.instructor || "",
+        description: courseData.description || "",
+        thumbnail: null,
+        previewImage: courseData.thumbnail?.secure_url || "",
+      });
+
+      setCourseStructure({
+        units: (courseData.units || []).map(unit => ({
+          ...unit,
+          id: unit.id || unit._id || Date.now() + Math.random(),
+          lessons: (unit.lessons || []).map(lesson => ({
+            ...lesson,
+            id: lesson.id || lesson._id || Date.now() + Math.random()
+          }))
+        })),
+        directLessons: (courseData.directLessons || []).map(lesson => ({
+          ...lesson,
+          id: lesson.id || lesson._id || Date.now() + Math.random()
+        })),
+        structureType: courseData.structureType || "direct-lessons"
+      });
+    }
+  }, [courseData]);
 
   // Fetch subjects on component mount
   useEffect(() => {
-    const fetchSubjects = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axiosInstance.get('/subjects');
-        if (response.data.success) {
-          setSubjects(response.data.subjects);
+        // Fetch subjects
+        const subjectsResponse = await axiosInstance.get('/subjects');
+        if (subjectsResponse.data.success) {
+          setSubjects(subjectsResponse.data.subjects);
+        }
+
+        // Fetch instructors
+        const instructorsResponse = await axiosInstance.get('/instructors');
+        if (instructorsResponse.data.success) {
+          setInstructors(instructorsResponse.data.data.instructors);
+        }
+
+        // Fetch stages
+        const stagesResponse = await axiosInstance.get('/stages');
+        console.log('Stages API Response:', stagesResponse.data);
+        if (stagesResponse.data.success) {
+          setStages(stagesResponse.data.data.stages);
+          console.log('Stages set:', stagesResponse.data.data.stages);
         }
       } catch (error) {
-        console.error('Error fetching subjects:', error);
-        toast.error('فشل في تحميل المواد الدراسية');
+        console.error('Error fetching data:', error);
+        toast.error('فشل في تحميل البيانات');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSubjects();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -153,6 +235,20 @@ export default function EditCourse() {
 
   function handleUserInput(e) {
     const { name, value } = e.target;
+    
+    // Auto-fill display name when instructor is selected
+    if (name === 'instructor' && value && instructors) {
+      const selectedInstructor = instructors.find(i => i._id === value);
+      if (selectedInstructor && !userInput.createdBy) {
+        setUserInput(prev => ({
+          ...prev,
+          [name]: value,
+          createdBy: selectedInstructor.name
+        }));
+        return;
+      }
+    }
+    
     setUserInput({
       ...userInput,
       [name]: value,
@@ -246,7 +342,6 @@ export default function EditCourse() {
       description: "",
       lecture: {},
       duration: 0,
-      price: 10,
       order: courseStructure.units.find(u => (u.id || u._id) === unitId)?.lessons.length || 0
     };
     
@@ -319,7 +414,6 @@ export default function EditCourse() {
       description: "",
       lecture: {},
       duration: 0,
-      price: 10,
       order: courseStructure.directLessons.length
     };
     
@@ -417,8 +511,8 @@ export default function EditCourse() {
   async function onFormSubmit(e) {
     e.preventDefault();
 
-    if (!userInput.title || !userInput.description || !userInput.subject || !userInput.stage) {
-      toast.error("Title, description, subject, and stage are mandatory!");
+    if (!userInput.title || !userInput.description || !userInput.subject || !userInput.stage || !userInput.instructor) {
+      toast.error("Title, description, subject, stage, and instructor are mandatory!");
       return;
     }
 
@@ -426,10 +520,10 @@ export default function EditCourse() {
     const formData = new FormData();
     formData.append("title", userInput.title);
     formData.append("description", userInput.description);
-    formData.append("category", userInput.category);
     formData.append("subject", userInput.subject);
     formData.append("stage", userInput.stage);
     formData.append("createdBy", userInput.createdBy);
+    formData.append("instructor", userInput.instructor);
     formData.append("structureType", courseStructure.structureType);
     
     // Calculate total lessons
@@ -494,8 +588,28 @@ export default function EditCourse() {
     );
   }
 
-  if (!courseData) {
-    return null;
+  if (!courseData && !loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-6xl mb-4">❌</div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              لم يتم العثور على الدورة
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              يبدو أن الدورة التي تبحث عنها غير موجودة
+            </p>
+            <button
+              onClick={() => navigate("/admin/dashboard")}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              العودة إلى لوحة التحكم
+            </button>
+          </div>
+        </div>
+      </Layout>
+    );
   }
 
   return (
@@ -587,45 +701,61 @@ export default function EditCourse() {
                         />
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            وصف الدورة *
-                          </label>
                           <TextArea
+                            label={"وصف الدورة"}
                             name={"description"}
-                            rows={4}
-                            placeholder={"أدخل وصف مفصل للدورة..."}
+                            type={"text"}
+                            placeholder={"أدخل وصف الدورة"}
                             onChange={handleUserInput}
                             value={userInput.description}
                             required
                             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
                           />
                         </div>
-
-                        <InputBox
-                          label={"الفئة"}
-                          name={"category"}
-                          type={"text"}
-                          placeholder={"أدخل فئة الدورة"}
-                          onChange={handleUserInput}
-                          value={userInput.category}
-                        />
                       </div>
                     </div>
 
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                        <FaUser className="text-green-500" />
+                        <FaUser className="text-blue-500" />
                         معلومات المدرس
                       </h3>
                       
-                      <InputBox
-                        label={"اسم المدرس"}
-                        name={"createdBy"}
-                        type={"text"}
-                        placeholder={"أدخل اسم المدرس"}
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            المدرس *
+                          </label>
+                          <select
+                            name="instructor"
+                            value={userInput.instructor}
+                            onChange={handleUserInput}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            required
+                          >
+                            <option value="">اختر المدرس</option>
+                            {instructors?.map((instructor) => (
+                              <option key={instructor._id} value={instructor._id}>
+                                {instructor.name} - {instructor.specialization}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            اسم المدرس (للعرض)
+                          </label>
+                          <input
+                            type="text"
+                            name="createdBy"
+                            placeholder="أدخل اسم المدرس للعرض"
                         onChange={handleUserInput}
                         value={userInput.createdBy}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -650,7 +780,7 @@ export default function EditCourse() {
                             required
                           >
                             <option value="">اختر مادة دراسية</option>
-                            {subjects.map((subject) => (
+                            {subjects?.map((subject) => (
                               <option key={subject._id} value={subject._id}>
                                 {subject.title}
                               </option>
@@ -669,22 +799,12 @@ export default function EditCourse() {
                             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                             required
                           >
-                                                    <option value="1 ابتدائي">1 ابتدائي</option>
-                        <option value="2 ابتدائي">2 ابتدائي</option>
-                        <option value="3 ابتدائي">3 ابتدائي</option>
-                        <option value="4 ابتدائي">4 ابتدائي</option>
-                        <option value="5 ابتدائي">5 ابتدائي</option>
-                        <option value="6 ابتدائي">6 ابتدائي</option>
-                        <option value="1 إعدادي">1 إعدادي</option>
-                        <option value="2 إعدادي">2 إعدادي</option>
-                        <option value="3 إعدادي">3 إعدادي</option>
-                        <option value="1 ثانوي">1 ثانوي</option>
-                        <option value="2 ثانوي">2 ثانوي</option>
-                        <option value="3 ثانوي">3 ثانوي</option>
-                        <option value="1 جامعة">1 جامعة</option>
-                        <option value="2 جامعة">2 جامعة</option>
-                        <option value="3 جامعة">3 جامعة</option>
-                        <option value="4 جامعة">4 جامعة</option>
+                            <option value="">اختر المرحلة</option>
+                            {stages?.map((stage) => (
+                              <option key={stage._id} value={stage._id}>
+                                {stage.name}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </div>
@@ -784,17 +904,33 @@ export default function EditCourse() {
                     <div className="flex items-center gap-2">
                       <FaUsers className="text-purple-500" />
                       <span className="text-gray-700 dark:text-gray-300">المرحلة:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{userInput.stage}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {userInput.stage ? 
+                          (() => {
+                            const selectedStage = stages?.find(s => s._id === userInput.stage);
+                            return selectedStage ? selectedStage.name : 'Not selected';
+                          })() 
+                          : 'Not selected'
+                        }
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <FaUser className="text-orange-500" />
                       <span className="text-gray-700 dark:text-gray-300">المدرس:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{userInput.createdBy || 'Not set'}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {userInput.instructor ? 
+                          (() => {
+                            const selectedInstructor = instructors?.find(i => i._id === userInput.instructor);
+                            return selectedInstructor ? `${selectedInstructor.name} - ${selectedInstructor.specialization}` : 'Not selected';
+                          })() 
+                          : 'Not selected'
+                        }
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <FaStar className="text-yellow-500" />
-                      <span className="text-gray-700 dark:text-gray-300">الفئة:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{userInput.category || 'General'}</span>
+                      <FaUser className="text-blue-500" />
+                      <span className="text-gray-700 dark:text-gray-300">اسم العرض:</span>
+                      <span className="font-medium text-gray-900 dark:text-white">{userInput.createdBy || 'Not set'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <FaGraduationCap className="text-red-500" />
@@ -843,6 +979,14 @@ export default function EditCourse() {
                       )}
                       المرحلة
                     </li>
+                    <li className="flex items-center gap-2">
+                      {userInput.instructor ? (
+                        <FaCheck className="text-green-500" />
+                      ) : (
+                        <FaTimes className="text-red-500" />
+                      )}
+                      المدرس
+                    </li>
                   </ul>
                 </div>
 
@@ -850,7 +994,7 @@ export default function EditCourse() {
                 <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <button
                     type="submit"
-                    disabled={isUpdatingCourse || !userInput.title || !userInput.description || !userInput.subject || !userInput.stage}
+                    disabled={isUpdatingCourse || !userInput.title || !userInput.description || !userInput.subject || !userInput.stage || !userInput.instructor}
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                   >
                     {isUpdatingCourse ? (
@@ -1158,18 +1302,6 @@ export default function EditCourse() {
                                                                         rows={2}
                                                                       />
                                                                       <div className="flex gap-2">
-                                                                        <input
-                                                                          type="number"
-                                                                          value={lesson.price || 10}
-                                                                          onChange={(e) => updateLessonInUnit(unit.id || unit._id, lesson.id || lesson._id, 'price', parseFloat(e.target.value) || 0)}
-                                                                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
-                                                                          placeholder="Lesson price (EGP)"
-                                                                          min="0"
-                                                                          step="0.01"
-                                                                        />
-                                                                        <span className="text-xs text-gray-500 self-center">EGP</span>
-                                                                      </div>
-                                                                      <div className="flex gap-2">
                                                                         <button
                                                                           onClick={() => setEditingLesson(null)}
                                                                           className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
@@ -1194,9 +1326,6 @@ export default function EditCourse() {
                                                                           {lesson.description}
                                                                         </div>
                                                                       )}
-                                                                      <div className="text-xs text-green-600 dark:text-green-400 font-medium">
-                                                                        Price: {lesson.price || 10} EGP
-                                                                      </div>
                                                                     </div>
                                                                   )}
                                                                 </div>
@@ -1320,18 +1449,6 @@ export default function EditCourse() {
                                                   rows={2}
                                                 />
                                                 <div className="flex gap-2">
-                                                  <input
-                                                    type="number"
-                                                    value={lesson.price || 10}
-                                                    onChange={(e) => updateDirectLesson(lesson.id || lesson._id, 'price', parseFloat(e.target.value) || 0)}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                                    placeholder="Lesson price (EGP)"
-                                                    min="0"
-                                                    step="0.01"
-                                                  />
-                                                  <span className="text-xs text-gray-500 self-center">EGP</span>
-                                                </div>
-                                                <div className="flex gap-2">
                                                   <button
                                                     onClick={() => setEditingLesson(null)}
                                                     className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
@@ -1352,13 +1469,10 @@ export default function EditCourse() {
                                                   {lesson.title || "Untitled Lesson"}
                                                 </h4>
                                                 {lesson.description && (
-                                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                                  <div className="text-sm text-gray-600 dark:text-gray-400">
                                                     {lesson.description}
-                                                  </p>
+                                                  </div>
                                                 )}
-                                                <div className="text-xs text-green-600 dark:text-green-400 font-medium mt-1">
-                                                  Price: {lesson.price || 10} EGP
-                                                </div>
                                               </div>
                                             )}
                                           </div>

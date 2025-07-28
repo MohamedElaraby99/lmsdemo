@@ -81,7 +81,7 @@ export default function InstructorDetail() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
         <div className="container mx-auto px-4 py-8">
           {/* Back Button */}
           <button
@@ -99,12 +99,16 @@ export default function InstructorDetail() {
               <div className="w-full h-48 bg-gradient-to-r from-blue-500 to-purple-600"></div>
               
               {/* Profile Image */}
-              <div className="absolute -bottom-16 left-8">
+              <div className="absolute -bottom-16 right-8">
                 {instructor.profileImage?.secure_url ? (
                   <img
                     src={instructor.profileImage.secure_url}
                     alt={instructor.name}
                     className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
                   />
                 ) : (
                   <div className="w-32 h-32 bg-white/20 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
@@ -115,7 +119,7 @@ export default function InstructorDetail() {
 
               {/* Featured Badge */}
               {instructor.featured && (
-                <div className="absolute top-4 right-4 bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full text-sm font-semibold">
+                <div className="absolute top-4 left-4 bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full text-sm font-semibold">
                   مميز
                 </div>
               )}
@@ -125,10 +129,10 @@ export default function InstructorDetail() {
             <div className="pt-20 pb-6 px-8">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                  <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 text-right">
                     {instructor.name}
                   </h1>
-                  <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
+                  <p className="text-xl text-gray-600 dark:text-gray-300 mb-4 text-right">
                     {instructor.specialization}
                   </p>
                 </div>
@@ -178,11 +182,11 @@ export default function InstructorDetail() {
             <div className="lg:col-span-2 space-y-8">
               {/* Bio */}
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2 text-right">
                   <FaBookOpen className="text-blue-600" />
                   نبذة عن المدرس
                 </h2>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-right">
                   {instructor.bio || 'لا توجد نبذة متاحة لهذا المدرس.'}
                 </p>
               </div>
@@ -190,11 +194,11 @@ export default function InstructorDetail() {
               {/* Education */}
               {instructor.education && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2 text-right">
                     <FaGraduationCap className="text-purple-600" />
                     المؤهلات التعليمية
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-right">
                     {instructor.education}
                   </p>
                 </div>

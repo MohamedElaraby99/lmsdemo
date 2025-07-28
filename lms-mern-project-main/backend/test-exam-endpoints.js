@@ -1,8 +1,8 @@
-const axios = require('axios');
+import axios from 'axios';
 
 // Test the exam endpoints
 async function testExamEndpoints() {
-  const baseURL = 'http://localhost:5000/api/v1';
+  const baseURL = 'http://localhost:4000/api/v1';
   
   // Sample exam data
   const examData = {

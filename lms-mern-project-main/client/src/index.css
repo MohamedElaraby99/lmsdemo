@@ -577,13 +577,26 @@ html.light ::-webkit-scrollbar-thumb:hover {
 /* Wave animation for 404 page */
 @keyframes wave {
   0%, 100% {
-    transform: translateX(0);
+    transform: translateY(0);
   }
   50% {
-    transform: translateX(-10px);
+    transform: translateY(-10px);
   }
 }
 
 .animate-wave {
   animation: wave 3s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
 }

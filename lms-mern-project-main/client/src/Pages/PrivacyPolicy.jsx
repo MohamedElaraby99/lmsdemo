@@ -1,6 +1,6 @@
 import React from "react";
 import Layout from "../Layout/Layout";
-import { FaShieldAlt, FaDatabase, FaEye, FaLock, FaUserSecret, FaInfoCircle, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
+import { FaShieldAlt, FaDatabase, FaEye, FaLock, FaUserSecret, FaInfoCircle, FaCheckCircle, FaExclamationTriangle, FaVideo, FaBan } from "react-icons/fa";
 
 export default function PrivacyPolicy() {
   return (
@@ -13,91 +13,147 @@ export default function PrivacyPolicy() {
               <FaShieldAlt className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Privacy Policy
+              سياسة الخصوصية
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              How we collect, use, and protect your personal information
+              كيف نجمع ونستخدم ونحمي معلوماتك الشخصية
             </p>
             <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-              Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              آخر تحديث: {new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
           </div>
 
           {/* Content */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700" dir="rtl">
             <div className="prose prose-lg dark:prose-invert max-w-none">
               
               {/* Introduction */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <FaInfoCircle className="mr-3 text-purple-600" />
-                  Introduction
+                  <FaInfoCircle className="ml-3 text-purple-600" />
+                  مقدمة
                 </h2>
                 <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  Fikra Software ("we," "our," or "us") is committed to protecting your privacy. 
-                  This Privacy Policy explains how we collect, use, disclose, and safeguard your information 
-                  when you use our learning management platform.
+                  شركة فكرة سوفت وير ("نحن" أو "لنا" أو "لنا") ملتزمة بحماية خصوصيتك. 
+                  تشرح سياسة الخصوصية هذه كيف نجمع ونستخدم ونكشف ونحمي معلوماتك 
+                  عند استخدام منصة إدارة التعلم الخاصة بنا.
                 </p>
                 <p className="text-gray-700 dark:text-gray-300">
-                  By using our services, you consent to the data practices described in this policy.
+                  من خلال استخدام خدماتنا، فإنك توافق على ممارسات البيانات الموضحة في هذه السياسة.
                 </p>
+              </section>
+
+              {/* Video Screening Policy - NEW SECTION */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <FaVideo className="ml-3 text-red-600" />
+                  سياسة مراقبة المحتوى والفيديوهات
+                </h2>
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6 border-l-4 border-red-500">
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <FaExclamationTriangle className="text-red-500 mt-1 ml-3 flex-shrink-0" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                          تحذير مهم: سياسة الحظر الصارمة
+                        </h3>
+                        <p className="text-red-700 dark:text-red-300">
+                          يحظر تماماً على أي طالب تسجيل أو مشاركة أو نشر أي فيديو أو محتوى من منصتنا التعليمية.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-red-200 dark:border-red-800">
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-3">العقوبات المطبقة:</h4>
+                      <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+                        <li className="flex items-start">
+                          <FaBan className="text-red-500 mt-1 ml-2 flex-shrink-0" />
+                          <span>حذف الحساب فوراً</span>
+                        </li>
+                        <li className="flex items-start">
+                          <FaBan className="text-red-500 mt-1 ml-2 flex-shrink-0" />
+                          <span>حظر دائم من المنصة</span>
+                        </li>
+                        <li className="flex items-start">
+                          <FaBan className="text-red-500 mt-1 ml-2 flex-shrink-0" />
+                          <span>عدم إمكانية التسجيل مرة أخرى</span>
+                        </li>
+                        <li className="flex items-start">
+                          <FaBan className="text-red-500 mt-1 ml-2 flex-shrink-0" />
+                          <span>إجراءات قانونية إذا لزم الأمر</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
+                      <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">ما يعتبر انتهاكاً:</h4>
+                      <ul className="space-y-1 text-yellow-700 dark:text-yellow-300 text-sm">
+                        <li>• تسجيل شاشة الفيديوهات التعليمية</li>
+                        <li>• مشاركة روابط المحتوى مع أشخاص آخرين</li>
+                        <li>• نشر المحتوى على وسائل التواصل الاجتماعي</li>
+                        <li>• حفظ أو تحميل المواد التعليمية</li>
+                        <li>• إعادة توزيع المحتوى بأي شكل من الأشكال</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </section>
 
               {/* Information We Collect */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <FaDatabase className="mr-3 text-blue-600" />
-                  Information We Collect
+                  <FaDatabase className="ml-3 text-blue-600" />
+                  المعلومات التي نجمعها
                 </h2>
                 
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Personal Information</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">المعلومات الشخصية</h3>
                     <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                       <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                         <li className="flex items-start">
-                          <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                          <span>Full name and contact information</span>
+                          <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                          <span>الاسم الكامل ومعلومات الاتصال</span>
                         </li>
                         <li className="flex items-start">
-                          <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                          <span>Email address and phone numbers</span>
+                          <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                          <span>عنوان البريد الإلكتروني وأرقام الهواتف</span>
                         </li>
                         <li className="flex items-start">
-                          <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                          <span>Age and educational details</span>
+                          <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                          <span>العمر والتفاصيل التعليمية</span>
                         </li>
                         <li className="flex items-start">
-                          <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                          <span>Geographic location (governorate)</span>
+                          <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                          <span>الموقع الجغرافي (المحافظة)</span>
                         </li>
                         <li className="flex items-start">
-                          <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                          <span>Profile picture and avatar</span>
+                          <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                          <span>صورة الملف الشخصي والصورة الرمزية</span>
                         </li>
                       </ul>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Usage Information</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">معلومات الاستخدام</h3>
                     <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                       <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                         <li className="flex items-start">
-                          <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                          <span>Course progress and completion data</span>
+                          <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                          <span>بيانات تقدم الدورة وإكمالها</span>
                         </li>
                         <li className="flex items-start">
-                          <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                          <span>Learning preferences and interactions</span>
+                          <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                          <span>تفضيلات التعلم والتفاعلات</span>
                         </li>
                         <li className="flex items-start">
-                          <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                          <span>Device information and IP addresses</span>
+                          <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                          <span>معلومات الجهاز وعناوين IP</span>
                         </li>
                         <li className="flex items-start">
-                          <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                          <span>Usage patterns and analytics</span>
+                          <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                          <span>أنماط الاستخدام والتحليلات</span>
                         </li>
                       </ul>
                     </div>
@@ -105,48 +161,39 @@ export default function PrivacyPolicy() {
                 </div>
               </section>
 
-              {/* How We Use Your Information */}
+              {/* How We Use Information */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <FaEye className="mr-3 text-green-600" />
-                  How We Use Your Information
+                  <FaEye className="ml-3 text-green-600" />
+                  كيف نستخدم المعلومات
                 </h2>
                 <div className="space-y-4">
-                  <div className="flex items-start">
-                    <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                    <p className="text-gray-700 dark:text-gray-300">
-                      Provide and maintain our educational services
-                    </p>
-                  </div>
-                  <div className="flex items-start">
-                    <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                    <p className="text-gray-700 dark:text-gray-300">
-                      Personalize your learning experience and recommendations
-                    </p>
-                  </div>
-                  <div className="flex items-start">
-                    <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                    <p className="text-gray-700 dark:text-gray-300">
-                      Communicate with you about your account and services
-                    </p>
-                  </div>
-                  <div className="flex items-start">
-                    <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                    <p className="text-gray-700 dark:text-gray-300">
-                      Improve our platform and develop new features
-                    </p>
-                  </div>
-                  <div className="flex items-start">
-                    <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                    <p className="text-gray-700 dark:text-gray-300">
-                      Ensure platform security and prevent fraud
-                    </p>
-                  </div>
-                  <div className="flex items-start">
-                    <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                    <p className="text-gray-700 dark:text-gray-300">
-                      Comply with legal obligations and regulations
-                    </p>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    نستخدم المعلومات التي نجمعها للأغراض التالية:
+                  </p>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>تقديم وتحسين خدمات التعلم</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>التواصل معك بشأن حسابك والدورات</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>تحليل استخدام المنصة لتحسين التجربة</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>ضمان أمان المنصة ومنع الاحتيال</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>الامتثال للالتزامات القانونية</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </section>
@@ -154,31 +201,30 @@ export default function PrivacyPolicy() {
               {/* Information Sharing */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <FaUserSecret className="mr-3 text-orange-600" />
-                  Information Sharing
+                  <FaUserSecret className="ml-3 text-purple-600" />
+                  مشاركة المعلومات
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    We do not sell, trade, or rent your personal information to third parties. 
-                    We may share your information in the following circumstances:
+                    نحن لا نبيع أو نؤجر أو نشارك معلوماتك الشخصية مع أطراف ثالثة، إلا في الحالات التالية:
                   </p>
-                  <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                     <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                       <li className="flex items-start">
-                        <FaExclamationTriangle className="text-yellow-500 mt-1 mr-3 flex-shrink-0" />
-                        <span>With your explicit consent</span>
+                        <FaExclamationTriangle className="text-yellow-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>بموافقتك الصريحة</span>
                       </li>
                       <li className="flex items-start">
-                        <FaExclamationTriangle className="text-yellow-500 mt-1 mr-3 flex-shrink-0" />
-                        <span>To comply with legal requirements</span>
+                        <FaExclamationTriangle className="text-yellow-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>لتقديم الخدمات المطلوبة (مثل معالجة الدفع)</span>
                       </li>
                       <li className="flex items-start">
-                        <FaExclamationTriangle className="text-yellow-500 mt-1 mr-3 flex-shrink-0" />
-                        <span>With trusted service providers who assist in platform operation</span>
+                        <FaExclamationTriangle className="text-yellow-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>للامتثال للقوانين والأنظمة</span>
                       </li>
                       <li className="flex items-start">
-                        <FaExclamationTriangle className="text-yellow-500 mt-1 mr-3 flex-shrink-0" />
-                        <span>To protect our rights and safety</span>
+                        <FaExclamationTriangle className="text-yellow-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>لحماية حقوقنا وممتلكاتنا</span>
                       </li>
                     </ul>
                   </div>
@@ -188,120 +234,130 @@ export default function PrivacyPolicy() {
               {/* Data Security */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <FaLock className="mr-3 text-green-600" />
-                  Data Security
+                  <FaLock className="ml-3 text-blue-600" />
+                  أمان البيانات
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    We implement appropriate technical and organizational measures to protect your personal information:
+                    نحن نستخدم تدابير أمنية تقنية وإدارية مناسبة لحماية معلوماتك الشخصية:
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Encryption</h4>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        All data is encrypted in transit and at rest using industry-standard protocols.
-                      </p>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Access Control</h4>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        Strict access controls limit who can view your personal information.
-                      </p>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Regular Audits</h4>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        We regularly review and update our security practices.
-                      </p>
-                    </div>
-                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Secure Storage</h4>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        Data is stored on secure servers with multiple layers of protection.
-                      </p>
-                    </div>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>التشفير أثناء النقل والتخزين</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>الوصول المقيد للموظفين المصرح لهم</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>مراقبة الأمان المنتظمة</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>النسخ الاحتياطية الآمنة</span>
+                      </li>
+                    </ul>
                   </div>
+                </div>
+              </section>
+
+              {/* Data Retention */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  الاحتفاظ بالبيانات
+                </h2>
+                <div className="space-y-4">
+                  <p className="text-gray-700 dark:text-gray-300">
+                    نحتفظ بمعلوماتك الشخصية طالما كان حسابك نشطاً أو كما هو مطلوب لتقديم الخدمات.
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    عند إغلاق حسابك، قد نحتفظ ببعض المعلومات لفترة محدودة للامتثال للقوانين 
+                    أو لحل النزاعات أو لتنفيذ اتفاقياتنا.
+                  </p>
                 </div>
               </section>
 
               {/* Your Rights */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Your Rights
+                  حقوقك
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    You have the following rights regarding your personal information:
+                    لديك الحق في:
                   </p>
-                  <div className="space-y-3">
-                    <div className="flex items-start">
-                      <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <strong className="text-gray-900 dark:text-white">Access:</strong>
-                        <span className="text-gray-700 dark:text-gray-300 ml-2">
-                          Request a copy of your personal data
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <strong className="text-gray-900 dark:text-white">Correction:</strong>
-                        <span className="text-gray-700 dark:text-gray-300 ml-2">
-                          Update or correct inaccurate information
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <strong className="text-gray-900 dark:text-white">Deletion:</strong>
-                        <span className="text-gray-700 dark:text-gray-300 ml-2">
-                          Request deletion of your personal data
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <strong className="text-gray-900 dark:text-white">Portability:</strong>
-                        <span className="text-gray-700 dark:text-gray-300 ml-2">
-                          Receive your data in a portable format
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-start">
-                      <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
-                      <div>
-                        <strong className="text-gray-900 dark:text-white">Objection:</strong>
-                        <span className="text-gray-700 dark:text-gray-300 ml-2">
-                          Object to certain processing activities
-                        </span>
-                      </div>
-                    </div>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>الوصول إلى معلوماتك الشخصية</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>تصحيح المعلومات غير الدقيقة</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>حذف معلوماتك الشخصية</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>تقييد معالجة معلوماتك</span>
+                      </li>
+                      <li className="flex items-start">
+                        <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
+                        <span>الاعتراض على معالجة معلوماتك</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </section>
 
-              {/* Cookies and Tracking */}
+              {/* Cookies */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Cookies and Tracking
+                  ملفات تعريف الارتباط
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    We use cookies and similar technologies to enhance your experience:
+                    نستخدم ملفات تعريف الارتباط لتحسين تجربتك على منصتنا. هذه الملفات تساعدنا في:
                   </p>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                     <ul className="space-y-2 text-gray-700 dark:text-gray-300">
-                      <li><strong>Essential Cookies:</strong> Required for platform functionality</li>
-                      <li><strong>Analytics Cookies:</strong> Help us understand usage patterns</li>
-                      <li><strong>Preference Cookies:</strong> Remember your settings and preferences</li>
-                      <li><strong>Security Cookies:</strong> Protect against fraud and abuse</li>
+                      <li>• تذكر تفضيلاتك</li>
+                      <li>• تحليل استخدام الموقع</li>
+                      <li>• تحسين الأداء والأمان</li>
+                      <li>• تخصيص المحتوى</li>
                     </ul>
                   </div>
                   <p className="text-gray-700 dark:text-gray-300">
-                    You can control cookie settings through your browser preferences.
+                    يمكنك التحكم في ملفات تعريف الارتباط من خلال إعدادات المتصفح.
+                  </p>
+                </div>
+              </section>
+
+              {/* Third-Party Services */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  خدمات الطرف الثالث
+                </h2>
+                <div className="space-y-4">
+                  <p className="text-gray-700 dark:text-gray-300">
+                    قد نستخدم خدمات من أطراف ثالثة مثل:
+                  </p>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+                      <li>• مزودي خدمات الدفع</li>
+                      <li>• خدمات الاستضافة والسحابة</li>
+                      <li>• أدوات التحليلات</li>
+                      <li>• خدمات البريد الإلكتروني</li>
+                    </ul>
+                  </div>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    هذه الخدمات لها سياسات خصوصية خاصة بها، ونشجعك على مراجعتها.
                   </p>
                 </div>
               </section>
@@ -309,29 +365,16 @@ export default function PrivacyPolicy() {
               {/* Children's Privacy */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Children's Privacy
+                  خصوصية الأطفال
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    Our platform is designed for users aged 5 and above. We collect information from children 
-                    with parental consent and take special care to protect their privacy.
+                    منصتنا مخصصة للأطفال من سن 5 سنوات وما فوق. نحن نجمع معلومات محدودة من الأطفال 
+                    ونحصل على موافقة الوالدين عند الحاجة.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    Parents can review, delete, or refuse further collection of their child's information 
-                    by contacting us directly.
-                  </p>
-                </div>
-              </section>
-
-              {/* International Transfers */}
-              <section className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  International Data Transfers
-                </h2>
-                <div className="space-y-4">
-                  <p className="text-gray-700 dark:text-gray-300">
-                    Your information may be transferred to and processed in countries other than Egypt. 
-                    We ensure appropriate safeguards are in place to protect your data during such transfers.
+                    إذا كنت أحد الوالدين وتعتقد أن طفلك قد قدم لنا معلومات شخصية، 
+                    يرجى الاتصال بنا فوراً.
                   </p>
                 </div>
               </section>
@@ -339,15 +382,15 @@ export default function PrivacyPolicy() {
               {/* Changes to Privacy Policy */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Changes to This Privacy Policy
+                  تغييرات سياسة الخصوصية
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    We may update this Privacy Policy from time to time. We will notify you of any changes 
-                    by posting the new policy on this page and updating the "Last updated" date.
+                    قد نحدث هذه السياسة من وقت لآخر. سنقوم بنشر أي تغييرات على هذه الصفحة 
+                    وإخطارك عبر البريد الإلكتروني إذا كانت التغييرات مهمة.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    We encourage you to review this policy periodically for any changes.
+                    الاستمرار في استخدام خدماتنا بعد التغييرات يشكل قبول السياسة المحدثة.
                   </p>
                 </div>
               </section>
@@ -355,17 +398,17 @@ export default function PrivacyPolicy() {
               {/* Contact Information */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Contact Us
+                  معلومات الاتصال
                 </h2>
-                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-6">
-                  <p className="text-gray-700 dark:text-gray-300 mb-4">
-                    If you have questions about this Privacy Policy or our data practices, please contact us:
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+                  <p className="text-gray-700 dark:text-gray-300 mb-2">
+                    إذا كان لديك أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا:
                   </p>
                   <div className="space-y-1 text-gray-700 dark:text-gray-300">
-                    <p><strong>Email:</strong> softwarefikra@gmail.com</p>
-                    <p><strong>Phone:</strong> +201207039410</p>
-                    <p><strong>Address:</strong> Mansoura, 18 Street Torel, Egypt</p>
-                    <p><strong>Website:</strong> https://fikra.solutions/</p>
+                    <p><strong>البريد الإلكتروني:</strong> softwarefikra@gmail.com</p>
+                    <p><strong>الهاتف:</strong> +201207039410</p>
+                    <p><strong>العنوان:</strong> المنصورة، شارع 18 توريل، مصر</p>
+                    <p><strong>الموقع الإلكتروني:</strong> https://fikra.solutions/</p>
                   </div>
                 </div>
               </section>
@@ -373,8 +416,8 @@ export default function PrivacyPolicy() {
               {/* Footer */}
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-8">
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                  By using Fikra Software's platform, you acknowledge that you have read and understood 
-                  this Privacy Policy and consent to our data practices as described herein.
+                  من خلال استخدام خدماتنا، فإنك توافق على جمع واستخدام معلوماتك 
+                  كما هو موضح في سياسة الخصوصية هذه.
                 </p>
               </div>
             </div>

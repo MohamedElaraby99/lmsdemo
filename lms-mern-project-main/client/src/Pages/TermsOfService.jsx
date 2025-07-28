@@ -1,6 +1,6 @@
 import React from "react";
 import Layout from "../Layout/Layout";
-import { FaShieldAlt, FaUserCheck, FaHandshake, FaExclamationTriangle, FaCheckCircle, FaInfoCircle } from "react-icons/fa";
+import { FaShieldAlt, FaUserCheck, FaHandshake, FaExclamationTriangle, FaCheckCircle, FaInfoCircle, FaVideo, FaBan } from "react-icons/fa";
 
 export default function TermsOfService() {
   return (
@@ -13,66 +13,122 @@ export default function TermsOfService() {
               <FaShieldAlt className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Terms of Service
+              شروط الخدمة
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Please read these terms carefully before using Fikra Software's learning platform
+              يرجى قراءة هذه الشروط بعناية قبل استخدام منصة فكرة التعليمية
             </p>
             <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-              Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              آخر تحديث: {new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
           </div>
 
           {/* Content */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700" dir="rtl">
             <div className="prose prose-lg dark:prose-invert max-w-none">
               
               {/* Introduction */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <FaInfoCircle className="mr-3 text-blue-600" />
-                  Introduction
+                  <FaInfoCircle className="ml-3 text-blue-600" />
+                  مقدمة
                 </h2>
                 <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  Welcome to Fikra Software's Learning Management System. By accessing and using our platform, 
-                  you agree to be bound by these Terms of Service. If you do not agree to these terms, 
-                  please do not use our services.
+                  مرحباً بك في نظام إدارة التعلم من فكرة سوفت وير. من خلال الوصول إلى منصتنا واستخدامها، 
+                  فإنك توافق على الالتزام بشروط الخدمة هذه. إذا كنت لا توافق على هذه الشروط، 
+                  يرجى عدم استخدام خدماتنا.
                 </p>
                 <p className="text-gray-700 dark:text-gray-300">
-                  These terms apply to all users of the platform, including students, instructors, and administrators.
+                  تنطبق هذه الشروط على جميع مستخدمي المنصة، بما في ذلك الطلاب والمدرسين والمسؤولين.
                 </p>
               </section>
 
               {/* Account Registration */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <FaUserCheck className="mr-3 text-green-600" />
-                  Account Registration
+                  <FaUserCheck className="ml-3 text-green-600" />
+                  تسجيل الحساب
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-start">
-                    <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
+                    <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
                     <p className="text-gray-700 dark:text-gray-300">
-                      You must provide accurate, current, and complete information during registration.
+                      يجب عليك تقديم معلومات دقيقة وحالية وكاملة أثناء التسجيل.
                     </p>
                   </div>
                   <div className="flex items-start">
-                    <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
+                    <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
                     <p className="text-gray-700 dark:text-gray-300">
-                      You are responsible for maintaining the confidentiality of your account credentials.
+                      أنت مسؤول عن الحفاظ على سرية بيانات اعتماد حسابك.
                     </p>
                   </div>
                   <div className="flex items-start">
-                    <FaCheckCircle className="text-green-500 mt-1 mr-3 flex-shrink-0" />
+                    <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
                     <p className="text-gray-700 dark:text-gray-300">
-                      You must be at least 5 years old to create an account.
+                      يجب أن تكون عمرك 5 سنوات على الأقل لإنشاء حساب.
                     </p>
                   </div>
                   <div className="flex items-start">
-                    <FaExclamationTriangle className="text-yellow-500 mt-1 mr-3 flex-shrink-0" />
+                    <FaExclamationTriangle className="text-yellow-500 mt-1 ml-3 flex-shrink-0" />
                     <p className="text-gray-700 dark:text-gray-300">
-                      You are responsible for all activities that occur under your account.
+                      أنت مسؤول عن جميع الأنشطة التي تحدث تحت حسابك.
                     </p>
+                  </div>
+                </div>
+              </section>
+
+              {/* Video Screening Policy - NEW SECTION */}
+              <section className="mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <FaVideo className="ml-3 text-red-600" />
+                  سياسة مراقبة المحتوى والفيديوهات
+                </h2>
+                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6 border-l-4 border-red-500">
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <FaExclamationTriangle className="text-red-500 mt-1 ml-3 flex-shrink-0" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                          تحذير مهم: سياسة الحظر الصارمة
+                        </h3>
+                        <p className="text-red-700 dark:text-red-300">
+                          يحظر تماماً على أي طالب تسجيل أو مشاركة أو نشر أي فيديو أو محتوى من منصتنا التعليمية.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-red-200 dark:border-red-800">
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-3">العقوبات المطبقة:</h4>
+                      <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+                        <li className="flex items-start">
+                          <FaBan className="text-red-500 mt-1 ml-2 flex-shrink-0" />
+                          <span>حذف الحساب فوراً</span>
+                        </li>
+                        <li className="flex items-start">
+                          <FaBan className="text-red-500 mt-1 ml-2 flex-shrink-0" />
+                          <span>حظر دائم من المنصة</span>
+                        </li>
+                        <li className="flex items-start">
+                          <FaBan className="text-red-500 mt-1 ml-2 flex-shrink-0" />
+                          <span>عدم إمكانية التسجيل مرة أخرى</span>
+                        </li>
+                        <li className="flex items-start">
+                          <FaBan className="text-red-500 mt-1 ml-2 flex-shrink-0" />
+                          <span>إجراءات قانونية إذا لزم الأمر</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
+                      <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">ما يعتبر انتهاكاً:</h4>
+                      <ul className="space-y-1 text-yellow-700 dark:text-yellow-300 text-sm">
+                        <li>• تسجيل شاشة الفيديوهات التعليمية</li>
+                        <li>• مشاركة روابط المحتوى مع أشخاص آخرين</li>
+                        <li>• نشر المحتوى على وسائل التواصل الاجتماعي</li>
+                        <li>• حفظ أو تحميل المواد التعليمية</li>
+                        <li>• إعادة توزيع المحتوى بأي شكل من الأشكال</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -80,31 +136,31 @@ export default function TermsOfService() {
               {/* Acceptable Use */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <FaHandshake className="mr-3 text-purple-600" />
-                  Acceptable Use
+                  <FaHandshake className="ml-3 text-purple-600" />
+                  الاستخدام المقبول
                 </h2>
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">You agree to:</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">توافق على:</h3>
                   <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                     <li className="flex items-start">
-                      <span className="text-blue-600 mr-2">•</span>
-                      Use the platform for educational purposes only
+                      <span className="text-blue-600 ml-2">•</span>
+                      استخدام المنصة للأغراض التعليمية فقط
                     </li>
                     <li className="flex items-start">
-                      <span className="text-blue-600 mr-2">•</span>
-                      Respect other users and maintain a positive learning environment
+                      <span className="text-blue-600 ml-2">•</span>
+                      احترام المستخدمين الآخرين والحفاظ على بيئة تعليمية إيجابية
                     </li>
                     <li className="flex items-start">
-                      <span className="text-blue-600 mr-2">•</span>
-                      Not share inappropriate, offensive, or harmful content
+                      <span className="text-blue-600 ml-2">•</span>
+                      عدم مشاركة محتوى غير مناسب أو مسيء أو ضار
                     </li>
                     <li className="flex items-start">
-                      <span className="text-blue-600 mr-2">•</span>
-                      Not attempt to gain unauthorized access to the platform
+                      <span className="text-blue-600 ml-2">•</span>
+                      عدم محاولة الوصول غير المصرح به للمنصة
                     </li>
                     <li className="flex items-start">
-                      <span className="text-blue-600 mr-2">•</span>
-                      Not use automated systems to access the platform
+                      <span className="text-blue-600 ml-2">•</span>
+                      عدم استخدام الأنظمة الآلية للوصول إلى المنصة
                     </li>
                   </ul>
                 </div>
@@ -113,19 +169,19 @@ export default function TermsOfService() {
               {/* Content and Intellectual Property */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Content and Intellectual Property
+                  المحتوى والملكية الفكرية
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    All content on this platform, including courses, materials, and software, 
-                    is owned by Fikra Software or its licensors and is protected by copyright laws.
+                    جميع المحتوى على هذه المنصة، بما في ذلك الدورات والمواد والبرامج، 
+                    مملوك لشركة فكرة سوفت وير أو المرخصين لها ومحمي بقوانين حقوق النشر.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    You may not reproduce, distribute, or create derivative works without explicit permission.
+                    لا يجوز لك إعادة إنتاج أو توزيع أو إنشاء أعمال مشتقة دون إذن صريح.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    User-generated content remains your property, but you grant us a license to use it 
-                    for platform improvement and educational purposes.
+                    المحتوى الذي ينشئه المستخدم يبقى ملكك، لكنك تمنحنا ترخيصاً لاستخدامه 
+                    لتحسين المنصة والأغراض التعليمية.
                   </p>
                 </div>
               </section>
@@ -133,20 +189,20 @@ export default function TermsOfService() {
               {/* Privacy and Data Protection */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Privacy and Data Protection
+                  الخصوصية وحماية البيانات
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    We are committed to protecting your privacy. Our data collection and usage practices 
-                    are outlined in our Privacy Policy.
+                    نحن ملتزمون بحماية خصوصيتك. ممارسات جمع البيانات واستخدامها 
+                    موضحة في سياسة الخصوصية الخاصة بنا.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    We collect personal information including name, email, phone numbers, location, 
-                    and educational details to provide our services effectively.
+                    نجمع المعلومات الشخصية بما في ذلك الاسم والبريد الإلكتروني وأرقام الهواتف والموقع 
+                    والتفاصيل التعليمية لتقديم خدماتنا بفعالية.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    Your data is stored securely and will not be shared with third parties without your consent, 
-                    except as required by law.
+                    يتم تخزين بياناتك بأمان ولن يتم مشاركتها مع أطراف ثالثة دون موافقتك، 
+                    إلا كما هو مطلوب بموجب القانون.
                   </p>
                 </div>
               </section>
@@ -154,17 +210,17 @@ export default function TermsOfService() {
               {/* Payment and Subscriptions */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Payment and Subscriptions
+                  الدفع والاشتراكات
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    Some features may require payment. All fees are clearly stated before purchase.
+                    قد تتطلب بعض الميزات الدفع. جميع الرسوم موضحة بوضوح قبل الشراء.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    Payments are processed securely through our payment partners.
+                    يتم معالجة المدفوعات بأمان من خلال شركائنا في الدفع.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    Refunds are handled according to our refund policy, available upon request.
+                    يتم التعامل مع الاستردادات وفقاً لسياسة الاسترداد الخاصة بنا، المتاحة عند الطلب.
                   </p>
                 </div>
               </section>
@@ -172,18 +228,18 @@ export default function TermsOfService() {
               {/* Termination */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Account Termination
+                  إنهاء الحساب
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    You may terminate your account at any time by contacting our support team.
+                    يمكنك إنهاء حسابك في أي وقت من خلال الاتصال بفريق الدعم لدينا.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    We reserve the right to suspend or terminate accounts that violate these terms.
+                    نحتفظ بالحق في تعليق أو إنهاء الحسابات التي تنتهك هذه الشروط.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    Upon termination, your access to the platform will be revoked, 
-                    but your data will be retained as required by law.
+                    عند الإنهاء، سيتم إلغاء وصولك إلى المنصة، 
+                    لكن بياناتك سيتم الاحتفاظ بها كما هو مطلوب بموجب القانون.
                   </p>
                 </div>
               </section>
@@ -191,17 +247,17 @@ export default function TermsOfService() {
               {/* Limitation of Liability */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Limitation of Liability
+                  حدود المسؤولية
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    Fikra Software provides educational content and services "as is" without warranties.
+                    تقدم شركة فكرة سوفت وير المحتوى التعليمي والخدمات "كما هي" دون ضمانات.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    We are not liable for any indirect, incidental, or consequential damages.
+                    نحن لسنا مسؤولين عن أي أضرار غير مباشرة أو عرضية أو تبعية.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    Our total liability is limited to the amount you paid for our services.
+                    إجمالي مسؤوليتنا محدود بالمبلغ الذي دفعته لخدماتنا.
                   </p>
                 </div>
               </section>
@@ -209,14 +265,14 @@ export default function TermsOfService() {
               {/* Changes to Terms */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Changes to Terms
+                  تغييرات الشروط
                 </h2>
                 <div className="space-y-4">
                   <p className="text-gray-700 dark:text-gray-300">
-                    We may update these terms from time to time. Changes will be posted on this page.
+                    قد نحدث هذه الشروط من وقت لآخر. سيتم نشر التغييرات على هذه الصفحة.
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    Continued use of the platform after changes constitutes acceptance of new terms.
+                    الاستمرار في استخدام المنصة بعد التغييرات يشكل قبول الشروط الجديدة.
                   </p>
                 </div>
               </section>
@@ -224,17 +280,17 @@ export default function TermsOfService() {
               {/* Contact Information */}
               <section className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Contact Information
+                  معلومات الاتصال
                 </h2>
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
                   <p className="text-gray-700 dark:text-gray-300 mb-2">
-                    If you have questions about these terms, please contact us:
+                    إذا كان لديك أسئلة حول هذه الشروط، يرجى الاتصال بنا:
                   </p>
                   <div className="space-y-1 text-gray-700 dark:text-gray-300">
-                    <p><strong>Email:</strong> softwarefikra@gmail.com</p>
-                    <p><strong>Phone:</strong> +201207039410</p>
-                    <p><strong>Address:</strong> Mansoura, 18 Street Torel, Egypt</p>
-                    <p><strong>Website:</strong> https://fikra.solutions/</p>
+                    <p><strong>البريد الإلكتروني:</strong> softwarefikra@gmail.com</p>
+                    <p><strong>الهاتف:</strong> +201207039410</p>
+                    <p><strong>العنوان:</strong> المنصورة، شارع 18 توريل، مصر</p>
+                    <p><strong>الموقع الإلكتروني:</strong> https://fikra.solutions/</p>
                   </div>
                 </div>
               </section>
@@ -242,8 +298,8 @@ export default function TermsOfService() {
               {/* Footer */}
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-8">
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                  By using Fikra Software's platform, you acknowledge that you have read, 
-                  understood, and agree to be bound by these Terms of Service.
+                  من خلال استخدام منصة شركة فكرة سوفت وير، فإنك تقر بأنك قد قرأت وفهمت 
+                  وتوافق على الالتزام بشروط الخدمة هذه.
                 </p>
               </div>
             </div>

@@ -36,9 +36,7 @@ export default function StageDashboard() {
 
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
-    order: "",
-    color: "#3B82F6",
+    type: "national",
     status: "active"
   });
 
@@ -54,14 +52,6 @@ export default function StageDashboard() {
 
     if (!formData.name.trim()) {
       newErrors.name = "اسم المرحلة مطلوب";
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = "وصف المرحلة مطلوب";
-    }
-
-    if (!formData.order || parseInt(formData.order) < 1) {
-      newErrors.order = "ترتيب المرحلة مطلوب ويجب أن يكون أكبر من 0";
     }
 
     setErrors(newErrors);
@@ -122,9 +112,6 @@ export default function StageDashboard() {
     setSelectedStage(stage);
     setFormData({
       name: stage.name,
-      description: stage.description,
-      order: stage.order.toString(),
-      color: stage.color,
       status: stage.status
     });
     setErrors({});
@@ -134,9 +121,6 @@ export default function StageDashboard() {
   const resetForm = () => {
     setFormData({
       name: "",
-      description: "",
-      order: "",
-      color: "#3B82F6",
       status: "active"
     });
     setErrors({});
@@ -158,8 +142,7 @@ export default function StageDashboard() {
   };
 
   const filteredStages = stages.filter(stage => {
-    const matchesSearch = stage.name.toLowerCase().includes(search.toLowerCase()) ||
-                         stage.description.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = stage.name.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = !status || stage.status === status;
     
     return matchesSearch && matchesStatus;
@@ -284,13 +267,7 @@ export default function StageDashboard() {
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      المرحلة
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      الوصف
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      الترتيب
+                      اسم المرحلة
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       الإحصائيات
@@ -307,24 +284,8 @@ export default function StageDashboard() {
                   {filteredStages.map((stage) => (
                     <tr key={stage._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div 
-                            className="w-4 h-4 rounded-full mr-3"
-                            style={{ backgroundColor: stage.color }}
-                          ></div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {stage.name}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 dark:text-white max-w-xs truncate">
-                          {stage.description}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-white">
-                          {stage.order}
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {stage.name}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -417,60 +378,6 @@ export default function StageDashboard() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      وصف المرحلة *
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows="3"
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
-                        errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                      placeholder="وصف المرحلة"
-                    />
-                    {errors.description && (
-                      <p className="text-red-500 text-sm mt-1">{errors.description}</p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        الترتيب *
-                      </label>
-                      <input
-                        type="number"
-                        name="order"
-                        value={formData.order}
-                        onChange={handleInputChange}
-                        min="1"
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
-                          errors.order ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                        }`}
-                        placeholder="1"
-                      />
-                      {errors.order && (
-                        <p className="text-red-500 text-sm mt-1">{errors.order}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        اللون
-                      </label>
-                      <input
-                        type="color"
-                        name="color"
-                        value={formData.color}
-                        onChange={handleInputChange}
-                        className="w-full h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       الحالة
                     </label>
                     <select
@@ -546,60 +453,6 @@ export default function StageDashboard() {
                     {errors.name && (
                       <p className="text-red-500 text-sm mt-1">{errors.name}</p>
                     )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      وصف المرحلة *
-                    </label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      rows="3"
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
-                        errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                      placeholder="وصف المرحلة"
-                    />
-                    {errors.description && (
-                      <p className="text-red-500 text-sm mt-1">{errors.description}</p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        الترتيب *
-                      </label>
-                      <input
-                        type="number"
-                        name="order"
-                        value={formData.order}
-                        onChange={handleInputChange}
-                        min="1"
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
-                          errors.order ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                        }`}
-                        placeholder="1"
-                      />
-                      {errors.order && (
-                        <p className="text-red-500 text-sm mt-1">{errors.order}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        اللون
-                      </label>
-                      <input
-                        type="color"
-                        name="color"
-                        value={formData.color}
-                        onChange={handleInputChange}
-                        className="w-full h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
                   </div>
 
                   <div>

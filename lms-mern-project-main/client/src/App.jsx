@@ -103,7 +103,7 @@ function App() {
 
                   <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
             <Route path="/course/create" element={<CreateCourse />} />
-            <Route path="/course/edit" element={<EditCourse />} />
+            <Route path="/course/edit/:id" element={<EditCourse />} />
             <Route path="/course/structure" element={<CourseStructure />} />
             <Route path="/course/addlecture" element={<AddLecture />} />
             <Route path="/course/add-pdf" element={<AddPdfToLesson />} />

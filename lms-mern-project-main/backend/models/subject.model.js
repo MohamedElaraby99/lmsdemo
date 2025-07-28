@@ -12,19 +12,15 @@ const subjectSchema = new Schema({
         required: [true, 'Subject description is required'],
         maxLength: [500, 'Subject description should be less than 500 characters']
     },
-    category: {
-        type: String,
-        required: [true, 'Subject category is required'],
-        enum: ['Programming', 'Design', 'Business', 'Marketing', 'Technology', 'Science', 'Arts', 'Other']
-    },
     instructor: {
-        type: String,
-        required: [true, 'Instructor name is required']
+        type: Schema.Types.ObjectId,
+        ref: 'Instructor',
+        required: [true, 'Instructor is required']
     },
     stage: {
-        type: String,
-        required: [true, 'Stage is required'],
-        enum: ['1 ابتدائي', '2 ابتدائي', '3 ابتدائي', '4 ابتدائي', '5 ابتدائي', '6 ابتدائي', '1 إعدادي', '2 إعدادي', '3 إعدادي', '1 ثانوي', '2 ثانوي', '3 ثانوي', '1 جامعة', '2 جامعة', '3 جامعة', '4 جامعة']
+        type: Schema.Types.ObjectId,
+        ref: 'Stage',
+        required: [true, 'Stage is required']
     },
     image: {
         public_id: {
@@ -69,8 +65,6 @@ const subjectSchema = new Schema({
 });
 
 // Create index for better search performance
-subjectSchema.index({ title: 'text', description: 'text', category: 'text' });
+subjectSchema.index({ title: 'text', description: 'text' });
 
-const Subject = model("Subject", subjectSchema);
-
-export default Subject; 
+export default model('Subject', subjectSchema); 

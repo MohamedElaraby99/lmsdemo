@@ -26,10 +26,9 @@ const courseSchema = new Schema({
         required: [true, 'Subject is required']
     },
     stage: {
-        type: String,
-        required: [true, 'Stage is required'],
-        enum: ['1 ابتدائي', '2 ابتدائي', '3 ابتدائي', '4 ابتدائي', '5 ابتدائي', '6 ابتدائي', '1 إعدادي', '2 إعدادي', '3 إعدادي', '1 ثانوي', '2 ثانوي', '3 ثانوي', '1 جامعة', '2 جامعة', '3 جامعة', '4 جامعة'],
-        default: '1 ابتدائي'
+        type: Schema.Types.ObjectId,
+        ref: 'Stage',
+        required: [true, 'Stage is required']
     },
     thumbnail: {
         public_id: {
