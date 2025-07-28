@@ -36,7 +36,7 @@ export default function BlogList() {
 
   return (
     <Layout>
-      <section className="min-h-screen py-8 px-4 lg:px-20">
+      <section className="min-h-screen py-8 px-4 lg:px-20" dir="rtl">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
@@ -56,13 +56,13 @@ export default function BlogList() {
                 placeholder="البحث في المدونات..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
               />
             </div>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
             >
               <option value="">جميع الفئات</option>
               {categories.map((cat) => (
@@ -108,17 +108,17 @@ export default function BlogList() {
                       </span>
                     </div>
                     
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-3 line-clamp-2">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-3 line-clamp-2 text-right">
                       {blog.title}
                     </h3>
                     
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 text-right">
                       {blog.excerpt}
                     </p>
                     
                     {/* Tags */}
                     {blog.tags && blog.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
+                      <div className="flex flex-wrap gap-2 mb-4 justify-end">
                         {blog.tags.slice(0, 3).map((tag, index) => (
                           <span
                             key={index}

@@ -21,20 +21,10 @@ const subjectSchema = new Schema({
         type: String,
         required: [true, 'Instructor name is required']
     },
-    duration: {
+    stage: {
         type: String,
-        required: [true, 'Course duration is required'],
-        default: '4 weeks'
-    },
-    level: {
-        type: String,
-        required: [true, 'Course level is required'],
-        enum: ['Beginner', 'Intermediate', 'Advanced']
-    },
-    price: {
-        type: Number,
-        required: [true, 'Course price is required'],
-        min: [0, 'Price cannot be negative']
+        required: [true, 'Stage is required'],
+        enum: ['1 ابتدائي', '2 ابتدائي', '3 ابتدائي', '4 ابتدائي', '5 ابتدائي', '6 ابتدائي', '1 إعدادي', '2 إعدادي', '3 إعدادي', '1 ثانوي', '2 ثانوي', '3 ثانوي', '1 جامعة', '2 جامعة', '3 جامعة', '4 جامعة']
     },
     image: {
         public_id: {
@@ -65,13 +55,14 @@ const subjectSchema = new Schema({
         type: Number,
         default: 0
     },
-    tags: [{
-        type: String,
-        trim: true
-    }],
     featured: {
         type: Boolean,
         default: false
+    },
+    grade: {
+        type: Schema.Types.ObjectId,
+        ref: 'Grade',
+        default: null
     }
 }, {
     timestamps: true

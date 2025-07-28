@@ -80,15 +80,17 @@ export const createSubject = async (req, res, next) => {
             description, 
             category, 
             instructor, 
-            duration, 
-            level, 
-            price, 
-            tags,
-            featured 
+            stage,
+            featured,
+            grade
         } = req.body;
         
-        if (!title || !description || !category || !instructor || !level || !price) {
+        if (!title || !description || !category || !instructor || !stage) {
             return next(new AppError('All required fields must be provided', 400));
+        }
+        
+        if (!req.file) {
+            return next(new AppError('Subject image is required', 400));
         }
         
         const subjectData = {
@@ -96,43 +98,33 @@ export const createSubject = async (req, res, next) => {
             description,
             category,
             instructor,
-            duration: duration || '4 weeks',
-            level,
-            price: parseFloat(price),
-            tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-            featured: featured === 'true'
+            stage,
+            featured: featured === 'true',
+            grade: grade || null
         };
         
-        // Handle image upload
-        if (req.file) {
-            try {
-                const result = await cloudinary.uploader.upload(req.file.path, {
-                    folder: 'subjects',
-                    width: 300,
-                    height: 200,
-                    crop: 'fill'
-                });
-                
-                subjectData.image = {
-                    public_id: result.public_id,
-                    secure_url: result.secure_url
-                };
-                
-                // Remove file from uploads folder
-                fs.rmSync(req.file.path);
-            } catch (error) {
-                console.error('Cloudinary upload error:', error);
-                // If Cloudinary fails, use local file
-                subjectData.image = {
-                    public_id: req.file.filename,
-                    secure_url: `/uploads/${req.file.filename}`
-                };
-            }
-        } else {
-            // Use placeholder image if no image uploaded
+        // Handle image upload (required)
+        try {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'subjects',
+                width: 300,
+                height: 200,
+                crop: 'fill'
+            });
+            
             subjectData.image = {
-                public_id: 'placeholder',
-                secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xNTAgMTAwQzE1MCAxMDAgMTUwIDEwMCAxNTAgMTAwWiIgZmlsbD0iI0QxRDFEMSIvPgo8L3N2Zz4K'
+                public_id: result.public_id,
+                secure_url: result.secure_url
+            };
+            
+            // Remove file from uploads folder
+            fs.rmSync(req.file.path);
+        } catch (error) {
+            console.error('Cloudinary upload error:', error);
+            // If Cloudinary fails, use local file
+            subjectData.image = {
+                public_id: req.file.filename,
+                secure_url: `/uploads/${req.file.filename}`
             };
         }
         
@@ -157,12 +149,10 @@ export const updateSubject = async (req, res, next) => {
             description, 
             category, 
             instructor, 
-            duration, 
-            level, 
-            price, 
-            tags,
+            stage,
             featured,
-            status 
+            status,
+            grade
         } = req.body;
         
         const subject = await subjectModel.findById(id);
@@ -177,12 +167,10 @@ export const updateSubject = async (req, res, next) => {
         if (description) updateData.description = description;
         if (category) updateData.category = category;
         if (instructor) updateData.instructor = instructor;
-        if (duration) updateData.duration = duration;
-        if (level) updateData.level = level;
-        if (price) updateData.price = parseFloat(price);
-        if (tags) updateData.tags = tags.split(',').map(tag => tag.trim());
+        if (stage) updateData.stage = stage;
         if (featured !== undefined) updateData.featured = featured === 'true';
         if (status) updateData.status = status;
+        if (grade !== undefined) updateData.grade = grade;
         
         // Handle image upload
         if (req.file) {

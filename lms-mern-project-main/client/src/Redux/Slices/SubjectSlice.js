@@ -122,11 +122,7 @@ const initialState = {
     'Arts',
     'Other'
   ],
-  levels: [
-    'Beginner',
-    'Intermediate',
-    'Advanced'
-  ]
+
 };
 
 const subjectSlice = createSlice({

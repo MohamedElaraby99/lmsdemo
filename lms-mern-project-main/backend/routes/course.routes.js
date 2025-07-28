@@ -10,14 +10,14 @@ router.route('/')
     .delete(isLoggedIn, authorisedRoles('ADMIN'), deleteCourseLecture)
     .put(isLoggedIn, authorisedRoles('ADMIN'), upload.single("lecture"), updateCourseLecture)
 
+router.route('/:id/structure')
+    .get(getCourseStructure);
+
 router.route('/:id')
     .get(isLoggedIn, authorizeSubscriber, getLecturesByCourseId)
     .put(isLoggedIn, authorisedRoles("ADMIN"), upload.single("thumbnail"), updateCourse)
     .delete(isLoggedIn, authorisedRoles('ADMIN'), removeCourse)
     .post(isLoggedIn, authorisedRoles("ADMIN"), upload.single("lecture"), addLectureToCourseById);
-
-router.route('/:id/structure')
-    .get(getCourseStructure);
 
 // Complete course structure update route
 router.route('/:courseId/structure/update')

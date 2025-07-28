@@ -1,0 +1,679 @@
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  getAllInstructors, 
+  createInstructor, 
+  updateInstructor, 
+  deleteInstructor,
+  addCourseToInstructor,
+  removeCourseFromInstructor,
+  getInstructorStats
+} from '../../Redux/Slices/InstructorSlice';
+import { getAllCourses } from '../../Redux/Slices/CourseSlice';
+import { 
+  FaPlus, 
+  FaEdit, 
+  FaTrash, 
+  FaEye, 
+  FaStar, 
+  FaUsers, 
+  FaGraduationCap,
+  FaLinkedin,
+  FaTwitter,
+  FaGlobe,
+  FaSearch,
+  FaFilter,
+  FaTimes,
+  FaUpload,
+  FaCheck,
+  FaTimes as FaClose
+} from 'react-icons/fa';
+import { toast } from 'react-hot-toast';
+import Layout from '../../Layout/Layout';
+
+const InstructorDashboard = () => {
+  const dispatch = useDispatch();
+  const { instructors, loading, pagination } = useSelector((state) => state.instructor);
+  const { courses } = useSelector((state) => state.course);
+  const { role } = useSelector((state) => state.auth);
+
+  const [showModal, setShowModal] = useState(false);
+  const [editingInstructor, setEditingInstructor] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterFeatured, setFilterFeatured] = useState('');
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [selectedInstructor, setSelectedInstructor] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    bio: '',
+    specialization: '',
+    experience: '',
+    education: '',
+    socialLinks: {
+      linkedin: '',
+      twitter: '',
+      website: ''
+    },
+    featured: false
+  });
+
+  useEffect(() => {
+    dispatch(getAllInstructors({ page: 1, limit: 50 }));
+    dispatch(getAllCourses());
+  }, [dispatch]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      if (editingInstructor) {
+        await dispatch(updateInstructor({ 
+          id: editingInstructor._id, 
+          instructorData: formData 
+        })).unwrap();
+        toast.success('تم تحديث المدرس بنجاح');
+      } else {
+        await dispatch(createInstructor(formData)).unwrap();
+        toast.success('تم إنشاء المدرس بنجاح');
+      }
+      
+      setShowModal(false);
+      setEditingInstructor(null);
+      resetForm();
+    } catch (error) {
+      console.error('Error saving instructor:', error);
+    }
+  };
+
+  const handleEdit = (instructor) => {
+    setEditingInstructor(instructor);
+    setFormData({
+      name: instructor.name,
+      email: instructor.email,
+      bio: instructor.bio,
+      specialization: instructor.specialization,
+      experience: instructor.experience,
+      education: instructor.education,
+      socialLinks: instructor.socialLinks || {
+        linkedin: '',
+        twitter: '',
+        website: ''
+      },
+      featured: instructor.featured
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (instructorId) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا المدرس؟')) {
+      try {
+        await dispatch(deleteInstructor(instructorId)).unwrap();
+        toast.success('تم حذف المدرس بنجاح');
+      } catch (error) {
+        console.error('Error deleting instructor:', error);
+      }
+    }
+  };
+
+  const handleAddCourse = async () => {
+    if (!selectedCourse) {
+      toast.error('يرجى اختيار دورة');
+      return;
+    }
+
+    try {
+      await dispatch(addCourseToInstructor({
+        instructorId: selectedInstructor._id,
+        courseId: selectedCourse
+      })).unwrap();
+      setShowCourseModal(false);
+      setSelectedInstructor(null);
+      setSelectedCourse('');
+    } catch (error) {
+      console.error('Error adding course to instructor:', error);
+    }
+  };
+
+  const handleRemoveCourse = async (instructorId, courseId) => {
+    if (window.confirm('هل أنت متأكد من إزالة هذه الدورة من المدرس؟')) {
+      try {
+        await dispatch(removeCourseFromInstructor({
+          instructorId,
+          courseId
+        })).unwrap();
+        toast.success('تم إزالة الدورة من المدرس بنجاح');
+      } catch (error) {
+        console.error('Error removing course from instructor:', error);
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      bio: '',
+      specialization: '',
+      experience: '',
+      education: '',
+      socialLinks: {
+        linkedin: '',
+        twitter: '',
+        website: ''
+      },
+      featured: false
+    });
+  };
+
+  const filteredInstructors = instructors.filter(instructor => {
+    const matchesSearch = instructor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         instructor.specialization.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterFeatured === '' || 
+                         (filterFeatured === 'true' && instructor.featured) ||
+                         (filterFeatured === 'false' && !instructor.featured);
+    return matchesSearch && matchesFilter;
+  });
+
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <FaStar
+          key={i}
+          className={`text-sm ${i <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+        />
+      );
+    }
+    return stars;
+  };
+
+  if (role !== 'ADMIN') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+            غير مصرح لك بالوصول إلى هذه الصفحة
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            يجب أن تكون مدير للوصول إلى لوحة تحكم المدرسين
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+              إدارة المدرسين
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              إدارة مدرسين المنصة وإعداداتهم
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setEditingInstructor(null);
+              resetForm();
+              setShowModal(true);
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+          >
+            <FaPlus />
+            إضافة مدرس جديد
+          </button>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="البحث في المدرسين..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <select
+                value={filterFeatured}
+                onChange={(e) => setFilterFeatured(e.target.value)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">جميع المدرسين</option>
+                <option value="true">المدرسين المميزين</option>
+                <option value="false">المدرسين العاديين</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Instructors Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredInstructors.map((instructor) => (
+            <div
+              key={instructor._id}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
+            >
+              {/* Instructor Header */}
+              <div className="relative p-6 bg-gradient-to-r from-blue-500 to-purple-600">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    {instructor.profileImage?.secure_url ? (
+                      <img
+                        src={instructor.profileImage.secure_url}
+                        alt={instructor.name}
+                        className="w-12 h-12 rounded-full border-2 border-white"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                        <FaGraduationCap className="text-white text-xl" />
+                      </div>
+                    )}
+                    <div className="ml-3">
+                      <h3 className="text-white font-semibold">{instructor.name}</h3>
+                      <p className="text-white/80 text-sm">{instructor.specialization}</p>
+                    </div>
+                  </div>
+                  {instructor.featured && (
+                    <span className="bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-semibold">
+                      مميز
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Instructor Info */}
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    {renderStars(instructor.rating)}
+                    <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">
+                      ({instructor.rating})
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    {instructor.experience} سنة خبرة
+                  </div>
+                </div>
+
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                  {instructor.bio}
+                </p>
+
+                {/* Stats */}
+                <div className="flex items-center justify-between mb-4 text-sm">
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
+                    <FaUsers className="mr-1" />
+                    <span>{instructor.totalStudents} طالب</span>
+                  </div>
+                  <div className="flex items-center text-gray-600 dark:text-gray-400">
+                    <FaGraduationCap className="mr-1" />
+                    <span>{instructor.courses?.length || 0} دورة</span>
+                  </div>
+                </div>
+
+                {/* Social Links */}
+                {(instructor.socialLinks?.linkedin || instructor.socialLinks?.twitter || instructor.socialLinks?.website) && (
+                  <div className="flex items-center justify-center space-x-4 mb-4">
+                    {instructor.socialLinks?.linkedin && (
+                      <a
+                        href={instructor.socialLinks.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-700 transition-colors"
+                      >
+                        <FaLinkedin />
+                      </a>
+                    )}
+                    {instructor.socialLinks?.twitter && (
+                      <a
+                        href={instructor.socialLinks.twitter}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-500 transition-colors"
+                      >
+                        <FaTwitter />
+                      </a>
+                    )}
+                    {instructor.socialLinks?.website && (
+                      <a
+                        href={instructor.socialLinks.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-600 hover:text-gray-700 transition-colors"
+                      >
+                        <FaGlobe />
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEdit(instructor)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      title="تعديل"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedInstructor(instructor);
+                        setShowCourseModal(true);
+                      }}
+                      className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                      title="إضافة دورة"
+                    >
+                      <FaPlus />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(instructor._id)}
+                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      title="حذف"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Courses List */}
+                {instructor.courses && instructor.courses.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h4 className="text-sm font-semibold text-gray-800 dark:text-white mb-2">
+                      الدورات:
+                    </h4>
+                    <div className="space-y-2">
+                      {instructor.courses.map((course) => (
+                        <div key={course._id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
+                          <span className="text-sm text-gray-600 dark:text-gray-300">
+                            {course.title}
+                          </span>
+                          <button
+                            onClick={() => handleRemoveCourse(instructor._id, course._id)}
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                            title="إزالة الدورة"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredInstructors.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">👨‍🏫</div>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+              لا توجد مدرسين
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              ابدأ بإضافة مدرسين جدد للمنصة
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Add/Edit Instructor Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                  {editingInstructor ? 'تعديل المدرس' : 'إضافة مدرس جديد'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingInstructor(null);
+                    resetForm();
+                  }}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      الاسم
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      البريد الإلكتروني
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    التخصص
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.specialization}
+                    onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      سنوات الخبرة
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.experience}
+                      onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      المؤهل العلمي
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.education}
+                      onChange={(e) => setFormData({ ...formData, education: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    السيرة الذاتية
+                  </label>
+                  <textarea
+                    value={formData.bio}
+                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                {/* Social Links */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    روابط التواصل الاجتماعي
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input
+                      type="url"
+                      placeholder="LinkedIn"
+                      value={formData.socialLinks.linkedin}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        socialLinks: { ...formData.socialLinks, linkedin: e.target.value }
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Twitter"
+                      value={formData.socialLinks.twitter}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        socialLinks: { ...formData.socialLinks, twitter: e.target.value }
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Website"
+                      value={formData.socialLinks.website}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        socialLinks: { ...formData.socialLinks, website: e.target.value }
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="featured"
+                    checked={formData.featured}
+                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <label htmlFor="featured" className="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    مدرس مميز
+                  </label>
+                </div>
+
+                <div className="flex justify-end gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowModal(false);
+                      setEditingInstructor(null);
+                      resetForm();
+                    }}
+                    className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                  >
+                    {editingInstructor ? 'تحديث' : 'إضافة'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Course Modal */}
+      {showCourseModal && selectedInstructor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+                  إضافة دورة إلى {selectedInstructor.name}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowCourseModal(false);
+                    setSelectedInstructor(null);
+                    setSelectedCourse('');
+                  }}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  اختر الدورة
+                </label>
+                <select
+                  value={selectedCourse}
+                  onChange={(e) => setSelectedCourse(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">اختر دورة...</option>
+                  {courses
+                    .filter(course => !selectedInstructor.courses?.some(c => c._id === course._id))
+                    .map(course => (
+                      <option key={course._id} value={course._id}>
+                        {course.title}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => {
+                    setShowCourseModal(false);
+                    setSelectedInstructor(null);
+                    setSelectedCourse('');
+                  }}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={handleAddCourse}
+                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+                >
+                  إضافة
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
+    </Layout>
+  );
+};
+
+export default InstructorDashboard; 

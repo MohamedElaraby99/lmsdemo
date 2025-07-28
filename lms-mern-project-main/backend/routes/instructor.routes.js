@@ -1,0 +1,30 @@
+import express from 'express';
+const router = express.Router();
+import { isLoggedIn, authorisedRoles } from '../middleware/auth.middleware.js';
+import upload from '../middleware/multer.middleware.js';
+import {
+  createInstructor,
+  getAllInstructors,
+  getFeaturedInstructors,
+  getInstructorById,
+  updateInstructor,
+  deleteInstructor,
+  addCourseToInstructor,
+  removeCourseFromInstructor,
+  getInstructorStats
+} from '../controllers/instructor.controller.js';
+
+// Public routes
+router.get('/', getAllInstructors);
+router.get('/featured', getFeaturedInstructors);
+router.get('/:id', getInstructorById);
+router.get('/:id/stats', getInstructorStats);
+
+// Protected routes (Admin only)
+router.post('/', isLoggedIn, authorisedRoles('ADMIN'), upload.single('profileImage'), createInstructor);
+router.put('/:id', isLoggedIn, authorisedRoles('ADMIN'), upload.single('profileImage'), updateInstructor);
+router.delete('/:id', isLoggedIn, authorisedRoles('ADMIN'), deleteInstructor);
+router.post('/:id/courses', isLoggedIn, authorisedRoles('ADMIN'), addCourseToInstructor);
+router.delete('/:id/courses', isLoggedIn, authorisedRoles('ADMIN'), removeCourseFromInstructor);
+
+export default router; 

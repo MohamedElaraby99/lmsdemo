@@ -7,7 +7,7 @@ import viteLogo from "../assets/images/vite.svg.png";
 
 export default function Navbar() {
   const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("theme") === "dark"
+    localStorage.getItem("theme") === "light" ? false : true
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, role } = useSelector((state) => state.auth);
@@ -61,6 +61,15 @@ export default function Navbar() {
       localStorage.setItem("theme", "light");
     }
   }, [darkMode]);
+
+  // Set dark mode as default on first load
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (!savedTheme) {
+      setDarkMode(true);
+      localStorage.setItem("theme", "dark");
+    }
+  }, []);
 
   // Close menu when route changes
   useEffect(() => {

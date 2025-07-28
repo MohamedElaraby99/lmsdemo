@@ -32,7 +32,9 @@ import {
 import { placeholderImages } from "../utils/placeholderImages";
 import FAQAccordion from "../Components/FAQAccordion";
 import SubjectCard from "../Components/SubjectCard";
-
+import InstructorSection from "../Components/InstructorSection";
+// Using a public URL for now - replace with your actual image URL
+const fikraCharacter = "/fikra_character-removebg-preview.png";
 
 import NewsletterSection from "../Components/NewsletterSection";
 
@@ -125,91 +127,103 @@ export default function HomePage() {
 
   return (
     <Layout>
-      {/* Hero Section with Animation */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        {/* Animated Background */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-          <div className="absolute top-40 right-20 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-40 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+      {/* Hero Section - Clean & Modern RTL */}
+      <section className="relative min-h-screen flex items-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden" dir="rtl">
+        {/* Subtle Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.4%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
-            <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-              <h1 className="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6">
-                أتقن
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> مهاراتك</span>
-                <br />
-                <span className="text-4xl md:text-6xl">مع الكورسات بقيادة الخبراء</span>
-                <br />
-                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">الكورسات</span>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Text Content */}
+            <div className={`space-y-8 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'} transition-all duration-1000`}>
+              {/* Badge */}
+              <div className="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
+                <FaStar className="ml-2 text-yellow-500" />
+                منصة تعليمية رائدة
+              </div>
+
+              {/* Main Heading */}
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-tight text-right">
+                ابدأ رحلة
+                <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  التعلم الذكي
+                </span>
+                معنا اليوم
               </h1>
               
-              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-                انضم إلى آلاف المتعلمين حول العالم وحول مسيرتك المهنية مع دوراتنا الشاملة عبر الإنترنت المصممة من قبل خبراء الصناعة.
+              {/* Description */}
+              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl text-right">
+                اكتشف آلاف الكورسات المميزة بقيادة خبراء الصناعة. طور مهاراتك وابدأ مسيرتك المهنية من خلال منصتنا التعليمية المتطورة.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-end">
                 <Link to="/subjects">
-                  <button className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-full text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                    <span className="flex items-center gap-2">
-                      ابدأ التعلم
+                  <button className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden">
+                    <span className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    <span className="relative flex items-center gap-3">
+                      ابدأ التعلم الآن
                       <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
                     </span>
                   </button>
                 </Link>
                 
                 <Link to="/courses">
-                  <button className="group px-8 py-4 border-2 border-blue-600 text-blue-600 dark:text-blue-400 font-semibold rounded-full text-lg hover:bg-blue-600 hover:text-white transition-all duration-300">
-                    <span className="flex items-center gap-2">
+                  <button className="group px-8 py-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-xl text-lg hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
+                    <span className="flex items-center gap-3">
                       <FaPlay className="group-hover:scale-110 transition-transform duration-300" />
                       {role === "USER" ? "كورساتي" : "استكشف الكورسات"}
                     </span>
                   </button>
                 </Link>
               </div>
+
+              {/* Quick Stats */}
+              <div className="flex items-center gap-8 pt-4 justify-end">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">10K+ طالب نشط</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">500+ دورة متاحة</span>
+                </div>
+              </div>
             </div>
 
-            {/* Stats Section */}
-            <div className={`grid grid-cols-2 md:grid-cols-4 gap-8 mt-16 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center group">
-                  <div className={`inline-flex items-center justify-center w-16 h-16 ${stat.color} bg-white dark:bg-gray-800 rounded-full mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <stat.icon className="text-2xl" />
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{stat.number}</div>
-                  <div className="text-gray-600 dark:text-gray-400">{stat.label}</div>
+            {/* Hero Image */}
+            <div className={`relative ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'} transition-all duration-1000 delay-300`}>
+              <div className="relative">
+                {/* Main Image */}
+                <div className="relative z-10">
+                  <img
+                    src={fikraCharacter}
+                    alt="Fikra Character"
+                    className="w-full max-w-lg mx-auto drop-shadow-2xl"
+                  />
                 </div>
-              ))}
+
+                {/* Subtle Glow */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-purple-400/10 rounded-full blur-3xl -z-10"></div>
+
+                {/* Floating Elements - Minimal */}
+                <div className="absolute top-4 left-4 w-6 h-6 bg-yellow-400 rounded-full animate-bounce opacity-60"></div>
+                <div className="absolute bottom-8 right-4 w-4 h-4 bg-blue-400 rounded-full animate-pulse opacity-50"></div>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              لماذا تختار منصتنا؟
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              نقدم لك كل ما تحتاجه للنجاح في رحلة تعلمك
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div 
-                key={index} 
-                className={`${feature.bgColor} p-8 rounded-2xl text-center group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2`}
-              >
-                <div className={`inline-flex items-center justify-center w-16 h-16 ${feature.color} bg-white dark:bg-gray-700 rounded-full mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                  <feature.icon className="text-2xl" />
+          {/* Stats Section - Clean */}
+          <div className={`grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 pt-16 border-t border-gray-200 dark:border-gray-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'} transition-all duration-1000 delay-500`}>
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center group">
+                <div className={`inline-flex items-center justify-center w-14 h-14 ${stat.color} bg-white dark:bg-gray-800 rounded-xl mb-4 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                  <stat.icon className="text-xl" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{feature.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300">{feature.description}</p>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{stat.number}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -264,6 +278,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Instructor Section */}
+      <InstructorSection />
+
       {/* Course Categories Section */}
       <section className="py-20 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -295,7 +312,7 @@ export default function HomePage() {
       </section>
 
       {/* Latest Blogs Section */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+      <section className="py-20 bg-gray-50 dark:bg-gray-900" dir="rtl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
@@ -339,11 +356,11 @@ export default function HomePage() {
                       </span>
                     </div>
                     
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2 text-right">
                       {blog.title}
                     </h3>
                     
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 text-right">
                       {blog.excerpt || blog.content.substring(0, 150)}...
                     </p>
                     
@@ -363,7 +380,7 @@ export default function HomePage() {
                         to={`/blog/${blog._id}`}
                         className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center gap-1 group"
                       >
-                        Read More
+                        اقرأ المزيد
                         <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-300" />
                       </Link>
                     </div>
@@ -375,10 +392,10 @@ export default function HomePage() {
             <div className="text-center py-12">
               <div className="text-6xl mb-4 animate-pulse">📝</div>
               <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-                No blog posts yet
+                لا توجد منشورات مدونة حتى الآن
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Check back soon for amazing content!
+                تابعونا قريبا للحصول على محتوى مذهل!
               </p>
             </div>
           )}

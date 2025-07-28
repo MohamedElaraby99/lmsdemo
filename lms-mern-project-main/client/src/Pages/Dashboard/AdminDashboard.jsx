@@ -82,12 +82,12 @@ export default function AdminDashboard() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [viewMode, setViewMode] = useState("grid"); // grid or list
 
-  // Enhanced chart data for course categories
-  const courseCategoryData = {
-    labels: ["Mathematics", "Science", "Literature", "History", "Technology", "Arts"],
+  // Enhanced chart data for stages
+  const stagesData = {
+    labels: ["المرحلة الأولى", "المرحلة الثانية", "المرحلة الثالثة", "المرحلة الرابعة", "المرحلة الخامسة", "المرحلة السادسة"],
     datasets: [
       {
-        label: "Courses by Category",
+        label: "الدورات حسب المرحلة",
         data: [totalCourses, totalLectures, allUsersCount, subscribedCount, totalPayments, totalRevenue],
         backgroundColor: [
           "rgba(59, 130, 246, 0.8)",
@@ -312,12 +312,12 @@ export default function AdminDashboard() {
                     <FaChartLine className="text-blue-600 dark:text-blue-400 text-lg lg:text-xl" />
                   </div>
                   <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
-                    فئات الكورسات
+                     المراحل الدراسية
                   </h3>
                 </div>
                 <div className="h-48 sm:h-56 lg:h-64 w-full">
                   <Pie
-                    data={courseCategoryData}
+                    data={stagesData}
                   options={{
                     responsive: true,
                     maintainAspectRatio: false,

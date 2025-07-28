@@ -818,8 +818,8 @@ export default function DisplayLecture() {
       const unitId = unit ? (unit._id || unit.id) : null;
 
       const endpoint = unitId 
-        ? `/api/v1/courses/${courseId}/units/${unitId}/lessons/${lessonId}/pdf`
-        : `/api/v1/courses/${courseId}/direct-lessons/${lessonId}/pdf`;
+        ? `/courses/${courseId}/units/${unitId}/lessons/${lessonId}/pdf`
+        : `/courses/${courseId}/direct-lessons/${lessonId}/pdf`;
 
       // Create a file input for PDF upload
       const input = document.createElement('input');
@@ -840,7 +840,7 @@ export default function DisplayLecture() {
         toast.success('PDF added successfully');
         
         // Refresh course data
-        const response = await axiosInstance.get(`/api/v1/courses/${courseId}`);
+        const response = await axiosInstance.get(`/courses/${courseId}`);
         setCourseData(response.data.course);
       };
       input.click();
@@ -858,8 +858,8 @@ export default function DisplayLecture() {
       const unitId = unit ? (unit._id || unit.id) : null;
 
       const endpoint = unitId 
-        ? `/api/v1/courses/${courseId}/units/${unitId}/lessons/${lessonId}/training-exam`
-        : `/api/v1/courses/${courseId}/direct-lessons/${lessonId}/training-exam`;
+        ? `/courses/${courseId}/units/${unitId}/lessons/${lessonId}/training-exam`
+        : `/courses/${courseId}/direct-lessons/${lessonId}/training-exam`;
 
       // Sample training exam questions
       const sampleQuestions = [
@@ -888,7 +888,7 @@ export default function DisplayLecture() {
       toast.success('Training exam added successfully');
       
       // Refresh course data
-      const response = await axiosInstance.get(`/api/v1/courses/${courseId}`);
+      const response = await axiosInstance.get(`/courses/${courseId}`);
       setCourseData(response.data.course);
     } catch (error) {
       console.error('Error adding training exam:', error);
@@ -904,8 +904,8 @@ export default function DisplayLecture() {
       const unitId = unit ? (unit._id || unit.id) : null;
 
       const endpoint = unitId 
-        ? `/api/v1/courses/${courseId}/units/${unitId}/lessons/${lessonId}/final-exam`
-        : `/api/v1/courses/${courseId}/direct-lessons/${lessonId}/final-exam`;
+        ? `/courses/${courseId}/units/${unitId}/lessons/${lessonId}/final-exam`
+        : `/courses/${courseId}/direct-lessons/${lessonId}/final-exam`;
 
       // Sample final exam questions
       const sampleQuestions = [
@@ -940,7 +940,7 @@ export default function DisplayLecture() {
       toast.success('Final exam added successfully');
       
       // Refresh course data
-      const response = await axiosInstance.get(`/api/v1/courses/${courseId}`);
+      const response = await axiosInstance.get(`/courses/${courseId}`);
       setCourseData(response.data.course);
     } catch (error) {
       console.error('Error adding final exam:', error);
@@ -1366,73 +1366,7 @@ export default function DisplayLecture() {
                                                 </div>
                                               </div>
                                             )}
-                                            {role === "ADMIN" && (
-                                              <div className="flex gap-1">
-                                                <button
-                                                  onClick={() => openAddVideoModal(lesson, unit)}
-                                                  className={`p-2 rounded-lg transition-colors ${
-                                                    hasVideo(lesson) 
-                                                      ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                      : 'bg-orange-500 text-white hover:bg-orange-600'
-                                                  }`}
-                                                  title={hasVideo(lesson) ? "تحديث الفيديو" : "إضافة فيديو"}
-                                                >
-                                                  {hasVideo(lesson) ? <FaEdit className="text-sm" /> : <FaPlus className="text-sm" />}
-                                                </button>
-                                                {hasVideo(lesson) && (
-                                                  <button
-                                                    onClick={() => handleDeleteVideo(lesson, unit)}
-                                                    className="p-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
-                                                    title="إزالة الفيديو"
-                                                  >
-                                                    <FaVideo className="text-sm" />
-                                                  </button>
-                                                )}
-                                                {/* PDF Management */}
-                                                <button
-                                                  onClick={() => handleAddPdf(lesson, unit)}
-                                                  className={`p-2 rounded-lg transition-colors ${
-                                                    hasPdf(lesson) 
-                                                      ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                                      : 'bg-indigo-500 text-white hover:bg-indigo-600'
-                                                  }`}
-                                                  title={hasPdf(lesson) ? "تحديث PDF" : "إضافة PDF"}
-                                                >
-                                                  <FaFilePdf className="text-sm" />
-                                                </button>
-                                                {/* Training Exam Management */}
-                                                <button
-                                                  onClick={() => handleAddTrainingExam(lesson, unit)}
-                                                  className={`p-2 rounded-lg transition-colors ${
-                                                    hasTrainingExam(lesson) 
-                                                      ? 'bg-purple-500 text-white hover:bg-purple-600' 
-                                                      : 'bg-pink-500 text-white hover:bg-pink-600'
-                                                  }`}
-                                                  title={hasTrainingExam(lesson) ? "تحديث الامتحان التدريبي" : "إضافة امتحان تدريبي"}
-                                                >
-                                                  <FaClipboardCheck className="text-sm" />
-                                                </button>
-                                                {/* Final Exam Management */}
-                                                <button
-                                                  onClick={() => handleAddFinalExam(lesson, unit)}
-                                                  className={`p-2 rounded-lg transition-colors ${
-                                                    hasFinalExam(lesson) 
-                                                      ? 'bg-orange-500 text-white hover:bg-orange-600' 
-                                                      : 'bg-red-500 text-white hover:bg-red-600'
-                                                  }`}
-                                                  title={hasFinalExam(lesson) ? "تحديث الامتحان النهائي" : "إضافة امتحان نهائي"}
-                                                >
-                                                  <FaExam className="text-sm" />
-                                                </button>
-                                                <button
-                                                  onClick={() => handleDeleteLesson(lesson, unit)}
-                                                  className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                                  title="حذف الدرس"
-                                                >
-                                                  <FaTrash className="text-sm" />
-                                                </button>
-                                              </div>
-                                            )}
+
                                           </div>
                                         </div>
                                       </div>
@@ -1565,73 +1499,7 @@ export default function DisplayLecture() {
                                     </div>
                                   </div>
                                 )}
-                                {role === "ADMIN" && (
-                                  <div className="flex gap-1">
-                                    <button
-                                      onClick={() => openAddVideoModal(lesson)}
-                                      className={`p-2 rounded-lg transition-colors ${
-                                        hasVideo(lesson) 
-                                          ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                          : 'bg-orange-500 text-white hover:bg-orange-600'
-                                      }`}
-                                      title={hasVideo(lesson) ? "Update Video" : "Add Video"}
-                                    >
-                                      {hasVideo(lesson) ? <FaEdit className="text-sm" /> : <FaPlus className="text-sm" />}
-                                    </button>
-                                    {hasVideo(lesson) && (
-                                      <button
-                                        onClick={() => handleDeleteVideo(lesson)}
-                                        className="p-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
-                                        title="Remove Video"
-                                      >
-                                        <FaVideo className="text-sm" />
-                                      </button>
-                                    )}
-                                    {/* PDF Management */}
-                                    <button
-                                      onClick={() => handleAddPdf(lesson)}
-                                      className={`p-2 rounded-lg transition-colors ${
-                                        hasPdf(lesson) 
-                                          ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                                          : 'bg-indigo-500 text-white hover:bg-indigo-600'
-                                      }`}
-                                      title={hasPdf(lesson) ? "Update PDF" : "Add PDF"}
-                                    >
-                                      <FaFilePdf className="text-sm" />
-                                    </button>
-                                    {/* Training Exam Management */}
-                                    <button
-                                      onClick={() => handleAddTrainingExam(lesson)}
-                                      className={`p-2 rounded-lg transition-colors ${
-                                        hasTrainingExam(lesson) 
-                                          ? 'bg-purple-500 text-white hover:bg-purple-600' 
-                                          : 'bg-pink-500 text-white hover:bg-pink-600'
-                                      }`}
-                                      title={hasTrainingExam(lesson) ? "Update Training Exam" : "Add Training Exam"}
-                                    >
-                                      <FaClipboardCheck className="text-sm" />
-                                    </button>
-                                    {/* Final Exam Management */}
-                                    <button
-                                      onClick={() => handleAddFinalExam(lesson)}
-                                      className={`p-2 rounded-lg transition-colors ${
-                                        hasFinalExam(lesson) 
-                                          ? 'bg-orange-500 text-white hover:bg-orange-600' 
-                                          : 'bg-red-500 text-white hover:bg-red-600'
-                                      }`}
-                                      title={hasFinalExam(lesson) ? "Update Final Exam" : "Add Final Exam"}
-                                    >
-                                      <FaExam className="text-sm" />
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteLesson(lesson)}
-                                      className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                      title="Delete Lesson"
-                                    >
-                                      <FaTrash className="text-sm" />
-                                    </button>
-                                  </div>
-                                )}
+
                               </div>
                             </div>
                           </div>
@@ -1866,6 +1734,10 @@ export default function DisplayLecture() {
           balance={balance}
           lessonPrice={selectedLessonForDetail ? getLessonPrice(selectedLessonForDetail) : 0}
           courseData={courseData}
+          onAddVideo={role === 'ADMIN' ? openAddVideoModal : null}
+          onAddPdf={role === 'ADMIN' ? handleAddPdf : null}
+          onAddTrainingExam={role === 'ADMIN' ? handleAddTrainingExam : null}
+          onAddFinalExam={role === 'ADMIN' ? handleAddFinalExam : null}
         />
         {console.log('DisplayLecture - isPurchased:', selectedLessonForDetail ? isLessonPurchasedByUser(selectedLessonForDetail) : false)}
 

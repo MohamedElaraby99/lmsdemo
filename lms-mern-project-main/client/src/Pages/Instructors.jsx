@@ -1,0 +1,409 @@
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { getAllInstructors, getFeaturedInstructors } from '../Redux/Slices/InstructorSlice';
+import Layout from '../Layout/Layout';
+import { 
+  FaStar, 
+  FaUsers, 
+  FaGraduationCap, 
+  FaLinkedin, 
+  FaTwitter, 
+  FaGlobe,
+  FaSearch,
+  FaFilter,
+  FaEye
+} from 'react-icons/fa';
+
+export default function Instructors() {
+  const dispatch = useDispatch();
+  const { instructors, loading } = useSelector((state) => state.instructor);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterFeatured, setFilterFeatured] = useState('');
+  const [selectedInstructor, setSelectedInstructor] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    dispatch(getAllInstructors({ page: 1, limit: 100 }));
+    dispatch(getFeaturedInstructors());
+  }, [dispatch]);
+
+  const filteredInstructors = instructors.filter(instructor => {
+    const matchesSearch = instructor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         instructor.specialization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         instructor.bio?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFeatured = !filterFeatured || instructor.featured === (filterFeatured === 'true');
+    
+    return matchesSearch && matchesFeatured;
+  });
+
+  const renderStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <FaStar
+          key={i}
+          className={`w-4 h-4 ${
+            i <= rating ? 'text-yellow-400' : 'text-gray-300'
+          }`}
+        />
+      );
+    }
+    return stars;
+  };
+
+  const handleViewDetails = (instructor) => {
+    setSelectedInstructor(instructor);
+    setShowModal(true);
+  };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+          <div className="container mx-auto px-4 py-16">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        {/* Hero Section */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 dark:text-white mb-4">
+                مدرسونا المتميزون
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                تعرف على فريقنا من المدرسين المحترفين والخبراء في مجالاتهم
+              </p>
+            </div>
+
+            {/* Search and Filter */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="البحث في المدرسين..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <select
+                    value={filterFeatured}
+                    onChange={(e) => setFilterFeatured(e.target.value)}
+                    className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value="">جميع المدرسين</option>
+                    <option value="true">المدرسين المميزين</option>
+                    <option value="false">المدرسين العاديين</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Instructors Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredInstructors.map((instructor) => (
+                <div
+                  key={instructor._id}
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+                >
+                  {/* Instructor Header */}
+                  <div className="relative p-6 bg-gradient-to-r from-blue-500 to-purple-600">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        {instructor.profileImage?.secure_url ? (
+                          <img
+                            src={instructor.profileImage.secure_url}
+                            alt={instructor.name}
+                            className="w-12 h-12 rounded-full border-2 border-white"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                            <FaGraduationCap className="text-white text-xl" />
+                          </div>
+                        )}
+                        <div className="ml-3">
+                          <h3 className="text-white font-semibold">{instructor.name}</h3>
+                          <p className="text-white/80 text-sm">{instructor.specialization}</p>
+                        </div>
+                      </div>
+                      {instructor.featured && (
+                        <span className="bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-semibold">
+                          مميز
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Instructor Info */}
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <div className="flex items-center mr-2">
+                          {renderStars(instructor.rating || 0)}
+                        </div>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          ({instructor.rating || 0})
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                        <FaUsers className="mr-1" />
+                        {instructor.totalStudents || 0} طالب
+                      </div>
+                    </div>
+
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
+                      {instructor.bio || 'لا يوجد وصف متاح'}
+                    </p>
+
+                    {instructor.experience && (
+                      <div className="mb-3">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          الخبرة:
+                        </span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">
+                          {instructor.experience} سنة
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Social Links */}
+                    {(instructor.socialLinks?.linkedin || instructor.socialLinks?.twitter || instructor.socialLinks?.website) && (
+                      <div className="flex items-center gap-2 mb-4">
+                        {instructor.socialLinks?.linkedin && (
+                          <a
+                            href={instructor.socialLinks.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                          >
+                            <FaLinkedin size={16} />
+                          </a>
+                        )}
+                        {instructor.socialLinks?.twitter && (
+                          <a
+                            href={instructor.socialLinks.twitter}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-200"
+                          >
+                            <FaTwitter size={16} />
+                          </a>
+                        )}
+                        {instructor.socialLinks?.website && (
+                          <a
+                            href={instructor.socialLinks.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                          >
+                            <FaGlobe size={16} />
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    {/* View Details Button */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleViewDetails(instructor)}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        <FaEye />
+                        عرض التفاصيل
+                      </button>
+                      <Link
+                        to={`/instructors/${instructor._id}`}
+                        className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        <FaGraduationCap />
+                        الملف الشخصي
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {filteredInstructors.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-gray-500 dark:text-gray-400 text-lg">
+                  لم يتم العثور على مدرسين
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Instructor Details Modal */}
+        {showModal && selectedInstructor && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                    {selectedInstructor.name}
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setShowModal(false);
+                      setSelectedInstructor(null);
+                    }}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Profile Image */}
+                  <div className="md:col-span-1">
+                    {selectedInstructor.profileImage?.secure_url ? (
+                      <img
+                        src={selectedInstructor.profileImage.secure_url}
+                        alt={selectedInstructor.name}
+                        className="w-full h-64 object-cover rounded-lg"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                        <FaGraduationCap className="text-gray-400 text-6xl" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Details */}
+                  <div className="md:col-span-2">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                          التخصص
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-300">
+                          {selectedInstructor.specialization || 'غير محدد'}
+                        </p>
+                      </div>
+
+                      {selectedInstructor.bio && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                            نبذة
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-300">
+                            {selectedInstructor.bio}
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedInstructor.experience && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                            الخبرة
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-300">
+                            {selectedInstructor.experience} سنة
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedInstructor.education && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                            التعليم
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-300">
+                            {selectedInstructor.education}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                            التقييم
+                          </h3>
+                          <div className="flex items-center">
+                            {renderStars(selectedInstructor.rating || 0)}
+                            <span className="mr-2 text-gray-600 dark:text-gray-300">
+                              ({selectedInstructor.rating || 0})
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                            عدد الطلاب
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-300">
+                            {selectedInstructor.totalStudents || 0} طالب
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Social Links */}
+                      {(selectedInstructor.socialLinks?.linkedin || selectedInstructor.socialLinks?.twitter || selectedInstructor.socialLinks?.website) && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                            روابط التواصل
+                          </h3>
+                          <div className="flex items-center gap-4">
+                            {selectedInstructor.socialLinks?.linkedin && (
+                              <a
+                                href={selectedInstructor.socialLinks.linkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                              >
+                                <FaLinkedin size={20} />
+                              </a>
+                            )}
+                            {selectedInstructor.socialLinks?.twitter && (
+                              <a
+                                href={selectedInstructor.socialLinks.twitter}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-400 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-200"
+                              >
+                                <FaTwitter size={20} />
+                              </a>
+                            )}
+                            {selectedInstructor.socialLinks?.website && (
+                              <a
+                                href={selectedInstructor.socialLinks.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+                              >
+                                <FaGlobe size={20} />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+} 

@@ -18,6 +18,8 @@ import {
   FaCreditCard,
   FaUsers,
   FaWhatsapp,
+  FaChalkboardTeacher,
+  FaGraduationCap,
 } from "react-icons/fa";
 
 export default function Sidebar({ hideBar = false }) {
@@ -302,6 +304,30 @@ export default function Sidebar({ hideBar = false }) {
 
             {role === "ADMIN" && (
               <li>
+                <Link to="/admin/instructors" className="flex gap-4 items-center">
+                  <FaChalkboardTeacher
+                    size={18}
+                    className="text-gray-500 dark:text-slate-100"
+                  />
+                  إدارة المدرسين
+                </Link>
+              </li>
+            )}
+
+            {role === "ADMIN" && (
+              <li>
+                <Link to="/admin/stages" className="flex gap-4 items-center">
+                  <FaGraduationCap
+                    size={18}
+                    className="text-gray-500 dark:text-slate-100"
+                  />
+                  إدارة المراحل
+                </Link>
+              </li>
+            )}
+
+            {role === "ADMIN" && (
+              <li>
                 <Link to="/admin/whatsapp-services" className="flex gap-4 items-center">
                   <FaWhatsapp
                     size={18}
@@ -319,6 +345,16 @@ export default function Sidebar({ hideBar = false }) {
                   className="text-gray-500 dark:text-slate-100"
                 />
                 {role === "USER" ? "كورساتي" : "جميع الكورسات"}
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/instructors" className="flex gap-4 items-center">
+                <FaChalkboardTeacher
+                  size={18}
+                  className="text-gray-500 dark:text-slate-100"
+                />
+                المدرسين
               </Link>
             </li>
 

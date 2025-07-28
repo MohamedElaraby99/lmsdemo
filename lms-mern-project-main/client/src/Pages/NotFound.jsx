@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Layout from "../Layout/Layout";
 import NotFoundImg from "../assets/images/not-found.png";
-import { FaHome, FaArrowLeft, FaSearch, FaExclamationTriangle, FaGraduationCap, FaBlog } from "react-icons/fa";
+import { FaHome, FaArrowLeft, FaSearch, FaExclamationTriangle, FaGraduationCap, FaBlog, FaQuestionCircle } from "react-icons/fa";
 
 function NotFound() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ function NotFound() {
               {/* Error Badge */}
               <div className="inline-flex items-center gap-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-4 py-2 rounded-full text-sm font-medium mb-6 animate-pulse">
                 <FaExclamationTriangle className="w-4 h-4" />
-                <span>Page Not Found</span>
+                <span>الصفحة غير موجودة</span>
               </div>
 
               {/* Main Heading */}
@@ -37,13 +38,13 @@ function NotFound() {
 
               {/* Subtitle */}
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 dark:text-white mb-4">
-                Oops! Page Lost in Space
+                عذراً! الصفحة ضاعت في الفضاء الرقمي
               </h2>
 
               {/* Description */}
               <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-                The page you're looking for seems to have wandered off into the digital universe. 
-                Don't worry, we'll help you find your way back to familiar territory.
+                يبدو أن الصفحة التي تبحث عنها قد ضاعت في الكون الرقمي. 
+                لا تقلق، سنساعدك في العودة إلى الأراضي المألوفة.
               </p>
 
               {/* Action Buttons */}
@@ -54,7 +55,7 @@ function NotFound() {
                   className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
                 >
                   <FaArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
-                  Go Back
+                  العودة للخلف
                 </button>
 
                 {/* Home Button */}
@@ -63,7 +64,7 @@ function NotFound() {
                   className="group relative inline-flex items-center justify-center px-8 py-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-white font-semibold rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
                 >
                   <FaHome className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
-                  Go Home
+                  العودة للرئيسية
                 </button>
               </div>
 
@@ -72,19 +73,19 @@ function NotFound() {
                 <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
                   <FaSearch className="w-4 h-4 text-blue-500" />
                   <span className="text-sm">
-                    Try searching for what you're looking for, or explore our{" "}
+                    جرب البحث عما تبحث عنه، أو استكشف{" "}
                     <button 
                       onClick={() => navigate("/courses")}
                       className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
                     >
-                      {role === "USER" ? "كورساتي" : "courses"}
+                      {role === "USER" ? "كورساتي" : "الدورات"}
                     </button>{" "}
-                    and{" "}
+                    و{" "}
                     <button 
                       onClick={() => navigate("/subjects")}
                       className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
                     >
-                      subjects
+                      المواد الدراسية
                     </button>
                   </span>
                 </div>
@@ -99,7 +100,7 @@ function NotFound() {
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-3xl blur-3xl animate-pulse"></div>
                   <img 
                     src={NotFoundImg} 
-                    alt="404 Illustration" 
+                    alt="رسم توضيحي للصفحة غير الموجودة" 
                     className="relative z-10 w-80 h-80 lg:w-96 lg:h-96 object-contain drop-shadow-2xl animate-float"
                   />
                 </div>
@@ -149,10 +150,10 @@ function NotFound() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
-              Need Help Finding Something?
+              هل تحتاج مساعدة في العثور على شيء ما؟
             </h3>
             <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Our learning platform has plenty of resources to explore. Here are some popular destinations:
+              منصة التعلم لدينا تحتوي على الكثير من الموارد للاستكشاف. إليك بعض الوجهات الشائعة:
             </p>
           </div>
 
@@ -164,19 +165,19 @@ function NotFound() {
                   <FaGraduationCap className="w-6 h-6 text-white" />
                 </div>
                 <h4 className="font-semibold text-gray-800 dark:text-white mb-2">
-                  {role === "USER" ? "كورساتي" : "Browse Courses"}
+                  {role === "USER" ? "كورساتي" : "تصفح الدورات"}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                   {role === "USER" 
                     ? "استكشف دوراتك الشخصية" 
-                    : "Explore our comprehensive course catalog"
+                    : "استكشف كتالوج الدورات الشامل"
                   }
                 </p>
                 <button 
                   onClick={() => navigate("/courses")}
                   className="text-blue-600 dark:text-blue-400 hover:underline font-medium text-sm"
                 >
-                  {role === "USER" ? "عرض كورساتي →" : "View All Courses →"}
+                  {role === "USER" ? "عرض كورساتي →" : "عرض جميع الدورات →"}
                 </button>
               </div>
             </div>
@@ -186,15 +187,15 @@ function NotFound() {
                 <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                   <FaBlog className="w-6 h-6 text-white" />
                 </div>
-                <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Read Blog</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-white mb-2">اقرأ المدونة</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  Discover educational insights and tips
+                  اكتشف الرؤى والنصائح التعليمية
                 </p>
                 <button 
                   onClick={() => navigate("/blogs")}
                   className="text-purple-600 dark:text-purple-400 hover:underline font-medium text-sm"
                 >
-                  Read Articles →
+                  اقرأ المقالات →
                 </button>
               </div>
             </div>
@@ -204,15 +205,15 @@ function NotFound() {
                 <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                   <FaQuestionCircle className="w-6 h-6 text-white" />
                 </div>
-                <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Get Help</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-white mb-2">احصل على المساعدة</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  Ask questions and get expert answers
+                  اطرح الأسئلة واحصل على إجابات الخبراء
                 </p>
                 <button 
                   onClick={() => navigate("/qa")}
                   className="text-green-600 dark:text-green-400 hover:underline font-medium text-sm"
                 >
-                  Ask Questions →
+                  اطرح الأسئلة →
           </button>
               </div>
             </div>

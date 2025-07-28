@@ -14,6 +14,9 @@ import WhatsAppServiceSliceReducer from "./Slices/WhatsAppServiceSlice"
 import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
 import LessonPurchaseSliceReducer from "./Slices/LessonPurchaseSlice"
 import ExamSliceReducer from "./Slices/ExamSlice"
+import GradeSliceReducer from "./Slices/GradeSlice"
+import InstructorSliceReducer from "./Slices/InstructorSlice"
+import StageSliceReducer from "./Slices/StageSlice"
 
  const store = configureStore({
     reducer: {
@@ -31,7 +34,10 @@ import ExamSliceReducer from "./Slices/ExamSlice"
         whatsappService: WhatsAppServiceSliceReducer,
         videoProgress: VideoProgressSliceReducer,
         lessonPurchase: LessonPurchaseSliceReducer,
-        exam: ExamSliceReducer
+          exam: ExamSliceReducer,
+  grade: GradeSliceReducer,
+  instructor: InstructorSliceReducer,
+  stage: StageSliceReducer
     },
     devTools: true
 })

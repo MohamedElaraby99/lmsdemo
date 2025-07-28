@@ -23,7 +23,7 @@ import {
 
 export default function SubjectDashboard() {
   const dispatch = useDispatch();
-  const { subjects, loading, categories, levels } = useSelector((state) => state.subject);
+  const { subjects, loading, categories } = useSelector((state) => state.subject);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -36,14 +36,19 @@ export default function SubjectDashboard() {
     description: "",
     category: "",
     instructor: "",
-    duration: "4 weeks",
-    level: "",
-    price: "",
-    tags: "",
-    featured: false
+    stage: "",
+    featured: false,
+    image: null
   });
 
   const [errors, setErrors] = useState({});
+
+  const stages = [
+    "1 ابتدائي", "2 ابتدائي", "3 ابتدائي", "4 ابتدائي", "5 ابتدائي", "6 ابتدائي",
+    "1 إعدادي", "2 إعدادي", "3 إعدادي",
+    "1 ثانوي", "2 ثانوي", "3 ثانوي",
+    "1 جامعة", "2 جامعة", "3 جامعة", "4 جامعة"
+  ];
 
   useEffect(() => {
     dispatch(getAllSubjects({ page: 1, limit: 100 }));
@@ -68,12 +73,12 @@ export default function SubjectDashboard() {
       newErrors.instructor = "المدرس مطلوب";
     }
 
-    if (!formData.level) {
-      newErrors.level = "المستوى مطلوب";
+    if (!formData.stage) {
+      newErrors.stage = "المرحلة مطلوبة";
     }
 
-    if (!formData.price || parseFloat(formData.price) <= 0) {
-      newErrors.price = "السعر الصحيح مطلوب";
+    if (!formData.image) {
+      newErrors.image = "الصورة مطلوبة";
     }
 
     setErrors(newErrors);
@@ -90,7 +95,11 @@ export default function SubjectDashboard() {
     try {
       const subjectData = new FormData();
       Object.keys(formData).forEach(key => {
-        if (key === 'tags') {
+        if (key === 'image') {
+          if (formData[key]) {
+            subjectData.append('image', formData[key]);
+          }
+        } else if (key === 'tags') {
           subjectData.append(key, formData[key]);
         } else if (key === 'featured') {
           subjectData.append(key, formData[key].toString());
@@ -160,11 +169,9 @@ export default function SubjectDashboard() {
       description: subject.description,
       category: subject.category,
       instructor: subject.instructor,
-      duration: subject.duration,
-      level: subject.level,
-      price: subject.price.toString(),
-      tags: subject.tags ? subject.tags.join(', ') : '',
-      featured: subject.featured
+      stage: subject.stage,
+      featured: subject.featured,
+      image: null
     });
     setShowEditModal(true);
   };
@@ -175,20 +182,18 @@ export default function SubjectDashboard() {
       description: "",
       category: "",
       instructor: "",
-      duration: "4 weeks",
-      level: "",
-      price: "",
-      tags: "",
-      featured: false
+      stage: "",
+      featured: false,
+      image: null
     });
     setErrors({});
   };
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, files } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : type === 'file' ? files[0] : value
     }));
     
     if (errors[name]) {
@@ -378,7 +383,7 @@ export default function SubjectDashboard() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Instructor *
@@ -400,76 +405,48 @@ export default function SubjectDashboard() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Level *
+                      Stage *
                     </label>
                     <select
-                      name="level"
-                      value={formData.level}
+                      name="stage"
+                      value={formData.stage}
                       onChange={handleInputChange}
                       className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
-                        errors.level ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                        errors.stage ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
-                      <option value="">Select level</option>
-                      {levels.map((level) => (
-                        <option key={level} value={level}>{level}</option>
+                      <option value="">اختر المرحلة</option>
+                      {stages.map((stage) => (
+                        <option key={stage} value={stage}>{stage}</option>
                       ))}
                     </select>
-                    {errors.level && (
-                      <p className="text-red-500 text-sm mt-1">{errors.level}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Price *
-                    </label>
-                    <input
-                      type="number"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
-                        errors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                      placeholder="0.00"
-                    />
-                    {errors.price && (
-                      <p className="text-red-500 text-sm mt-1">{errors.price}</p>
+                    {errors.stage && (
+                      <p className="text-red-500 text-sm mt-1">{errors.stage}</p>
                     )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Duration
-                    </label>
-                    <input
-                      type="text"
-                      name="duration"
-                      value={formData.duration}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="4 weeks"
-                    />
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Tags
-                    </label>
-                    <input
-                      type="text"
-                      name="tags"
-                      value={formData.tags}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="tag1, tag2, tag3"
-                    />
-                  </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    صورة المادة الدراسية *
+                  </label>
+                  <input
+                    type="file"
+                    name="image"
+                    onChange={handleInputChange}
+                    accept="image/*"
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                      errors.image ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                  />
+                  {errors.image && (
+                    <p className="text-red-500 text-sm mt-1">{errors.image}</p>
+                  )}
+                  {formData.image && (
+                    <p className="text-green-600 text-sm mt-1">تم اختيار الملف: {formData.image.name}</p>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -611,79 +588,6 @@ export default function SubjectDashboard() {
                     {errors.instructor && (
                       <p className="text-red-500 text-sm mt-1">{errors.instructor}</p>
                     )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Level *
-                    </label>
-                    <select
-                      name="level"
-                      value={formData.level}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
-                        errors.level ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                    >
-                      <option value="">Select level</option>
-                      {levels.map((level) => (
-                        <option key={level} value={level}>{level}</option>
-                      ))}
-                    </select>
-                    {errors.level && (
-                      <p className="text-red-500 text-sm mt-1">{errors.level}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Price *
-                    </label>
-                    <input
-                      type="number"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
-                        errors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                      placeholder="0.00"
-                    />
-                    {errors.price && (
-                      <p className="text-red-500 text-sm mt-1">{errors.price}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Duration
-                    </label>
-                    <input
-                      type="text"
-                      name="duration"
-                      value={formData.duration}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="4 weeks"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Tags
-                    </label>
-                    <input
-                      type="text"
-                      name="tags"
-                      value={formData.tags}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="tag1, tag2, tag3"
-                    />
                   </div>
                 </div>
 

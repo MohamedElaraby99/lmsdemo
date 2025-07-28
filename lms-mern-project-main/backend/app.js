@@ -17,6 +17,9 @@ import whatsappServiceRoutes from './routes/whatsappService.routes.js';
 import videoProgressRoutes from './routes/videoProgress.routes.js';
 import lessonPurchaseRoutes from './routes/lessonPurchase.routes.js';
 import examRoutes from './routes/exam.routes.js';
+import gradeRoutes from './routes/grade.routes.js';
+import instructorRoutes from './routes/instructor.routes.js';
+import stageRoutes from './routes/stage.routes.js';
 import express from 'express';
 import connectToDb from './config/db.config.js';
 import errorMiddleware from './middleware/error.middleware.js';
@@ -69,6 +72,9 @@ app.use('/api/v1/whatsapp-services', whatsappServiceRoutes);
 app.use('/api/v1/video-progress', videoProgressRoutes);
 app.use('/api/v1/lesson-purchases', lessonPurchaseRoutes);
 app.use('/api/v1/exams', examRoutes);
+app.use('/api/v1/grades', gradeRoutes);
+app.use('/api/v1/instructors', instructorRoutes);
+app.use('/api/v1/stages', stageRoutes);
  
 
 app.all('*', (req, res) => {

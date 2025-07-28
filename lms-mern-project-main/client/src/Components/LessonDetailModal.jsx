@@ -18,7 +18,8 @@ import {
   FaDollarSign,
   FaFolder,
   FaHistory,
-  FaCalendarAlt
+  FaCalendarAlt,
+  FaPlus
 } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { axiosInstance } from '../Helpers/axiosInstance';
@@ -37,7 +38,11 @@ const LessonDetailModal = ({
   role,
   balance,
   lessonPrice,
-  courseData
+  courseData,
+  onAddVideo,
+  onAddPdf,
+  onAddTrainingExam,
+  onAddFinalExam
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -551,7 +556,16 @@ const LessonDetailModal = ({
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 sm:p-6 text-center">
                               <FaVideo className="text-3xl sm:text-4xl text-gray-400 mx-auto mb-3 sm:mb-4" />
                               <h4 className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Video Available</h4>
-                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500">Video content has not been added to this lesson yet.</p>
+                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 mb-4">Video content has not been added to this lesson yet.</p>
+                              {role === 'ADMIN' && onAddVideo && (
+                                <button
+                                  onClick={() => onAddVideo(lesson, unit)}
+                                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 mx-auto"
+                                >
+                                  <FaPlus className="text-sm" />
+                                  Add Video
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -581,7 +595,16 @@ const LessonDetailModal = ({
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-6 text-center">
                               <FaFilePdf className="text-4xl text-gray-400 mx-auto mb-4" />
                               <h4 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Study Material Available</h4>
-                              <p className="text-sm text-gray-500 dark:text-gray-500">PDF study materials have not been added to this lesson yet.</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">PDF study materials have not been added to this lesson yet.</p>
+                              {role === 'ADMIN' && onAddPdf && (
+                                <button
+                                  onClick={() => onAddPdf(lesson, unit)}
+                                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 mx-auto"
+                                >
+                                  <FaPlus className="text-sm" />
+                                  Add PDF
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -654,7 +677,16 @@ const LessonDetailModal = ({
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 sm:p-6 text-center">
                               <FaClipboardCheck className="text-3xl sm:text-4xl text-gray-400 mx-auto mb-3 sm:mb-4" />
                               <h4 className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Training Exam Available</h4>
-                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500">Training exam has not been added to this lesson yet.</p>
+                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 mb-4">Training exam has not been added to this lesson yet.</p>
+                              {role === 'ADMIN' && onAddTrainingExam && (
+                                <button
+                                  onClick={() => onAddTrainingExam(lesson, unit)}
+                                  className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-2 mx-auto"
+                                >
+                                  <FaPlus className="text-sm" />
+                                  Add Training Exam
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -727,7 +759,16 @@ const LessonDetailModal = ({
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 sm:p-6 text-center">
                               <FaExam className="text-3xl sm:text-4xl text-gray-400 mx-auto mb-3 sm:mb-4" />
                               <h4 className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Final Exam Available</h4>
-                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500">Final exam has not been added to this lesson yet.</p>
+                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 mb-4">Final exam has not been added to this lesson yet.</p>
+                              {role === 'ADMIN' && onAddFinalExam && (
+                                <button
+                                  onClick={() => onAddFinalExam(lesson, unit)}
+                                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 mx-auto"
+                                >
+                                  <FaPlus className="text-sm" />
+                                  Add Final Exam
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>

@@ -34,6 +34,10 @@ import AdminRechargeCodeDashboard from "./Pages/Dashboard/AdminRechargeCodeDashb
 import AdminUserDashboard from "./Pages/Dashboard/AdminUserDashboard";
 import WhatsAppServiceDashboard from "./Pages/Dashboard/WhatsAppServiceDashboard";
 import WhatsAppServices from "./Pages/WhatsAppServices/WhatsAppServices";
+import InstructorDashboard from "./Pages/Dashboard/InstructorDashboard";
+import StageDashboard from "./Pages/Dashboard/StageDashboard";
+import Instructors from "./Pages/Instructors";
+import InstructorDetail from "./Pages/InstructorDetail";
 
 import RequireAuth from "./Components/auth/RequireAuth";
 import CreateCourse from "./Pages/Course/CreateCourse";
@@ -69,8 +73,12 @@ function App() {
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/admin/recharge-codes" element={<AdminRechargeCodeDashboard />} />
         <Route path="/admin/users" element={<AdminUserDashboard />} />
+        <Route path="/admin/instructors" element={<InstructorDashboard />} />
+        <Route path="/admin/stages" element={<StageDashboard />} />
         <Route path="/admin/whatsapp-services" element={<WhatsAppServiceDashboard />} />
         <Route path="/whatsapp-services" element={<WhatsAppServices />} />
+        <Route path="/instructors" element={<Instructors />} />
+        <Route path="/instructors/:id" element={<InstructorDetail />} />
 
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />

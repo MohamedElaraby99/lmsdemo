@@ -61,7 +61,7 @@ export default function BlogDetail() {
 
   return (
     <Layout>
-      <section className="min-h-screen py-8 px-4 lg:px-20">
+      <section className="min-h-screen py-8 px-4 lg:px-20" dir="rtl">
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
           <Link
@@ -74,7 +74,7 @@ export default function BlogDetail() {
 
           {/* Blog Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
+            <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4 text-right">
               {currentBlog.title}
             </h1>
             
@@ -98,7 +98,7 @@ export default function BlogDetail() {
             </div>
 
             {/* Category and Tags */}
-            <div className="flex flex-wrap items-center gap-4 mb-6">
+            <div className="flex flex-wrap items-center gap-4 mb-6 justify-end">
               <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm">
                 {currentBlog.category}
               </span>
@@ -129,7 +129,7 @@ export default function BlogDetail() {
 
           {/* Blog Content */}
           <div className="prose prose-lg max-w-none dark:prose-invert">
-            <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+            <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed text-right">
               {currentBlog.content}
             </div>
           </div>
