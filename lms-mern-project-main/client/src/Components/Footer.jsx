@@ -130,7 +130,7 @@ export default function Footer() {
             </svg>
           </a>
         </div>
-        <span className="text-xs text-gray-500 dark:text-gray-400">
+        <span className="oi-regular text-xs text-gray-500 dark:text-gray-400">
           Fikra Software - فكرة للبرمجيات
         </span>
       </div>

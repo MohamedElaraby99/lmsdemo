@@ -86,13 +86,13 @@ export default function Wallet() {
         e.preventDefault();
         
         if (!rechargeForm.code || !rechargeForm.amount) {
-            toast.error("Please fill in all fields");
+            toast.error("يرجى ملء جميع الحقول");
             return;
         }
 
         const amount = parseFloat(rechargeForm.amount);
         if (isNaN(amount) || amount <= 0) {
-            toast.error("Please enter a valid amount");
+            toast.error("يرجى إدخال مبلغ صحيح");
             return;
         }
 
@@ -102,7 +102,7 @@ export default function Wallet() {
                 amount: amount 
             })).unwrap();
             
-            toast.success("Wallet recharged successfully!");
+            toast.success("تم شحن المحفظة بنجاح!");
             setRechargeForm({ code: "", amount: "" });
             dispatch(getWalletBalance());
         } catch (error) {
@@ -111,7 +111,7 @@ export default function Wallet() {
     };
 
     const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+        return new Date(dateString).toLocaleDateString('ar-EG', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -146,6 +146,32 @@ export default function Wallet() {
         }
     };
 
+    const getTransactionTypeText = (type) => {
+        switch (type) {
+            case 'recharge':
+                return 'شحن';
+            case 'purchase':
+                return 'شراء';
+            case 'refund':
+                return 'استرداد';
+            default:
+                return 'معاملة';
+        }
+    };
+
+    const getStatusText = (status) => {
+        switch (status) {
+            case 'completed':
+                return 'مكتمل';
+            case 'pending':
+                return 'قيد الانتظار';
+            case 'failed':
+                return 'فشل';
+            default:
+                return status;
+        }
+    };
+
     return (
         <Layout>
             <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8">
@@ -156,10 +182,10 @@ export default function Wallet() {
                             <FaWallet className="h-8 w-8 text-white" />
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                            My Wallet
+                            محفظتي
                         </h1>
                         <p className="text-gray-600 dark:text-gray-300">
-                            Manage your balance and view transaction history
+                            إدارة رصيدك وعرض سجل المعاملات
                         </p>
                     </div>
 
@@ -168,11 +194,11 @@ export default function Wallet() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                                    Current Balance
+                                    الرصيد الحالي
                                 </h2>
                                 <div className="flex items-center space-x-2">
                                     <span className="text-4xl font-bold text-green-600 dark:text-green-400">
-                                        {showAmount ? `${balance.toFixed(2)} EGP` : "**** EGP"}
+                                        {showAmount ? `${balance.toFixed(2)} جنيه` : "**** جنيه"}
                                     </span>
                                     <button
                                         onClick={() => setShowAmount(!showAmount)}
@@ -184,7 +210,7 @@ export default function Wallet() {
                             </div>
                             <div className="text-right">
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Total Transactions
+                                    إجمالي المعاملات
                                 </p>
                                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                                     {transactions.length}
@@ -204,7 +230,7 @@ export default function Wallet() {
                             }`}
                         >
                             <FaCreditCard className="inline mr-2" />
-                            Recharge Wallet
+                            شحن المحفظة
                         </button>
                         <button
                             onClick={() => setActiveTab("history")}
@@ -215,7 +241,7 @@ export default function Wallet() {
                             }`}
                         >
                             <FaHistory className="inline mr-2" />
-                            Transaction History
+                            سجل المعاملات
                         </button>
                     </div>
 
@@ -224,30 +250,30 @@ export default function Wallet() {
                         {activeTab === "balance" && (
                             <div className="p-6">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                                    Recharge Your Wallet
+                                    شحن محفظتك
                                 </h3>
                                 
                                 {/* How to recharge instructions */}
                                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
                                     <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-3">
-                                        How to recharge:
+                                        كيفية الشحن:
                                     </h4>
                                     <ul className="space-y-2 text-blue-800 dark:text-blue-200">
                                         <li className="flex items-start">
                                             <span className="text-blue-600 dark:text-blue-400 mr-2">•</span>
-                                            Purchase a recharge code from authorized vendors
+                                            اشتر كود شحن من البائعين المعتمدين
                                         </li>
                                         <li className="flex items-start">
                                             <span className="text-blue-600 dark:text-blue-400 mr-2">•</span>
-                                            Enter the code and amount in the form above
+                                            أدخل الكود والمبلغ في النموذج أعلاه
                                         </li>
                                         <li className="flex items-start">
                                             <span className="text-blue-600 dark:text-blue-400 mr-2">•</span>
-                                            Your wallet will be credited instantly
+                                            سيتم إضافة المبلغ إلى محفظتك فوراً
                                         </li>
                                         <li className="flex items-start">
                                             <span className="text-blue-600 dark:text-blue-400 mr-2">•</span>
-                                            Use your balance to purchase courses and services that you will contact us on WhatsApp
+                                            استخدم رصيدك لشراء الدورات والخدمات التي ستتواصل معنا بشأنها على واتساب
                                         </li>
                                     </ul>
                                     
@@ -256,7 +282,7 @@ export default function Wallet() {
                                         <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
                                             <h5 className="text-md font-semibold text-green-900 dark:text-green-100 mb-3 flex items-center gap-2">
                                                 <FaWhatsapp className="text-green-600 dark:text-green-400" />
-                                                Need Help? Contact Us on WhatsApp
+                                                تحتاج مساعدة؟ تواصل معنا على واتساب
                                             </h5>
                                             <div className="space-y-3">
                                                 {whatsappServices.map((service) => (
@@ -288,13 +314,13 @@ export default function Wallet() {
                                                                 </div>
                                                                 <button
                                                                     onClick={() => {
-                                                                        const message = `Hello! I'm interested in your ${service.name} service. ${service.instructions || 'Can you provide more information?'}`;
+                                                                        const message = `مرحباً! أنا مهتم بخدمة ${service.name}. ${service.instructions || 'هل يمكنك تقديم المزيد من المعلومات؟'}`;
                                                                         window.open(`https://wa.me/${number.number}?text=${encodeURIComponent(message)}`, '_blank');
                                                                     }}
                                                                     className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                                                                 >
                                                                     <FaWhatsapp />
-                                                                    Contact
+                                                                    تواصل
                                                                 </button>
                                                             </div>
                                                         ))}
@@ -303,7 +329,7 @@ export default function Wallet() {
                                             </div>
                                             <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded">
                                                 <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                                                    <strong>Working Hours:</strong> 24/7 Support Available
+                                                    <strong>ساعات العمل:</strong> الدعم متاح على مدار 24/7
                                                 </p>
                                             </div>
                                         </div>
@@ -314,7 +340,7 @@ export default function Wallet() {
                                     {/* Code Input */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Recharge Code
+                                            كود الشحن
                                         </label>
                                         <div className="relative">
                                             <input
@@ -326,7 +352,7 @@ export default function Wallet() {
                                                     handleCodeValidation(e.target.value);
                                                 }}
                                                 className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                                                placeholder="Enter your recharge code"
+                                                placeholder="أدخل كود الشحن الخاص بك"
                                                 required
                                             />
                                             {rechargeForm.code && (
@@ -351,7 +377,7 @@ export default function Wallet() {
                                     {/* Amount Input */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Amount (EGP)
+                                            المبلغ (جنيه)
                                         </label>
                                         <input
                                             type="number"
@@ -359,7 +385,7 @@ export default function Wallet() {
                                             value={rechargeForm.amount}
                                             onChange={handleRechargeFormChange}
                                             className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                                            placeholder="Enter amount in EGP"
+                                            placeholder="أدخل المبلغ بالجنيه"
                                             min="1"
                                             step="0.01"
                                             required
@@ -375,12 +401,12 @@ export default function Wallet() {
                                         {rechargeLoading ? (
                                             <div className="flex items-center">
                                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                                Processing...
+                                                جاري المعالجة...
                                             </div>
                                         ) : (
                                             <div className="flex items-center">
                                                 <FaPlus className="mr-2" />
-                                                Recharge Wallet
+                                                شحن المحفظة
                                             </div>
                                         )}
                                     </button>
@@ -391,7 +417,7 @@ export default function Wallet() {
                         {activeTab === "history" && (
                             <div className="p-6">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                                    Transaction History
+                                    سجل المعاملات
                                 </h3>
                                 
                                 {loading ? (
@@ -402,7 +428,7 @@ export default function Wallet() {
                                     <div className="text-center py-8">
                                         <FaHistory className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                                         <p className="text-gray-500 dark:text-gray-400">
-                                            No transactions found. Start by recharging your wallet!
+                                            لم يتم العثور على معاملات. ابدأ بشحن محفظتك!
                                         </p>
                                     </div>
                                 ) : (
@@ -421,7 +447,7 @@ export default function Wallet() {
                                                             {transaction.description}
                                                         </p>
                                                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Code: {transaction.code}
+                                                            الكود: {transaction.code}
                                                         </p>
                                                         <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center">
                                                             <FaCalendarAlt className="mr-1" />
@@ -436,7 +462,7 @@ export default function Wallet() {
                                                             : 'text-red-600 dark:text-red-400'
                                                     }`}>
                                                         {transaction.type === 'recharge' || transaction.type === 'refund' ? '+' : '-'}
-                                                        {transaction.amount.toFixed(2)} EGP
+                                                        {transaction.amount.toFixed(2)} جنيه
                                                     </p>
                                                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                                         transaction.status === 'completed'
@@ -445,7 +471,7 @@ export default function Wallet() {
                                                             ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
                                                             : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
                                                     }`}>
-                                                        {transaction.status}
+                                                        {getStatusText(transaction.status)}
                                                     </span>
                                                 </div>
                                             </div>

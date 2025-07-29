@@ -23,12 +23,55 @@ export const getAllCourses = createAsyncThunk("/courses/get", async () => {
 })
 
 // ....get course by id....
-export const fetchCourseById = createAsyncThunk("/courses/getById", async (id) => {
+export const fetchCourseById = createAsyncThunk("/courses/getById", async (id, { getState }) => {
     const loadingMessage = toast.loading("fetching course...");
     try {
-        const res = await axiosInstance.get(`/courses/${id}`);
-        toast.success(res?.data?.message, { id: loadingMessage });
-        return res?.data
+        // Get user role from state
+        const state = getState();
+        const userRole = state.auth.data?.role || 'USER';
+        const isLoggedIn = state.auth.isLoggedIn;
+        
+        console.log('CourseSlice Debug:', {
+            userRole: userRole,
+            authData: state.auth.data,
+            isLoggedIn: isLoggedIn,
+            courseId: id,
+            localStorage: {
+                role: localStorage.getItem('role'),
+                data: localStorage.getItem('data'),
+                isLoggedIn: localStorage.getItem('isLoggedIn')
+            }
+        });
+        
+        // If user is not logged in, throw an error
+        if (!isLoggedIn) {
+            throw new Error('User not logged in');
+        }
+        
+        // Use admin route for admin users to bypass subscription check
+        const endpoint = userRole === 'ADMIN' ? `/courses/admin/${id}` : `/courses/${id}`;
+        
+        console.log('Using endpoint:', endpoint);
+        
+        try {
+            const res = await axiosInstance.get(endpoint);
+            toast.success(res?.data?.message, { id: loadingMessage });
+            return res?.data;
+        } catch (error) {
+            // If regular route fails with subscription error, try admin route as fallback
+            if (error?.response?.status === 403 && 
+                error?.response?.data?.message?.includes('subscribe') && 
+                endpoint.includes('/courses/') && 
+                !endpoint.includes('/admin/')) {
+                
+                console.log('Subscription error, trying admin route as fallback');
+                const adminEndpoint = `/courses/admin/${id}`;
+                const adminRes = await axiosInstance.get(adminEndpoint);
+                toast.success(adminRes?.data?.message, { id: loadingMessage });
+                return adminRes?.data;
+            }
+            throw error;
+        }
     } catch (error) {
         toast.error(error?.response?.data?.message, { id: loadingMessage });
         throw error;

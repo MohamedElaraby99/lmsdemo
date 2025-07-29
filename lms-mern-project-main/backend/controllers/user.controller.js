@@ -196,7 +196,7 @@ const logout = async (req, res, next) => {
 const getProfile = async (req, res) => {
     try {
         const { id } = req.user;
-        const user = await userModel.findById(id);
+        const user = await userModel.findById(id).populate('stage');
 
         console.log('User profile data being sent:', {
             id: user._id,
@@ -206,6 +206,7 @@ const getProfile = async (req, res) => {
             fatherPhoneNumber: user.fatherPhoneNumber,
             governorate: user.governorate,
             grade: user.grade,
+            stage: user.stage,
             age: user.age,
             role: user.role
         });
@@ -333,10 +334,10 @@ const changePassword = async (req, res, next) => {
 // update profile
 const updateUser = async (req, res, next) => {
     try {
-        const { fullName, username, phoneNumber, fatherPhoneNumber, governorate, grade, age } = req.body;
+        const { fullName, username, phoneNumber, fatherPhoneNumber, governorate, grade, stage, age } = req.body;
         const { id } = req.user;
 
-        console.log('Update user data:', { fullName, username, phoneNumber, fatherPhoneNumber, governorate, grade, age });
+        console.log('Update user data:', { fullName, username, phoneNumber, fatherPhoneNumber, governorate, grade, stage, age });
 
         const user = await userModel.findById(id);
 
@@ -370,6 +371,9 @@ const updateUser = async (req, res, next) => {
         }
         if (grade) {
             user.grade = grade;
+        }
+        if (stage) {
+            user.stage = stage;
         }
         if (age) {
             user.age = parseInt(age);

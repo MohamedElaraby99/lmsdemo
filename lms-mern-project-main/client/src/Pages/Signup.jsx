@@ -83,53 +83,53 @@ export default function Signup() {
     
     // Basic required fields for all users
     if (!signupData.email || !signupData.password || !signupData.fullName || !signupData.username) {
-      toast.error("Name, username, email, and password are required");
+      toast.error("الاسم، اسم المستخدم، البريد الإلكتروني، وكلمة المرور مطلوبة");
       return;
     }
     
     // For regular users, check all required fields
     if (!isAdminRegistration) {
       if (!signupData.phoneNumber || !signupData.fatherPhoneNumber || !signupData.governorate || !signupData.grade || !signupData.stage || !signupData.age) {
-        toast.error("Please fill all the required fields");
+        toast.error("يرجى ملء جميع الحقول المطلوبة");
         return;
       }
     }
 
     // checking name field length
     if (signupData.fullName.length < 3) {
-      toast.error("Name should be at least 3 characters");
+      toast.error("يجب أن يكون الاسم 3 أحرف على الأقل");
       return;
     }
     // checking username field length
     if (signupData.username.length < 3) {
-      toast.error("Username should be at least 3 characters");
+      toast.error("يجب أن يكون اسم المستخدم 3 أحرف على الأقل");
       return;
     }
     // checking username format
     if (!signupData.username.match(/^[a-zA-Z0-9_]+$/)) {
-      toast.error("Username can only contain letters, numbers, and underscores");
+      toast.error("يمكن أن يحتوي اسم المستخدم على أحرف وأرقام وشرطة سفلية فقط");
       return;
     }
     // checking valid email
     if (!signupData.email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g)) {
-      toast.error("Invalid email id");
+      toast.error("بريد إلكتروني غير صحيح");
       return;
     }
     // For regular users, validate additional fields
     if (!isAdminRegistration) {
       // checking valid phone numbers
       if (!signupData.phoneNumber.match(/^(\+20|0)?1[0125][0-9]{8}$/)) {
-        toast.error("Please enter a valid Egyptian phone number");
+        toast.error("يرجى إدخال رقم هاتف مصري صحيح");
         return;
       }
       if (!signupData.fatherPhoneNumber.match(/^(\+20|0)?1[0125][0-9]{8}$/)) {
-        toast.error("Please enter a valid father's phone number");
+        toast.error("يرجى إدخال رقم هاتف الأب الصحيح");
         return;
       }
       // checking valid age
       const age = parseInt(signupData.age);
       if (isNaN(age) || age < 5 || age > 100) {
-        toast.error("Please enter a valid age between 5 and 100");
+        toast.error("يرجى إدخال عمر صحيح بين 5 و 100");
         return;
       }
     }
@@ -184,10 +184,10 @@ export default function Signup() {
               <FaGraduationCap className="h-10 w-10 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Join Fikra Software
+              انضم إلى منصتنا التعليمية
             </h2>
             <p className="text-gray-600 dark:text-gray-300">
-              Create your account and start your learning journey
+              أنشئ حسابك وابدأ رحلة التعلم
             </p>
           </div>
 
@@ -197,7 +197,7 @@ export default function Signup() {
               {/* Full Name Field */}
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Full Name
+                  الاسم الكامل
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -209,7 +209,7 @@ export default function Signup() {
                     type="text"
                     required
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your full name"
+                    placeholder="أدخل اسمك الكامل"
                     value={signupData.fullName}
                     onChange={handleUserInput}
                   />
@@ -219,7 +219,7 @@ export default function Signup() {
               {/* Username Field */}
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Username
+                  اسم المستخدم
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -231,20 +231,20 @@ export default function Signup() {
                     type="text"
                     required
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your username"
+                    placeholder="أدخل اسم المستخدم"
                     value={signupData.username}
                     onChange={handleUserInput}
                   />
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Only letters, numbers, and underscores allowed
+                  يمكن استخدام الأحرف والأرقام والشرطة السفلية فقط
                 </p>
               </div>
 
               {/* Email Field */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Email Address
+                  البريد الإلكتروني
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -256,7 +256,7 @@ export default function Signup() {
                     type="email"
                     required
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter your email"
+                    placeholder="أدخل بريدك الإلكتروني"
                     value={signupData.email}
                     onChange={handleUserInput}
                   />
@@ -266,7 +266,7 @@ export default function Signup() {
               {/* Password Field */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Password
+                  كلمة المرور
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -278,7 +278,7 @@ export default function Signup() {
                     type={showPassword ? "text" : "password"}
                     required
                     className="block w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Create a strong password"
+                    placeholder="أنشئ كلمة مرور قوية"
                     value={signupData.password}
                     onChange={handleUserInput}
                   />
@@ -299,7 +299,7 @@ export default function Signup() {
               {/* Admin Code Field (Optional) */}
               <div>
                 <label htmlFor="adminCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Admin Code (Optional)
+                  رمز المدير (اختياري)
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -310,13 +310,13 @@ export default function Signup() {
                     name="adminCode"
                     type="text"
                     className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Enter admin code to create admin account"
+                    placeholder="أدخل رمز المدير لإنشاء حساب مدير"
                     value={signupData.adminCode}
                     onChange={handleUserInput}
                   />
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Leave empty for regular user account
+                  اتركه فارغاً لحساب المستخدم العادي
                 </p>
               </div>
 
@@ -517,7 +517,7 @@ export default function Signup() {
               {/* Avatar Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Profile Picture <span className="text-gray-500 text-xs">(Optional)</span>
+                  صورة الملف الشخصي <span className="text-gray-500 text-xs">(اختياري)</span>
                 </label>
                 <div className="flex items-center space-x-4">
                   <div className="relative">
@@ -543,7 +543,7 @@ export default function Signup() {
                       <div className="flex items-center justify-center px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-400 dark:hover:border-purple-400 transition-colors duration-200">
                         <FaUpload className="w-4 h-4 text-gray-400 mr-2" />
                         <span className="text-sm text-gray-600 dark:text-gray-300">
-                          {previewImage ? "Change Photo" : "Upload Photo"}
+                          {previewImage ? "تغيير الصورة" : "رفع صورة"}
                         </span>
                       </div>
                     </label>
@@ -570,10 +570,10 @@ export default function Signup() {
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Creating account...
+                    جاري إنشاء الحساب...
                   </div>
                 ) : (
-                  "Create Account"
+                  "إنشاء الحساب"
                 )}
               </button>
             </form>
@@ -586,7 +586,7 @@ export default function Signup() {
                 </div>
                 <div className="relative flex justify-center text-sm">
                   <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                    Already have an account?
+                    لديك حساب بالفعل؟
                   </span>
                 </div>
               </div>
@@ -598,7 +598,7 @@ export default function Signup() {
                 to="/login"
                 className="font-medium text-purple-600 dark:text-purple-400 hover:text-purple-500 dark:hover:text-purple-300 transition-colors duration-200"
               >
-                Sign in to your account
+                تسجيل الدخول إلى حسابك
               </Link>
             </div>
           </div>
@@ -606,13 +606,13 @@ export default function Signup() {
           {/* Footer */}
           <div className="text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              By creating an account, you agree to our{" "}
+              بإنشاء حساب، فإنك توافق على{" "}
               <Link to="/terms" className="text-purple-600 dark:text-purple-400 hover:underline">
-                Terms of Service
+                شروط الخدمة
               </Link>{" "}
-              and{" "}
+              و{" "}
               <Link to="/privacy" className="text-purple-600 dark:text-purple-400 hover:underline">
-                Privacy Policy
+                سياسة الخصوصية
               </Link>
             </p>
           </div>

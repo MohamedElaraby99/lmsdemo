@@ -4,16 +4,70 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Oi Font Class */
+.oi-regular {
+  font-family: "Oi", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Marhey Font Classes */
+.marhey-light {
+  font-family: "Marhey", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.marhey-regular {
+  font-family: "Marhey", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.marhey-medium {
+  font-family: "Marhey", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.marhey-semibold {
+  font-family: "Marhey", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.marhey-bold {
+  font-family: "Marhey", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Global Marhey Font Application */
+html {
+  font-family: 'Marhey', sans-serif;
+}
+
+/* Ensure all text elements use Marhey */
+h1, h2, h3, h4, h5, h6, p, span, div, button, input, textarea, select, label, a {
+  font-family: 'Marhey', sans-serif;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   outline: none;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Marhey', sans-serif;
 }
 
 body {
   min-height: 100vh;
+  font-family: 'Marhey', sans-serif;
 }
 
 input:disabled,

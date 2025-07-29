@@ -208,13 +208,28 @@ const createCourse = async (req, res, next) => {
                     // Convert unified structure to separate structure for backward compatibility
                     unifiedStructure.forEach((item, index) => {
                         if (item.type === 'unit') {
+                            // Clean lessons to remove problematic IDs
+                            const cleanLessons = (item.data.lessons || []).map(lesson => ({
+                                title: lesson.title,
+                                description: lesson.description,
+                                lecture: lesson.lecture || {},
+                                duration: lesson.duration || 0,
+                                price: lesson.price || 10
+                            }));
+                            
                             units.push({
-                                ...item.data,
+                                title: item.data.title,
+                                description: item.data.description,
+                                lessons: cleanLessons,
                                 order: index
                             });
                         } else if (item.type === 'lesson') {
                             directLessons.push({
-                                ...item.data,
+                                title: item.data.title,
+                                description: item.data.description,
+                                lecture: item.data.lecture || {},
+                                duration: item.data.duration || 0,
+                                price: item.data.price || 10,
                                 order: index
                             });
                         }
@@ -347,13 +362,28 @@ const updateCourse = async (req, res, next) => {
                     
                     course.unifiedStructure.forEach((item, index) => {
                         if (item.type === 'unit') {
+                            // Clean lessons to remove problematic IDs
+                            const cleanLessons = (item.data.lessons || []).map(lesson => ({
+                                title: lesson.title,
+                                description: lesson.description,
+                                lecture: lesson.lecture || {},
+                                duration: lesson.duration || 0,
+                                price: lesson.price || 10
+                            }));
+                            
                             units.push({
-                                ...item.data,
+                                title: item.data.title,
+                                description: item.data.description,
+                                lessons: cleanLessons,
                                 order: index
                             });
                         } else if (item.type === 'lesson') {
                             directLessons.push({
-                                ...item.data,
+                                title: item.data.title,
+                                description: item.data.description,
+                                lecture: item.data.lecture || {},
+                                duration: item.data.duration || 0,
+                                price: item.data.price || 10,
                                 order: index
                             });
                         }

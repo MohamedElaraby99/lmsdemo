@@ -23,7 +23,8 @@ const PurchaseModal = ({
   onPurchase, 
   loading, 
   success, 
-  error 
+  error,
+  role = 'USER'
 }) => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -49,6 +50,55 @@ const PurchaseModal = ({
 
   if (!isOpen) return null;
 
+  // Admin doesn't need to purchase
+  if (role === 'ADMIN') {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                  <FaUnlock className="text-lg" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">وصول المدير</h2>
+                  <p className="text-sm opacity-90">لديك وصول كامل لجميع المحتوى</p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+              >
+                <FaTimes className="text-sm" />
+              </button>
+            </div>
+          </div>
+          <div className="p-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaCheck className="text-green-600 dark:text-green-400 text-2xl" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                مرحباً بك كمدير!
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                يمكنك الوصول إلى جميع الدروس والمحتوى بدون الحاجة للشراء
+              </p>
+              <button
+                onClick={onClose}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-200"
+              >
+                فهمت
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const canAfford = balance >= price;
   const remainingBalance = balance - price;
 
@@ -69,8 +119,8 @@ const PurchaseModal = ({
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
                 <FaCheck className="text-3xl" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Purchase Successful!</h3>
-              <p className="text-sm opacity-90">Lesson unlocked and ready to watch</p>
+              <h3 className="text-xl font-bold mb-2">تم الشراء بنجاح!</h3>
+              <p className="text-sm opacity-90">تم فتح الدرس وجاهز للمشاهدة</p>
             </div>
           </div>
         )}
@@ -82,7 +132,7 @@ const PurchaseModal = ({
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
                 <FaTimes className="text-3xl" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Purchase Failed</h3>
+              <h3 className="text-xl font-bold mb-2">فشل في الشراء</h3>
               <p className="text-sm opacity-90">{error}</p>
             </div>
           </div>
@@ -96,8 +146,8 @@ const PurchaseModal = ({
                 <FaShoppingCart className="text-lg" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">Purchase Lesson</h2>
-                <p className="text-sm opacity-90">Unlock this lesson to start learning</p>
+                <h2 className="text-xl font-bold">شراء الدرس</h2>
+                <p className="text-sm opacity-90">افتح هذا الدرس لبدء التعلم</p>
               </div>
             </div>
             <button
@@ -119,7 +169,7 @@ const PurchaseModal = ({
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
-                  {lesson?.title || 'Untitled Lesson'}
+                  {lesson?.title || 'درس بدون عنوان'}
                 </h3>
                 {lesson?.description && (
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -128,10 +178,10 @@ const PurchaseModal = ({
                 )}
                 <div className="flex items-center gap-2 mt-2">
                   <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full font-medium">
-                    Video Lesson
+                    درس فيديو
                   </span>
                   <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs rounded-full font-medium">
-                    HD Quality
+                    جودة عالية
                   </span>
                 </div>
               </div>
@@ -141,21 +191,21 @@ const PurchaseModal = ({
           {/* Pricing */}
           <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-4 mb-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Lesson Price</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">سعر الدرس</span>
               <div className="flex items-center gap-2">
                 <FaCoins className="text-yellow-500" />
                 <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {price} EGP
+                  {price} جنيه
                 </span>
               </div>
             </div>
             
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Your Balance</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">رصيدك</span>
               <div className="flex items-center gap-2">
                 <FaWallet className="text-green-500" />
                 <span className={`font-semibold ${canAfford ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {balance} EGP
+                  {balance} جنيه
                 </span>
               </div>
             </div>
@@ -163,9 +213,9 @@ const PurchaseModal = ({
             {canAfford && (
               <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Remaining Balance</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">الرصيد المتبقي</span>
                   <span className="font-semibold text-green-600 dark:text-green-400">
-                    {remainingBalance} EGP
+                    {remainingBalance} جنيه
                   </span>
                 </div>
               </div>
@@ -180,9 +230,9 @@ const PurchaseModal = ({
                   <FaLock className="text-red-600 dark:text-red-400 text-sm" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-red-800 dark:text-red-200">Insufficient Balance</h4>
+                  <h4 className="font-semibold text-red-800 dark:text-red-200">رصيد غير كافي</h4>
                   <p className="text-sm text-red-600 dark:text-red-400">
-                    You need {price - balance} more EGP to purchase this lesson
+                    تحتاج {price - balance} جنيه إضافية لشراء هذا الدرس
                   </p>
                 </div>
               </div>
@@ -200,12 +250,12 @@ const PurchaseModal = ({
                 {loading ? (
                   <>
                     <FaSpinner className="animate-spin" />
-                    Processing Purchase...
+                    جاري معالجة الشراء...
                   </>
                 ) : (
                   <>
                     <FaCreditCard />
-                    Purchase Lesson
+                    شراء الدرس
                   </>
                 )}
               </button>
@@ -215,7 +265,7 @@ const PurchaseModal = ({
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center gap-3"
               >
                 <FaWallet />
-                Recharge Wallet
+                شحن المحفظة
               </button>
             )}
 
@@ -223,7 +273,7 @@ const PurchaseModal = ({
               onClick={onClose}
               className="w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-6 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
-              Cancel
+              إلغاء
             </button>
           </div>
 
@@ -231,24 +281,24 @@ const PurchaseModal = ({
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
               <FaStar className="text-yellow-500" />
-              What you'll get
+              ما ستحصل عليه
             </h4>
             <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <div className="flex items-center gap-2">
                 <FaCheck className="text-green-500 text-xs" />
-                Lifetime access to this lesson
+                فيديوهات تعليمية عالية الجودة
               </div>
               <div className="flex items-center gap-2">
                 <FaCheck className="text-green-500 text-xs" />
-                HD video quality
+                ملفات PDF للدراسة
               </div>
               <div className="flex items-center gap-2">
                 <FaCheck className="text-green-500 text-xs" />
-                Watch anytime, anywhere
+                امتحان تدريبي للفهم
               </div>
               <div className="flex items-center gap-2">
                 <FaCheck className="text-green-500 text-xs" />
-                Progress tracking included
+                امتحان نهائي شامل
               </div>
             </div>
           </div>

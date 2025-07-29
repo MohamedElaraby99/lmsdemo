@@ -145,11 +145,11 @@ export default function Navbar() {
             
             {/* Modern Brand Name */}
             <div className="flex flex-col">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent group-hover:from-blue-500 group-hover:via-purple-500 group-hover:to-indigo-500 transition-all duration-300">
+              <span className="oi-regular text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent group-hover:from-blue-500 group-hover:via-purple-500 group-hover:to-indigo-500 transition-all duration-300">
                 فكرة
               </span>
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300 tracking-wider">
-                FIKRA LEARNING
+              <span className="oi-regular text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300 tracking-wider">
+                منصة التعليم
             </span>
             </div>
           </Link>

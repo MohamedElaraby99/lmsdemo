@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserData, updateUserData } from "../../Redux/Slices/AuthSlice";
 import InputBox from "../../Components/InputBox/InputBox";
-import { FaUserCircle, FaPhone, FaMapMarkerAlt, FaGraduationCap, FaCalendarAlt, FaEnvelope, FaUser, FaIdCard, FaEdit, FaSave, FaTimes } from "react-icons/fa";
+import { FaUserCircle, FaPhone, FaMapMarkerAlt, FaGraduationCap, FaCalendarAlt, FaEnvelope, FaUser, FaIdCard, FaEdit, FaSave, FaTimes, FaBook } from "react-icons/fa";
 import { IoIosLock, IoIosRefresh } from "react-icons/io";
 import { FiMoreVertical } from "react-icons/fi";
 import Layout from "../../Layout/Layout";
 import { useNavigate } from "react-router-dom";
+import { axiosInstance } from "../../Helpers/axiosInstance";
 
 
 export default function Profile() {
@@ -22,14 +23,39 @@ export default function Profile() {
     fatherPhoneNumber: userData?.fatherPhoneNumber || "",
     governorate: userData?.governorate || "",
     grade: userData?.grade || "",
+    stage: userData?.stage || "",
     age: userData?.age || "",
     avatar: null,
     previewImage: null,
     userId: null,
   });
+  const [stages, setStages] = useState([]);
   const avatarInputRef = useRef(null);
   const [isChanged, setIschanged] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Fetch stages on component mount
+  useEffect(() => {
+    const fetchStages = async () => {
+      try {
+        console.log('Fetching stages...');
+        const response = await axiosInstance.get('/stages');
+        console.log('Stages API response:', response.data);
+        
+        if (response.data.success) {
+          const stagesData = response.data.data.stages;
+          console.log('Stages data:', stagesData);
+          setStages(stagesData);
+        } else {
+          console.error('Stages API returned success: false');
+        }
+      } catch (error) {
+        console.error('Error fetching stages:', error);
+      }
+    };
+
+    fetchStages();
+  }, []);
 
   function handleImageUpload(e) {
     e.preventDefault();
@@ -58,6 +84,7 @@ export default function Profile() {
     formData.append("fatherPhoneNumber", userInput.fatherPhoneNumber);
     formData.append("governorate", userInput.governorate);
     formData.append("grade", userInput.grade);
+    formData.append("stage", userInput.stage);
     formData.append("age", userInput.age);
     if (userInput.avatar) {
       formData.append("avatar", userInput.avatar);
@@ -89,6 +116,7 @@ export default function Profile() {
       fatherPhoneNumber: userData?.fatherPhoneNumber || "",
       governorate: userData?.governorate || "",
       grade: userData?.grade || "",
+      stage: userData?.stage?._id || userData?.stage || "",
       age: userData?.age || "",
       avatar: null,
       previewImage: null,
@@ -100,6 +128,7 @@ export default function Profile() {
       fatherPhoneNumber: userData?.fatherPhoneNumber || "",
       governorate: userData?.governorate || "",
       grade: userData?.grade || "",
+      stage: userData?.stage?._id || userData?.stage || "",
       age: userData?.age || "",
     });
   }
@@ -115,6 +144,7 @@ export default function Profile() {
       fatherPhoneNumber: userData?.fatherPhoneNumber || "",
       governorate: userData?.governorate || "",
       grade: userData?.grade || "",
+      stage: userData?.stage?._id || userData?.stage || "",
       age: userData?.age || "",
       avatar: null,
       previewImage: null,
@@ -131,6 +161,7 @@ export default function Profile() {
         userInput.fatherPhoneNumber !== userData?.fatherPhoneNumber ||
         userInput.governorate !== userData?.governorate ||
         userInput.grade !== userData?.grade ||
+        userInput.stage !== (userData?.stage?._id || userData?.stage) ||
         userInput.age !== userData?.age ||
         userInput.avatar
       );
@@ -153,7 +184,10 @@ export default function Profile() {
     console.log('Current userData:', userData);
     console.log('Grade from userData:', userData?.grade);
     console.log('Grade from userInput:', userInput.grade);
-  }, [userData, userInput.grade]);
+    console.log('Stage from userData:', userData?.stage);
+    console.log('Stage from userInput:', userInput.stage);
+    console.log('Stages array:', stages);
+  }, [userData, userInput.grade, userInput.stage, stages]);
 
   useEffect(() => {
     if (userData && Object.keys(userData).length > 0) {
@@ -165,6 +199,7 @@ export default function Profile() {
         fatherPhoneNumber: userData?.fatherPhoneNumber || "",
         governorate: userData?.governorate || "",
         grade: userData?.grade || "",
+        stage: userData?.stage?._id || userData?.stage || "",
         age: userData?.age || "",
       userId: userData?._id,
     });
@@ -413,6 +448,49 @@ export default function Profile() {
                   <option value="4 جامعة">4 جامعة</option>
                   <option value="Other">Other</option>
                 </select>
+              </div>
+
+              {/* Stage */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <FaBook className="text-blue-500" />
+                  المرحلة الدراسية
+                </label>
+                
+                <select
+                  value={isEditing ? userInput.stage : (userData?.stage?._id || userData?.stage || "")}
+                  onChange={(e) => {
+                    console.log('Stage selected:', e.target.value);
+                    setUserInput({ ...userInput, stage: e.target.value });
+                  }}
+                  disabled={!isEditing}
+                  className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    !isEditing 
+                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
+                      : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                  }`}
+                  onFocus={() => {
+                    console.log('Stage select focused. Current value:', isEditing ? userInput.stage : (userData?.stage?._id || userData?.stage || ""));
+                    console.log('Available stages:', stages);
+                  }}
+                >
+                  <option value="">اختر المرحلة الدراسية</option>
+                  {stages.length > 0 ? (
+                    stages.map((stage) => {
+                      console.log('Rendering stage:', stage);
+                      return (
+                        <option key={stage._id} value={stage._id}>
+                          {stage.name}
+                        </option>
+                      );
+                    })
+                  ) : (
+                    <option value="" disabled>جاري تحميل المراحل...</option>
+                  )}
+                </select>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {stages.length > 0 ? `${stages.length} مرحلة متاحة` : 'لا توجد مراحل متاحة'}
+                </div>
               </div>
 
               {/* Governorate */}

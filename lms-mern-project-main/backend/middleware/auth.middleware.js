@@ -36,14 +36,30 @@ const authorisedRoles = (...roles) => async (req, res, next) => {
 
 const authorizeSubscriber = async (req, res, next) => {
     const {role, id} = req.user; 
+    console.log('=== AUTHORIZE SUBSCRIBER CHECK ===');
+    console.log('User role:', role);
+    console.log('User ID:', id);
+    
     const user = await userModel.findById(id);
-    const subscriptionStatus = user.subscription.status;
+    console.log('Found user:', user ? 'Yes' : 'No');
+    
+    if (!user) {
+        console.log('User not found in database');
+        return next(new AppError('User not found', 404));
+    }
+    
+    const subscriptionStatus = user.subscription?.status;
+    console.log('Subscription status:', subscriptionStatus);
+    console.log('User subscription object:', user.subscription);
+    
     if (role !== 'ADMIN' && subscriptionStatus !== 'active') {
+        console.log('ACCESS DENIED: User needs subscription');
         return next(
             new AppError('Please subscribce to access this route!', 403)
         )
     }
-
+    
+    console.log('ACCESS GRANTED: User has valid subscription or is admin');
     next();
 }
 

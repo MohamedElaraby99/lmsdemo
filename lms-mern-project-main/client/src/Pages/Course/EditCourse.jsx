@@ -48,7 +48,6 @@ export default function EditCourse() {
 
   const [isUpdatingCourse, setIsUpdatingCourse] = useState(false);
   const [subjects, setSubjects] = useState([]);
-  const [instructors, setInstructors] = useState([]);
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("basic-info");
@@ -64,7 +63,6 @@ export default function EditCourse() {
     subject: "",
     stage: "",
     createdBy: "",
-    instructor: "",
     description: "",
     thumbnail: null,
     previewImage: "",
@@ -88,7 +86,6 @@ export default function EditCourse() {
     subject: "",
     stage: "",
     createdBy: "",
-    instructor: "",
     description: "",
     thumbnail: null,
     previewImage: "",
@@ -149,7 +146,6 @@ export default function EditCourse() {
         subject: courseData.subject?._id || courseData.subject || "",
         stage: courseData.stage?._id || courseData.stage || "",
         createdBy: courseData.createdBy || "",
-        instructor: courseData.instructor || "",
         description: courseData.description || "",
         thumbnail: null,
         previewImage: courseData.thumbnail?.secure_url || "",
@@ -165,35 +161,75 @@ export default function EditCourse() {
           directLessons: [],
           structureType: "unified"
         });
-      } else {
-        // Fallback to legacy structure
-        console.log('Loading legacy structure from course data:', {
+      } else if (courseData.units?.length > 0 || courseData.directLessons?.length > 0) {
+        // Convert legacy structure to unified structure
+        console.log('Converting legacy structure to unified structure:', {
           units: courseData.units,
           directLessons: courseData.directLessons
         });
         
-        setCourseStructure({
-          units: (courseData.units || []).map(unit => ({
-            ...unit,
-            id: unit.id || unit._id || Date.now() + Math.random(),
-            lessons: (unit.lessons || []).map(lesson => ({
-              ...lesson,
-              id: lesson.id || lesson._id || Date.now() + Math.random()
-            }))
-          })),
-          directLessons: (courseData.directLessons || []).map(lesson => ({
-            ...lesson,
-            id: lesson.id || lesson._id || Date.now() + Math.random()
-          })),
-          structureType: courseData.structureType || "direct-lessons"
+        const convertedUnifiedStructure = [];
+        
+        // Convert units to unified structure
+        (courseData.units || []).forEach(unit => {
+          convertedUnifiedStructure.push({
+            id: unit._id || `unit-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            type: 'unit',
+            data: {
+              title: unit.title,
+              description: unit.description,
+              lessons: (unit.lessons || []).map(lesson => ({
+                ...lesson,
+                // Remove _id if it's a string to avoid MongoDB casting issues
+                _id: undefined,
+                id: lesson._id || lesson.id || `lesson-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
+              }))
+            }
+          });
         });
         
-        // Also set unified structure to empty if not available
+        // Convert direct lessons to unified structure
+        (courseData.directLessons || []).forEach(lesson => {
+          convertedUnifiedStructure.push({
+            id: lesson._id || `lesson-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            type: 'lesson',
+            data: {
+              title: lesson.title,
+              description: lesson.description,
+              lecture: lesson.lecture || {},
+              duration: lesson.duration || 0,
+              price: lesson.price || 10
+            }
+          });
+        });
+        
+        console.log('Converted unified structure:', convertedUnifiedStructure);
+        setUnifiedStructure(convertedUnifiedStructure);
+        setStructureMode('unified');
+        setCourseStructure({
+          units: courseData.units || [],
+          directLessons: courseData.directLessons || [],
+          structureType: courseData.structureType || "unified"
+        });
+      } else {
+        // No structure available
+        console.log('No structure available in course data');
         setUnifiedStructure([]);
-        setStructureMode('legacy');
+        setStructureMode('unified');
+        setCourseStructure({
+          units: [],
+          directLessons: [],
+          structureType: "unified"
+        });
       }
     }
   }, [courseData]);
+
+  // Debug unifiedStructure changes
+  useEffect(() => {
+    console.log('EditCourse: unifiedStructure state updated:', unifiedStructure);
+    console.log('EditCourse: unifiedStructure length:', unifiedStructure.length);
+  }, [unifiedStructure]);
 
   // Fetch subjects on component mount
   useEffect(() => {
@@ -205,11 +241,7 @@ export default function EditCourse() {
           setSubjects(subjectsResponse.data.subjects);
         }
 
-        // Fetch instructors
-        const instructorsResponse = await axiosInstance.get('/instructors');
-        if (instructorsResponse.data.success) {
-          setInstructors(instructorsResponse.data.data.instructors);
-        }
+              // Instructors are handled through the subject relationship
 
         // Fetch stages
         const stagesResponse = await axiosInstance.get('/stages');
@@ -285,19 +317,6 @@ export default function EditCourse() {
 
   function handleUserInput(e) {
     const { name, value } = e.target;
-    
-    // Auto-fill display name when instructor is selected
-    if (name === 'instructor' && value && instructors) {
-      const selectedInstructor = instructors.find(i => i._id === value);
-      if (selectedInstructor && !userInput.createdBy) {
-        setUserInput(prev => ({
-          ...prev,
-          [name]: value,
-          createdBy: selectedInstructor.name
-        }));
-        return;
-      }
-    }
     
     setUserInput({
       ...userInput,
@@ -675,8 +694,8 @@ export default function EditCourse() {
   async function onFormSubmit(e) {
     e.preventDefault();
 
-    if (!userInput.title || !userInput.description || !userInput.subject || !userInput.stage || !userInput.instructor) {
-      toast.error("Title, description, subject, stage, and instructor are mandatory!");
+    if (!userInput.title || !userInput.description || !userInput.subject || !userInput.stage) {
+      toast.error("Title, description, subject, and stage are mandatory!");
       return;
     }
 
@@ -687,29 +706,35 @@ export default function EditCourse() {
       subject: userInput.subject,
       stage: userInput.stage,
       createdBy: userInput.createdBy,
-      instructor: userInput.instructor,
       thumbnail: userInput.thumbnail,
       previewImage: userInput.previewImage,
     });
 
+    // Debug what we're passing
+    const courseDataToPass = {
+      ...courseData,
+      title: userInput.title,
+      description: userInput.description,
+      subject: userInput.subject,
+      stage: userInput.stage,
+      createdBy: userInput.createdBy,
+      thumbnail: userInput.thumbnail,
+      previewImage: userInput.previewImage,
+      unifiedStructure: unifiedStructure,
+      units: courseStructure.units,
+      directLessons: courseStructure.directLessons,
+      structureType: structureMode === 'unified' ? 'unified' : 'legacy'
+    };
+    
+    console.log('EditCourse: Passing course data to structure page:', courseDataToPass);
+    console.log('EditCourse: unifiedStructure length:', unifiedStructure.length);
+    console.log('EditCourse: units length:', courseStructure.units.length);
+    console.log('EditCourse: directLessons length:', courseStructure.directLessons.length);
+    
     // Navigate to structure page with course data
     navigate(`/course/structure/edit/${id}`, {
       state: {
-        courseData: {
-          ...courseData,
-          title: userInput.title,
-          description: userInput.description,
-          subject: userInput.subject,
-          stage: userInput.stage,
-          createdBy: userInput.createdBy,
-          instructor: userInput.instructor,
-          thumbnail: userInput.thumbnail,
-          previewImage: userInput.previewImage,
-          unifiedStructure: unifiedStructure,
-          units: courseStructure.units,
-          directLessons: courseStructure.directLessons,
-          structureType: structureMode === 'unified' ? 'unified' : 'legacy'
-        }
+        courseData: courseDataToPass
       }
     });
   }
@@ -827,7 +852,6 @@ export default function EditCourse() {
                           value={userInput.title}
                           required
                         />
-                        
                         <div>
                           <TextArea
                             label={"وصف الدورة"}
@@ -850,24 +874,18 @@ export default function EditCourse() {
                       </h3>
                       
                       <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            المدرس *
-                          </label>
-                          <select
-                            name="instructor"
-                            value={userInput.instructor}
-                            onChange={handleUserInput}
-                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                            required
-                          >
-                            <option value="">اختر المدرس</option>
-                            {instructors.map((instructor) => (
-                              <option key={instructor._id} value={instructor._id}>
-                                {instructor.name}
-                              </option>
-                            ))}
-                          </select>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <FaInfo className="text-blue-500 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
+                                معلومات المدرس
+                              </h4>
+                              <p className="text-xs text-blue-700 dark:text-blue-300">
+                                يتم تحديد المدرس تلقائياً بناءً على المادة المختارة. المدرس مرتبط بالمادة وليس بالدورة مباشرة.
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -880,7 +898,6 @@ export default function EditCourse() {
                         <FaTag className="text-blue-500" />
                         تفاصيل الدورة
                       </h3>
-                      
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -973,6 +990,48 @@ export default function EditCourse() {
                   </div>
                 </div>
 
+                {/* Form Validation */}
+                <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
+                    <FaCheck className="text-blue-500" />
+                    الحقول المطلوبة
+                  </h4>
+                  <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
+                    <li className="flex items-center gap-2">
+                      {userInput.title ? (
+                        <FaCheck className="text-green-500" />
+                      ) : (
+                        <FaTimes className="text-red-500" />
+                      )}
+                      عنوان الدورة
+                    </li>
+                    <li className="flex items-center gap-2">
+                      {userInput.description ? (
+                        <FaCheck className="text-green-500" />
+                      ) : (
+                        <FaTimes className="text-red-500" />
+                      )}
+                      وصف الدورة
+                    </li>
+                    <li className="flex items-center gap-2">
+                      {userInput.subject ? (
+                        <FaCheck className="text-green-500" />
+                      ) : (
+                        <FaTimes className="text-red-500" />
+                      )}
+                      المادة
+                    </li>
+                    <li className="flex items-center gap-2">
+                      {userInput.stage ? (
+                        <FaCheck className="text-green-500" />
+                      ) : (
+                        <FaTimes className="text-red-500" />
+                      )}
+                      المرحلة
+                    </li>
+                  </ul>
+                </div>
+
                 {/* Submit Button */}
                 <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                   <button
@@ -984,7 +1043,7 @@ export default function EditCourse() {
                   </button>
                   <button
                     type="submit"
-                    disabled={isUpdatingCourse}
+                    disabled={isUpdatingCourse || !userInput.title || !userInput.description || !userInput.subject || !userInput.stage}
                     className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isUpdatingCourse ? (
