@@ -588,16 +588,16 @@ export default function DisplayLecture() {
             )}
 
             {/* Course Structure */}
-            <div className="space-y-6">
-              <div className="text-center mb-8">
+              <div className="space-y-6">
+                <div className="text-center mb-8">
                 <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-3">
                   <FaBookOpen className="text-blue-500" />
                   محتوى الدورة
-                </h2>
+                  </h2>
                 <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                   استكشف الوحدات والدروس المتنوعة في هذه الدورة التعليمية الشاملة
-                </p>
-              </div>
+                  </p>
+                </div>
 
               {/* Unified Structure */}
               {currentCourseData.unifiedStructure && currentCourseData.unifiedStructure.length > 0 && (
@@ -906,7 +906,7 @@ export default function DisplayLecture() {
                 </div>
               )}
 
-              {/* Empty State */}
+                {/* Empty State */}
               {(!currentCourseData.unifiedStructure || currentCourseData.unifiedStructure.length === 0) && (
                 <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
                   <div className="w-24 h-24 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -918,9 +918,9 @@ export default function DisplayLecture() {
                   <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
                     سيتم إضافة الدروس والوحدات التعليمية قريباً. تحقق من هذه الصفحة لاحقاً للحصول على المحتوى الجديد.
                   </p>
-                </div>
-              )}
-            </div>
+                  </div>
+                )}
+              </div>
           </div>
         </section>
 
