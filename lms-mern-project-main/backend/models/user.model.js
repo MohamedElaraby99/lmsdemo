@@ -56,13 +56,7 @@ const userSchema = new Schema({
         },
         trim: true
     },
-    grade: {
-        type: String,
-        required: function() {
-            return this.role !== 'ADMIN';
-        },
-        trim: true
-    },
+
     stage: {
         type: Schema.Types.ObjectId,
         ref: 'Stage',

@@ -243,7 +243,7 @@ const PurchaseModal = ({
           <div className="space-y-3">
             {canAfford ? (
               <button
-                onClick={onPurchase}
+                onClick={() => onPurchase(lesson)}
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
               >

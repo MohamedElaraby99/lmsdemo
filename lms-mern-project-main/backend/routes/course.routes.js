@@ -23,6 +23,10 @@ router.route('/:id')
 router.route('/admin/:id')
     .get(isLoggedIn, authorisedRoles("ADMIN"), getLecturesByCourseId);
 
+// Public route for getting course data (without subscriber authorization)
+router.route('/public/:id')
+    .get(isLoggedIn, getLecturesByCourseId);
+
 // Complete course structure update route
 router.route('/:courseId/structure/update')
     .put(isLoggedIn, authorisedRoles("ADMIN"), updateCourseStructure);

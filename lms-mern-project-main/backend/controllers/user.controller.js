@@ -33,7 +33,7 @@ const register = async (req, res, next) => {
 
         // For regular users, check all required fields
         if (userRole === 'USER') {
-            if (!phoneNumber || !fatherPhoneNumber || !governorate || !grade || !stage || !age) {
+            if (!phoneNumber || !fatherPhoneNumber || !governorate || !stage || !age) {
                 return next(new AppError("All fields are required for regular users", 400));
             }
         }
@@ -69,7 +69,6 @@ const register = async (req, res, next) => {
             userData.phoneNumber = phoneNumber;
             userData.fatherPhoneNumber = fatherPhoneNumber;
             userData.governorate = governorate;
-            userData.grade = grade;
             userData.stage = stage;
             userData.age = parseInt(age);
         }
@@ -334,10 +333,10 @@ const changePassword = async (req, res, next) => {
 // update profile
 const updateUser = async (req, res, next) => {
     try {
-        const { fullName, username, phoneNumber, fatherPhoneNumber, governorate, grade, stage, age } = req.body;
+        const { fullName, username, phoneNumber, fatherPhoneNumber, governorate, stage, age } = req.body;
         const { id } = req.user;
 
-        console.log('Update user data:', { fullName, username, phoneNumber, fatherPhoneNumber, governorate, grade, stage, age });
+        console.log('Update user data:', { fullName, username, phoneNumber, fatherPhoneNumber, governorate, stage, age });
 
         const user = await userModel.findById(id);
 
@@ -368,9 +367,6 @@ const updateUser = async (req, res, next) => {
         }
         if (governorate) {
             user.governorate = governorate;
-        }
-        if (grade) {
-            user.grade = grade;
         }
         if (stage) {
             user.stage = stage;

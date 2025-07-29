@@ -22,7 +22,6 @@ export default function Profile() {
     phoneNumber: userData?.phoneNumber || "",
     fatherPhoneNumber: userData?.fatherPhoneNumber || "",
     governorate: userData?.governorate || "",
-    grade: userData?.grade || "",
     stage: userData?.stage || "",
     age: userData?.age || "",
     avatar: null,
@@ -83,7 +82,6 @@ export default function Profile() {
     formData.append("phoneNumber", userInput.phoneNumber);
     formData.append("fatherPhoneNumber", userInput.fatherPhoneNumber);
     formData.append("governorate", userInput.governorate);
-    formData.append("grade", userInput.grade);
     formData.append("stage", userInput.stage);
     formData.append("age", userInput.age);
     if (userInput.avatar) {
@@ -115,7 +113,6 @@ export default function Profile() {
       phoneNumber: userData?.phoneNumber || "",
       fatherPhoneNumber: userData?.fatherPhoneNumber || "",
       governorate: userData?.governorate || "",
-      grade: userData?.grade || "",
       stage: userData?.stage?._id || userData?.stage || "",
       age: userData?.age || "",
       avatar: null,
@@ -127,10 +124,11 @@ export default function Profile() {
       phoneNumber: userData?.phoneNumber || "",
       fatherPhoneNumber: userData?.fatherPhoneNumber || "",
       governorate: userData?.governorate || "",
-      grade: userData?.grade || "",
       stage: userData?.stage?._id || userData?.stage || "",
       age: userData?.age || "",
     });
+    console.log('UserData stage object:', userData?.stage);
+    console.log('Available stages:', stages);
   }
 
   function handleCancelEdit() {
@@ -143,7 +141,6 @@ export default function Profile() {
       phoneNumber: userData?.phoneNumber || "",
       fatherPhoneNumber: userData?.fatherPhoneNumber || "",
       governorate: userData?.governorate || "",
-      grade: userData?.grade || "",
       stage: userData?.stage?._id || userData?.stage || "",
       age: userData?.age || "",
       avatar: null,
@@ -154,17 +151,31 @@ export default function Profile() {
 
   useEffect(() => {
     if (isEditing) {
-      setIschanged(
+      const hasChanges = 
         userInput.name !== userData?.fullName || 
         userInput.username !== userData?.username ||
         userInput.phoneNumber !== userData?.phoneNumber ||
         userInput.fatherPhoneNumber !== userData?.fatherPhoneNumber ||
         userInput.governorate !== userData?.governorate ||
-        userInput.grade !== userData?.grade ||
         userInput.stage !== (userData?.stage?._id || userData?.stage) ||
         userInput.age !== userData?.age ||
-        userInput.avatar
-      );
+        userInput.avatar;
+      
+      console.log('Change detection:', {
+        nameChanged: userInput.name !== userData?.fullName,
+        usernameChanged: userInput.username !== userData?.username,
+        phoneChanged: userInput.phoneNumber !== userData?.phoneNumber,
+        fatherPhoneChanged: userInput.fatherPhoneNumber !== userData?.fatherPhoneNumber,
+        governorateChanged: userInput.governorate !== userData?.governorate,
+        stageChanged: userInput.stage !== (userData?.stage?._id || userData?.stage),
+        ageChanged: userInput.age !== userData?.age,
+        avatarChanged: !!userInput.avatar,
+        userInputStage: userInput.stage,
+        userDataStage: userData?.stage?._id || userData?.stage,
+        hasChanges
+      });
+      
+      setIschanged(hasChanges);
     } else {
       setIschanged(false);
     }
@@ -182,12 +193,10 @@ export default function Profile() {
   // Debug: Log user data to see what's being received
   useEffect(() => {
     console.log('Current userData:', userData);
-    console.log('Grade from userData:', userData?.grade);
-    console.log('Grade from userInput:', userInput.grade);
     console.log('Stage from userData:', userData?.stage);
     console.log('Stage from userInput:', userInput.stage);
     console.log('Stages array:', stages);
-  }, [userData, userInput.grade, userInput.stage, stages]);
+  }, [userData, userInput.stage, stages]);
 
   useEffect(() => {
     if (userData && Object.keys(userData).length > 0) {
@@ -198,13 +207,23 @@ export default function Profile() {
         phoneNumber: userData?.phoneNumber || "",
         fatherPhoneNumber: userData?.fatherPhoneNumber || "",
         governorate: userData?.governorate || "",
-        grade: userData?.grade || "",
         stage: userData?.stage?._id || userData?.stage || "",
         age: userData?.age || "",
       userId: userData?._id,
     });
     }
-  }, [userData]);
+  }, [userData, stages]);
+
+  // Additional useEffect to handle stage selection when user doesn't have a stage assigned
+  useEffect(() => {
+    if (stages.length > 0 && userData && !userData.stage && isEditing) {
+      console.log('User has no stage assigned, but stages are available. Setting default to first stage.');
+      setUserInput(prev => ({
+        ...prev,
+        stage: stages[0]._id
+      }));
+    }
+  }, [stages, userData, isEditing]);
 
   return (
     <Layout hideFooter={true}>
@@ -412,43 +431,7 @@ export default function Profile() {
                 />
               </div>
 
-              {/* Grade */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <FaGraduationCap className="text-indigo-500" />
-                  الصف الدراسي
-                </label>
-                
-                <select
-                  value={isEditing ? userInput.grade : (userData?.grade || "")}
-                  onChange={(e) => setUserInput({ ...userInput, grade: e.target.value })}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    !isEditing 
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
-                      : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                  }`}
-                >
-                  <option value="">اختر الصف الدراسي</option>
-                  <option value="1 ابتدائي">1 ابتدائي</option>
-                  <option value="2 ابتدائي">2 ابتدائي</option>
-                  <option value="3 ابتدائي">3 ابتدائي</option>
-                  <option value="4 ابتدائي">4 ابتدائي</option>
-                  <option value="5 ابتدائي">5 ابتدائي</option>
-                  <option value="6 ابتدائي">6 ابتدائي</option>
-                  <option value="1 إعدادي">1 إعدادي</option>
-                  <option value="2 إعدادي">2 إعدادي</option>
-                  <option value="3 إعدادي">3 إعدادي</option>
-                  <option value="1 ثانوي">1 ثانوي</option>
-                  <option value="2 ثانوي">2 ثانوي</option>
-                  <option value="3 ثانوي">3 ثانوي</option>
-                  <option value="1 جامعة">1 جامعة</option>
-                  <option value="2 جامعة">2 جامعة</option>
-                  <option value="3 جامعة">3 جامعة</option>
-                  <option value="4 جامعة">4 جامعة</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
+
 
               {/* Stage */}
               <div className="space-y-2">
@@ -472,6 +455,7 @@ export default function Profile() {
                   onFocus={() => {
                     console.log('Stage select focused. Current value:', isEditing ? userInput.stage : (userData?.stage?._id || userData?.stage || ""));
                     console.log('Available stages:', stages);
+                    console.log('UserData stage:', userData?.stage);
                   }}
                 >
                   <option value="">اختر المرحلة الدراسية</option>
@@ -490,6 +474,11 @@ export default function Profile() {
                 </select>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {stages.length > 0 ? `${stages.length} مرحلة متاحة` : 'لا توجد مراحل متاحة'}
+                  {!userData?.stage && stages.length > 0 && (
+                    <div className="text-blue-600 dark:text-blue-400 mt-1">
+                      ⚠️ لم يتم تحديد مرحلة دراسية بعد. يرجى اختيار مرحلة.
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -586,8 +575,15 @@ export default function Profile() {
               <>
             <button
               type="submit"
-                  className="py-3.5 rounded-md bg-green-500 hover:bg-green-600 mt-3 text-white font-inter md:w-[48%] w-full flex items-center justify-center gap-2"
+                  className={`py-3.5 rounded-md mt-3 text-white font-inter md:w-[48%] w-full flex items-center justify-center gap-2 ${
+                    !isChanged || isUpdating 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-green-500 hover:bg-green-600'
+                  }`}
               disabled={!isChanged || isUpdating}
+              onClick={() => {
+                console.log('Save button clicked. isChanged:', isChanged, 'isUpdating:', isUpdating);
+              }}
             >
                   {isUpdating ? (
                     <>

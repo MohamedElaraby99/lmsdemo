@@ -41,11 +41,16 @@ import {
   FaLightbulb,
   FaBrain,
   FaHandshake,
-  FaAward
+  FaAward,
+  FaSync
 } from 'react-icons/fa';
 import { fetchCourseById } from '../../Redux/Slices/CourseSlice';
 import { getWalletBalance } from '../../Redux/Slices/WalletSlice';
-import { purchaseLesson, checkLessonPurchase } from '../../Redux/Slices/LessonPurchaseSlice';
+import { 
+  purchaseLesson, 
+  checkLessonAccess, 
+  getUserPurchases 
+} from '../../Redux/Slices/LessonPurchaseSlice';
 import { getUserData } from '../../Redux/Slices/AuthSlice';
 import LessonDetailModal from '../../Components/LessonDetailModal';
 import PurchaseModal from '../../Components/PurchaseModal';
@@ -77,6 +82,8 @@ export default function DisplayLecture() {
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [expandedUnits, setExpandedUnits] = useState(new Set());
   const [purchasedLessons, setPurchasedLessons] = useState(new Set());
+  const [hasCheckedPurchases, setHasCheckedPurchases] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0);
 
   // State for forms
   const [videoForm, setVideoForm] = useState({
@@ -139,8 +146,113 @@ export default function DisplayLecture() {
     }
   }, [dispatch, id, role, user, isLoggedIn]);
 
+  // Load user's purchased lessons
+  useEffect(() => {
+    if (isLoggedIn && user?._id && role === 'USER') {
+      console.log('Loading user lesson purchases...');
+      dispatch(getUserPurchases())
+        .then((result) => {
+          if (result.payload?.success) {
+            const purchases = result.payload.data.purchases;
+            console.log('Loaded purchases from backend:', purchases);
+            
+            // Create a Set of lesson IDs that the user has purchased
+            const purchasedLessonIds = new Set();
+            purchases.forEach(purchase => {
+              purchasedLessonIds.add(purchase.lessonId);
+              console.log('Added purchase to set:', purchase.lessonId, 'for lesson:', purchase.lessonTitle);
+            });
+            
+            console.log('Setting purchased lessons set:', Array.from(purchasedLessonIds));
+            setPurchasedLessons(purchasedLessonIds);
+          }
+        })
+        .catch((error) => {
+          console.error('Error loading lesson purchases:', error);
+        });
+    }
+  }, [dispatch, isLoggedIn, user?._id, role]);
+
+  // Clear purchased lessons when course changes
+  useEffect(() => {
+    console.log('Course changed, clearing purchased lessons');
+    setPurchasedLessons(new Set());
+    setHasCheckedPurchases(false);
+    setForceUpdate(0);
+    
+    // Force refresh of purchase status from backend
+    if (isLoggedIn && user?._id && role === 'USER') {
+      console.log('Refreshing purchase status from backend...');
+      dispatch(getUserPurchases())
+        .then((result) => {
+          if (result.payload?.success) {
+            const purchases = result.payload.data.purchases;
+            const purchasedLessonIds = new Set();
+            purchases.forEach(purchase => {
+              purchasedLessonIds.add(purchase.lessonId);
+            });
+            setPurchasedLessons(purchasedLessonIds);
+            console.log('Updated purchased lessons from backend:', purchasedLessonIds);
+          }
+        })
+        .catch((error) => {
+          console.error('Error refreshing purchase status:', error);
+        });
+    }
+  }, [id]);
+
+  // Function to manually check if a lesson is purchased
+  const checkIndividualLessonPurchase = async (lesson) => {
+    if (role === 'ADMIN') return true;
+    
+    const lessonId = getLessonId(lesson);
+    if (!lessonId) return false;
+    
+    try {
+      const result = await dispatch(checkLessonAccess(lessonId)).unwrap();
+      console.log('Individual lesson access check:', result);
+      return result.data.hasAccess;
+    } catch (error) {
+      console.error('Error checking individual lesson access:', error);
+      return false;
+    }
+  };
+
   // Use course data from state if available, otherwise use from Redux
   const currentCourseData = courseFromState || courseData;
+
+  // Check individual lesson purchases when course data is loaded
+  useEffect(() => {
+    if (currentCourseData && isLoggedIn && user?._id && role === 'USER' && purchasedLessons.size === 0 && !hasCheckedPurchases) {
+      console.log('Course data loaded, checking individual lesson purchases...');
+      setHasCheckedPurchases(true);
+      
+      const allLessons = getAllLessons();
+      // Only check lessons that have valid IDs
+      const validLessons = allLessons.filter(lesson => {
+        const lessonId = getLessonId(lesson);
+        return lessonId;
+      });
+      
+      if (validLessons.length === 0) {
+        console.log('No valid lessons found to check');
+        return;
+      }
+      
+      const checkPromises = validLessons.map(async (lesson) => {
+        const isPurchased = await checkIndividualLessonPurchase(lesson);
+        if (isPurchased) {
+          const lessonId = getLessonId(lesson);
+          setPurchasedLessons(prev => new Set([...prev, lessonId]));
+        }
+        return { lesson, isPurchased };
+      });
+      
+      Promise.all(checkPromises).then(results => {
+        console.log('Individual lesson purchase check results:', results);
+      });
+    }
+  }, [currentCourseData, isLoggedIn, user?._id, role, purchasedLessons.size, hasCheckedPurchases, forceUpdate]);
   
   // Debug: Log course data to see available fields
   console.log('Course Data Debug:', {
@@ -151,6 +263,56 @@ export default function DisplayLecture() {
     previewImage: currentCourseData?.previewImage,
     image: currentCourseData?.image
   });
+
+  // Force refresh purchase status for all lessons
+  const refreshAllLessonAccess = async () => {
+    if (!user?._id || role === 'ADMIN') return;
+    
+    console.log('🔄 Refreshing all lesson access status...');
+    const allLessons = getAllLessons();
+    
+    for (const lesson of allLessons) {
+      const lessonId = getLessonId(lesson);
+      if (lessonId) {
+        try {
+          const result = await dispatch(checkLessonAccess(lessonId)).unwrap();
+          const hasAccess = result.data?.hasAccess === true;
+          
+          if (hasAccess) {
+            lesson._hasAccess = true;
+            lesson._purchased = true;
+            const backendLessonId = result.data?.purchase?.lessonId || lessonId;
+            setPurchasedLessons(prev => new Set([...prev, backendLessonId]));
+            console.log('✅ Updated lesson access:', lessonId);
+          } else {
+            lesson._hasAccess = false;
+            lesson._purchased = false;
+            console.log('❌ Lesson has no access:', lessonId);
+          }
+        } catch (error) {
+          console.error('Error checking lesson access:', lessonId, error);
+        }
+      }
+    }
+    
+    setForceUpdate(prev => prev + 1);
+    console.log('🔄 Finished refreshing lesson access');
+  };
+
+  // Immediately update lesson status when backend confirms access
+  const updateLessonAccessStatus = (lesson, hasAccess, backendLessonId) => {
+    if (hasAccess) {
+      lesson._hasAccess = true;
+      lesson._purchased = true;
+      setPurchasedLessons(prev => new Set([...prev, backendLessonId]));
+      console.log('✅ Immediately updated lesson access:', backendLessonId);
+    } else {
+      lesson._hasAccess = false;
+      lesson._purchased = false;
+      console.log('❌ Immediately cleared lesson access:', backendLessonId);
+    }
+    setForceUpdate(prev => prev + 1);
+  };
 
   // Helper functions
   const hasVideo = (lesson) => {
@@ -183,6 +345,74 @@ export default function DisplayLecture() {
 
   const getLessonPrice = (lesson) => {
     return lesson.price || 10;
+  };
+
+  // Helper function to get a unique lesson ID
+  const getLessonId = (lesson) => {
+    if (!lesson) return null;
+    
+    // Try to get stored lesson ID first (for consistency after purchase)
+    if (lesson._lessonId) {
+      console.log('Using stored lesson ID:', lesson._lessonId);
+      return lesson._lessonId;
+    }
+    
+    // Try to get existing ID
+    const existingId = lesson._id || lesson.id;
+    if (existingId && existingId !== 'undefined') {
+      console.log('Using existing lesson ID:', existingId);
+      return existingId;
+    }
+    
+    // Check if lesson has a backend lesson ID from purchase data
+    if (lesson.purchases && Array.isArray(lesson.purchases) && lesson.purchases.length > 0) {
+      const purchase = lesson.purchases[0];
+      if (purchase.lessonId) {
+        console.log('Using lesson ID from purchase data:', purchase.lessonId);
+        return purchase.lessonId;
+      }
+    }
+    
+    // Generate a unique ID based on lesson title and course
+    const lessonTitle = getLessonTitle(lesson);
+    const courseId = id;
+    if (lessonTitle && courseId) {
+      // Create a more consistent ID that handles Arabic characters better
+      const sanitizedTitle = lessonTitle
+        .replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, '') // Keep Arabic and English alphanumeric
+        .substring(0, 15) // Limit length
+        .toLowerCase();
+      
+      if (sanitizedTitle && sanitizedTitle.length > 0) {
+        const generatedId = `lesson-${courseId}-${sanitizedTitle}`;
+        console.log('Generated lesson ID:', generatedId, 'from title:', lessonTitle);
+        return generatedId;
+      } else {
+        // Fallback to hash-based ID for Arabic-only titles
+        const hash = lessonTitle.split('').reduce((a, b) => {
+          a = ((a << 5) - a) + b.charCodeAt(0);
+          return a & a;
+        }, 0);
+        const hashId = `lesson-${courseId}-${Math.abs(hash)}`;
+        console.log('Generated hash-based lesson ID:', hashId, 'from title:', lessonTitle);
+        return hashId;
+      }
+    }
+    
+    console.log('No lesson ID could be generated for lesson:', lesson);
+    return null;
+  };
+
+  // Helper function to check if lesson is purchased directly from lesson object
+  const isLessonPurchasedFromObject = (lesson, userId) => {
+    if (!lesson || !userId) return false;
+    
+    // Check if lesson has purchases array
+    if (lesson.purchases && Array.isArray(lesson.purchases)) {
+      return lesson.purchases.some(purchase => purchase.userId === userId);
+    }
+    
+    return false;
   };
 
   const getAllLessons = () => {
@@ -232,7 +462,140 @@ export default function DisplayLecture() {
     if (role === 'ADMIN') {
       return true;
     }
-    return purchasedLessons.has(lesson._id || lesson.id);
+    
+    // Check if this is actually a lesson (not a unit)
+    if (!lesson || typeof lesson !== 'object') {
+      return false;
+    }
+    
+    // Check if this is a unit (has lessons array) - units can't be purchased
+    if (lesson.lessons && Array.isArray(lesson.lessons)) {
+      return false;
+    }
+    
+    // Check if this is a unit by title (Arabic units)
+    const lessonTitle = getLessonTitle(lesson);
+    if (lessonTitle.includes('وحدة') || lessonTitle.includes('unit') || lessonTitle.includes('Unit')) {
+      return false;
+    }
+    
+    // Check if this is a unit by data structure (has data.lessons)
+    if (lesson.data && lesson.data.lessons && Array.isArray(lesson.data.lessons)) {
+      return false;
+    }
+    
+    // Check if this is a unit by type field
+    if (lesson.type === 'unit') {
+      return false;
+    }
+    
+    // Check if this is a unit by having no content (empty lesson)
+    if (!lesson.lecture && !lesson.pdf && !lesson.trainingExam && !lesson.finalExam && lesson.title?.includes('وحدة')) {
+      return false;
+    }
+    
+    const lessonId = getLessonId(lesson);
+    
+    // If no lesson ID, this might be a unit or invalid object
+    if (!lessonId) {
+      return false;
+    }
+    
+    // DEBUG: Log the lesson status
+    console.log('🔍 Checking lesson purchase status:', {
+      lessonId: lessonId,
+      lessonTitle: getLessonTitle(lesson),
+      _hasAccess: lesson._hasAccess,
+      _purchased: lesson._purchased,
+      inPurchasedSet: purchasedLessons.has(lessonId),
+      purchasedLessons: Array.from(purchasedLessons),
+      role: role
+    });
+    
+    // SIMPLE: Check if lesson has access flag from backend
+    if (lesson._hasAccess === true) {
+      console.log('✅ Lesson has access flag:', lessonId);
+      return true;
+    }
+    
+    // SIMPLE: Check if lesson is marked as purchased
+    if (lesson._purchased === true) {
+      console.log('✅ Lesson marked as purchased:', lessonId);
+      return true;
+    }
+    
+    // SIMPLE: Check if lesson ID is in purchased set
+    const inSet = purchasedLessons.has(lessonId);
+    if (inSet) {
+      console.log('✅ Lesson found in purchased set:', lessonId);
+    } else {
+      console.log('❌ Lesson NOT found in purchased set:', lessonId);
+    }
+    
+    return inSet;
+  };
+
+  const isLessonPurchasable = (lesson) => {
+    // Check if this is actually a lesson (not a unit)
+    if (!lesson || typeof lesson !== 'object') {
+      console.log('isLessonPurchasable: Invalid lesson object:', lesson);
+      return false;
+    }
+    
+    // Get lesson title early
+    const lessonTitle = getLessonTitle(lesson);
+    
+    // STRONG UNIT DETECTION: If title contains "وحدة", it's definitely a unit
+    if (lessonTitle && lessonTitle.includes('وحدة')) {
+      console.log('🚫 STRONG UNIT DETECTION: This is a unit, not purchasable:', lessonTitle);
+      return false;
+    }
+    
+    // Check if this is a unit (has lessons array) - units can't be purchased
+    if (lesson.lessons && Array.isArray(lesson.lessons)) {
+      console.log('isLessonPurchasable: Has lessons array (unit):', lesson);
+      return false;
+    }
+    
+    // Check if this is a unit by title (English units)
+    if (lessonTitle && (lessonTitle.includes('unit') || lessonTitle.includes('Unit'))) {
+      console.log('isLessonPurchasable: Unit detected by English title:', lessonTitle);
+      return false;
+    }
+    
+    // Check if this is a unit by data structure (has data.lessons)
+    if (lesson.data && lesson.data.lessons && Array.isArray(lesson.data.lessons)) {
+      console.log('isLessonPurchasable: Unit detected by data structure:', lesson);
+      return false;
+    }
+    
+    // Check if this is a unit by type field
+    if (lesson.type === 'unit') {
+      console.log('isLessonPurchasable: Unit detected by type:', lesson);
+      return false;
+    }
+    
+    // Check if this is a unit by having no content (empty lesson)
+    if (!lesson.lecture && !lesson.pdf && !lesson.trainingExam && !lesson.finalExam && lesson.title?.includes('وحدة')) {
+      console.log('isLessonPurchasable: Unit detected by content check:', lesson);
+      return false;
+    }
+    
+    // Check if lesson has valid content
+    const hasContent = lesson.lecture || lesson.pdf || lesson.trainingExam || lesson.finalExam || lesson.video || lesson._id;
+    if (!hasContent) {
+      console.log('isLessonPurchasable: No content found:', lesson);
+      return false;
+    }
+    
+    // Check if this is a unit by having duration 0 and being a unit-like title
+    if (getLessonDuration(lesson) === 0 && lessonTitle && lessonTitle.includes('وحدة')) {
+      console.log('isLessonPurchasable: Unit detected by duration 0 and unit title:', lessonTitle);
+      return false;
+    }
+    
+    console.log('isLessonPurchasable: Lesson is purchasable:', lesson);
+    return true;
   };
 
   const canAffordLesson = (lesson) => {
@@ -240,11 +603,32 @@ export default function DisplayLecture() {
     if (role === 'ADMIN') {
       return true;
     }
+    
+    // Check if lesson is purchasable
+    if (!isLessonPurchasable(lesson)) {
+      console.log('Lesson not purchasable in canAffordLesson:', lesson);
+      return false;
+    }
+    
     const price = getLessonPrice(lesson);
+    console.log('canAffordLesson check:', {
+      lesson: lesson,
+      lessonTitle: getLessonTitle(lesson),
+      price: price,
+      balance: balance,
+      canAfford: balance >= price
+    });
     return balance >= price;
   };
 
   const handlePurchaseLesson = async (lesson) => {
+    // Check if lesson is actually a lesson object and not an event
+    if (!lesson || typeof lesson === 'object' && lesson.nativeEvent) {
+      console.error('Invalid lesson object passed to handlePurchaseLesson:', lesson);
+      toast.error('خطأ في بيانات الدرس');
+      return;
+    }
+
     if (!isLoggedIn || !user) {
       toast.error('يرجى تسجيل الدخول أولاً');
       return;
@@ -258,15 +642,18 @@ export default function DisplayLecture() {
     }
 
     const price = getLessonPrice(lesson);
-    // Try to get lesson ID from various sources
-    let lessonId = lesson._id || lesson.id || lesson.lessonId;
-    
-    // If no ID found, create a unique identifier based on lesson title and course
-    if (!lessonId) {
-      const lessonTitle = getLessonTitle(lesson);
-      lessonId = `lesson-${id}-${lessonTitle.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`;
-    }
+    // Get lesson ID using the helper function
+    const lessonId = getLessonId(lesson);
     const lessonTitle = getLessonTitle(lesson);
+    
+    console.log('Lesson ID for purchase:', {
+      lessonId: lessonId,
+      lessonTitle: lessonTitle,
+      lesson: lesson,
+      lessonKeys: Object.keys(lesson || {}),
+      lessonIdType: typeof lessonId,
+      lessonIdValid: lessonId && lessonId !== 'undefined' && lessonId !== 'null'
+    });
 
     console.log('Purchase attempt:', {
       courseId: id,
@@ -274,8 +661,31 @@ export default function DisplayLecture() {
       lessonTitle: lessonTitle,
       amount: price,
       lesson: lesson,
-      selectedUnit: selectedUnit
+      selectedUnit: selectedUnit,
+      currentPurchasedLessons: Array.from(purchasedLessons)
     });
+
+    // Check if already purchased before attempting purchase
+    const isAlreadyPurchased = purchasedLessons.has(lessonId);
+    if (isAlreadyPurchased) {
+      toast.success('أنت تملك هذا الدرس بالفعل!');
+      setShowPurchaseModal(false);
+      return;
+    }
+
+    // Double-check with backend
+    try {
+      const checkResult = await dispatch(checkLessonAccess(lessonId)).unwrap();
+      console.log('Backend access check result in handlePurchaseLesson:', checkResult);
+      if (checkResult.data.hasAccess === true) {
+        toast.success('أنت تملك هذا الدرس بالفعل!');
+        setPurchasedLessons(prev => new Set([...prev, lessonId]));
+        setShowPurchaseModal(false);
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking lesson access status:', error);
+    }
 
     // Validate required fields
     if (!lessonId) {
@@ -290,6 +700,17 @@ export default function DisplayLecture() {
 
     if (!price || price <= 0) {
       toast.error('سعر الدرس غير صحيح');
+      return;
+    }
+
+    // Check if lesson is actually purchasable
+    if (!isLessonPurchasable(lesson)) {
+      console.log('Lesson is not purchasable:', {
+        lesson: lesson,
+        lessonTitle: lessonTitle,
+        lessonId: lessonId
+      });
+      toast.error('هذا الدرس غير قابل للشراء');
       return;
     }
 
@@ -309,21 +730,210 @@ export default function DisplayLecture() {
 
       console.log('Sending purchase data:', purchaseData);
 
-      const result = await dispatch(purchaseLesson(purchaseData)).unwrap();
+      // Use the simple purchase system
+      console.log('Calling purchaseLesson with:', { lessonId, amount: price });
+      const result = await dispatch(purchaseLesson({ lessonId, amount: price })).unwrap();
 
       if (result.success) {
         toast.success('تم شراء الدرس بنجاح!');
-        setPurchasedLessons(prev => new Set([...prev, lessonId]));
+        
+        // Add the purchased lesson ID from the response
+        const purchasedLessonId = result.data.purchase.lessonId;
+        console.log('Purchase successful - lesson IDs:', {
+          originalLessonId: lessonId,
+          purchasedLessonId: purchasedLessonId,
+          lessonTitle: lessonTitle,
+          currentPurchasedLessons: Array.from(purchasedLessons)
+        });
+        
+        setPurchasedLessons(prev => {
+          const newSet = new Set([...prev, purchasedLessonId, lessonId]);
+          console.log('Updated purchased lessons set:', Array.from(newSet));
+          return newSet;
+        });
+        
+        // Also mark the lesson object as purchased for immediate UI update
+        if (selectedLesson) {
+          selectedLesson._purchased = true;
+          selectedLesson._purchaseId = purchasedLessonId;
+          // Store the lesson ID to ensure consistency
+          selectedLesson._lessonId = purchasedLessonId;
+        }
+        
         setShowPurchaseModal(false);
         // Refresh wallet balance
         dispatch(getWalletBalance());
+        
+        // Force a re-render by updating a state variable
+        setForceUpdate(prev => prev + 1);
+        
+        // Update the lesson object in the course data to reflect the purchase
+        if (selectedLesson && result.data.lessonUpdated) {
+          if (!selectedLesson.purchases) selectedLesson.purchases = [];
+          selectedLesson.purchases.push({
+            userId: user._id,
+            purchaseDate: new Date(),
+            amount: price,
+            transactionId: result.data.purchase.transactionId
+          });
+          
+          // Also update the lesson in the course data structure
+          if (currentCourseData) {
+            // Update in unified structure
+            if (currentCourseData.unifiedStructure) {
+              currentCourseData.unifiedStructure.forEach(item => {
+                if (item.type === 'unit' && item.data.lessons) {
+                  item.data.lessons.forEach(lesson => {
+                    if (getLessonId(lesson) === purchasedLessonId) {
+                      lesson._purchased = true;
+                      lesson._purchaseId = purchasedLessonId;
+                      lesson._lessonId = purchasedLessonId;
+                      if (!lesson.purchases) lesson.purchases = [];
+                      lesson.purchases.push({
+                        userId: user._id,
+                        purchaseDate: new Date(),
+                        amount: price,
+                        transactionId: result.data.purchase.transactionId
+                      });
+                    }
+                  });
+                } else if (item.type === 'lesson' && getLessonId(item.data) === purchasedLessonId) {
+                  item.data._purchased = true;
+                  item.data._purchaseId = purchasedLessonId;
+                  item.data._lessonId = purchasedLessonId;
+                  if (!item.data.purchases) item.data.purchases = [];
+                  item.data.purchases.push({
+                    userId: user._id,
+                    purchaseDate: new Date(),
+                    amount: price,
+                    transactionId: result.data.purchase.transactionId
+                  });
+                }
+              });
+            }
+            
+            // Update in legacy units structure
+            if (currentCourseData.units) {
+              currentCourseData.units.forEach(unit => {
+                if (unit.lessons) {
+                  unit.lessons.forEach(lesson => {
+                    if (getLessonId(lesson) === purchasedLessonId) {
+                      lesson._purchased = true;
+                      lesson._purchaseId = purchasedLessonId;
+                      lesson._lessonId = purchasedLessonId;
+                      if (!lesson.purchases) lesson.purchases = [];
+                      lesson.purchases.push({
+                        userId: user._id,
+                        purchaseDate: new Date(),
+                        amount: price,
+                        transactionId: result.data.purchase.transactionId
+                      });
+                    }
+                  });
+                }
+              });
+            }
+            
+            // Update in direct lessons structure
+            if (currentCourseData.directLessons) {
+              currentCourseData.directLessons.forEach(lesson => {
+                if (getLessonId(lesson) === purchasedLessonId) {
+                  lesson._purchased = true;
+                  lesson._purchaseId = purchasedLessonId;
+                  lesson._lessonId = purchasedLessonId;
+                  if (!lesson.purchases) lesson.purchases = [];
+                  lesson.purchases.push({
+                    userId: user._id,
+                    purchaseDate: new Date(),
+                    amount: price,
+                    transactionId: result.data.purchase.transactionId
+                  });
+                }
+              });
+            }
+          }
+        }
+        
+        // Immediately check the purchase status with backend
+        dispatch(checkLessonAccess(purchasedLessonId))
+          .then((checkResult) => {
+            console.log('Immediate purchase status check:', checkResult);
+            if (checkResult.payload?.data?.hasAccess) {
+              console.log('Lesson confirmed as purchased by backend');
+            }
+          })
+          .catch((error) => {
+            console.error('Error checking immediate purchase status:', error);
+          });
+        
+        // Refresh purchased lessons list
+        dispatch(getUserPurchases())
+          .then((result) => {
+            if (result.payload?.success) {
+              const purchases = result.payload.data.purchases;
+              const purchasedLessonIds = new Set();
+              purchases.forEach(purchase => {
+                purchasedLessonIds.add(purchase.lessonId);
+              });
+              setPurchasedLessons(purchasedLessonIds);
+              console.log('Updated purchased lessons:', purchasedLessonIds);
+              
+              // Refresh course data to get updated purchase information
+              setTimeout(() => {
+                dispatch(fetchCourseById(id))
+                  .then((courseResult) => {
+                    console.log('Course data refreshed after purchase:', courseResult);
+                  })
+                  .catch((error) => {
+                    console.error('Error refreshing course data:', error);
+                  });
+              }, 500); // Small delay to ensure backend has updated the data
+              
+              // Force a re-render by updating the component state
+              setTimeout(() => {
+                console.log('Forcing re-render after purchase');
+              }, 100);
+            }
+          })
+          .catch((error) => {
+            console.error('Error refreshing lesson purchases:', error);
+          });
       }
     } catch (error) {
-      if (error.includes('already purchased')) {
+      console.error('Purchase error details:', {
+        error: error,
+        errorType: typeof error,
+        errorMessage: error?.message,
+        errorData: error?.data,
+        errorResponse: error?.response,
+        lessonId: lessonId,
+        lessonTitle: lessonTitle,
+        price: price,
+        user: user?._id
+      });
+      
+      // Check if error is a string and contains the message
+      if (typeof error === 'string' && error.includes('already purchased')) {
         toast.success('أنت تملك هذا الدرس بالفعل!');
         setPurchasedLessons(prev => new Set([...prev, lessonId]));
       } else {
-        toast.error(error || 'فشل في شراء الدرس');
+        // Handle different error types
+        let errorMessage = 'فشل في شراء الدرس';
+        
+        if (error?.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error?.data?.message) {
+          errorMessage = error.data.message;
+        } else if (error?.message) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        } else if (error?.toString) {
+          errorMessage = error.toString();
+        }
+        
+        console.error('Final error message:', errorMessage);
+        toast.error(errorMessage);
       }
     }
   };
@@ -351,6 +961,53 @@ export default function DisplayLecture() {
   };
 
   const openLessonDetailModal = (lesson, unit = null) => {
+    const lessonId = getLessonId(lesson);
+    const isPurchased = isLessonPurchasedByUser(lesson);
+    
+    console.log('🔍 Opening lesson detail modal with:', {
+      lesson: lesson,
+      lessonTitle: getLessonTitle(lesson),
+      lessonId: lessonId,
+      isPurchased: isPurchased,
+      unit: unit,
+      lessonPurchases: lesson?.purchases,
+      lessonPurchased: lesson?._purchased,
+      lessonHasAccess: lesson?._hasAccess,
+      purchasedLessons: Array.from(purchasedLessons),
+      role: role,
+      userId: user?._id
+    });
+    
+    // SIMPLE: Always check with backend and update lesson status immediately
+    if (lessonId) {
+      dispatch(checkLessonAccess(lessonId))
+        .then((result) => {
+          const hasAccess = result.payload?.data?.hasAccess === true;
+          
+          if (hasAccess) {
+            // Update lesson object immediately using helper function
+            const backendLessonId = result.payload?.data?.purchase?.lessonId || lessonId;
+            updateLessonAccessStatus(lesson, true, backendLessonId);
+          } else {
+            // Remove access flags
+            updateLessonAccessStatus(lesson, false, lessonId);
+          }
+        })
+        .catch((error) => {
+          console.error('Error checking lesson access:', error);
+        });
+    }
+    
+    console.log('Setting selected lesson for modal:', {
+      lesson: lesson,
+      lessonId: getLessonId(lesson),
+      lessonTitle: getLessonTitle(lesson),
+      isPurchased: isLessonPurchasedByUser(lesson),
+      purchasedLessons: Array.from(purchasedLessons),
+      lessonPurchased: lesson._purchased,
+      lessonPurchases: lesson.purchases
+    });
+    
     setSelectedLesson(lesson);
     setSelectedUnit(unit);
     setShowLessonDetailModal(true);
@@ -363,9 +1020,69 @@ export default function DisplayLecture() {
   };
 
   const openPurchaseModal = (lesson, unit = null) => {
-    setSelectedLesson(lesson);
-    setSelectedUnit(unit);
-    setShowPurchaseModal(true);
+    // Get lesson ID using the helper function
+    const lessonId = getLessonId(lesson);
+    const isPurchased = isLessonPurchasedByUser(lesson);
+    
+    console.log('openPurchaseModal called with:', {
+      lesson: lesson,
+      lessonId: lessonId,
+      isPurchased: isPurchased,
+      lessonKeys: Object.keys(lesson || {}),
+      unit: unit,
+      purchasedLessons: Array.from(purchasedLessons)
+    });
+    
+    // Check if lessonId is valid
+    if (!lessonId) {
+      console.error('Invalid lesson ID:', lessonId);
+      toast.error('معرف الدرس غير صحيح');
+      return;
+    }
+    
+    // Check if lesson is already purchased
+    if (isPurchased) {
+      console.log('Lesson is already purchased, showing success message');
+      toast.success('أنت تملك هذا الدرس بالفعل!');
+      return;
+    }
+    
+    // Check local purchase status first
+    console.log('openPurchaseModal - isLessonPurchasedByUser result:', {
+      lessonId: lessonId,
+      isPurchased: isPurchased,
+      purchasedLessons: Array.from(purchasedLessons)
+    });
+    
+    // SIMPLE: Check with backend and show correct status
+    dispatch(checkLessonAccess(lessonId))
+      .then((result) => {
+        const backendHasAccess = result.payload?.data?.hasAccess === true;
+        
+        if (backendHasAccess) {
+          // Update lesson object immediately using helper function
+          const backendLessonId = result.payload?.data?.purchase?.lessonId || lessonId;
+          updateLessonAccessStatus(lesson, true, backendLessonId);
+          
+          toast.success('أنت تملك هذا الدرس بالفعل!');
+          return;
+        } else {
+          // Clear access flags
+          updateLessonAccessStatus(lesson, false, lessonId);
+        }
+        
+        setSelectedLesson(lesson);
+        setSelectedUnit(unit);
+        setShowPurchaseModal(true);
+      })
+      .catch((error) => {
+        console.error('Error checking lesson access:', error);
+        setSelectedLesson(lesson);
+        setSelectedUnit(unit);
+        setShowPurchaseModal(true);
+      });
+    
+    return; // Exit early since we're handling everything in the promise
   };
 
   const closePurchaseModal = () => {
@@ -500,8 +1217,8 @@ export default function DisplayLecture() {
                           <div className="text-sm text-gray-600 dark:text-gray-400">رصيد المحفظة</div>
                           <div className="text-2xl font-bold text-gray-900 dark:text-white">
                             {walletLoading ? '...' : `${balance} نقطة`}
-                          </div>
-                        </div>
+                </div>
+              </div>
                       </div>
                       <div className="text-right">
                         <div className="text-sm text-gray-600 dark:text-gray-400">إجمالي التكلفة</div>
@@ -553,9 +1270,18 @@ export default function DisplayLecture() {
                     <FaTrophy className="text-yellow-500" />
                     تقدمك في الدورة
                   </h3>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white">{getProgressPercentage()}%</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">مكتمل</div>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={refreshAllLessonAccess}
+                      className="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors flex items-center gap-1"
+                    >
+                      <FaSync className="text-xs" />
+                      تحديث الحالة
+                    </button>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">{getProgressPercentage()}%</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">مكتمل</div>
+                    </div>
                   </div>
                 </div>
                 
@@ -588,7 +1314,7 @@ export default function DisplayLecture() {
             )}
 
             {/* Course Structure */}
-              <div className="space-y-6">
+                  <div className="space-y-6">
                 <div className="text-center mb-8">
                 <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-3">
                   <FaBookOpen className="text-blue-500" />
@@ -597,7 +1323,7 @@ export default function DisplayLecture() {
                 <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                   استكشف الوحدات والدروس المتنوعة في هذه الدورة التعليمية الشاملة
                   </p>
-                </div>
+                  </div>
 
               {/* Unified Structure */}
               {currentCourseData.unifiedStructure && currentCourseData.unifiedStructure.length > 0 && (
@@ -726,7 +1452,7 @@ export default function DisplayLecture() {
                                             <FaCheck className="inline mr-1" />
                                             تم الشراء
                                           </span>
-                                        ) : (
+                                        ) : isLessonPurchasable(lesson) ? (
                                           <>
                                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriceBadgeColor(getLessonPrice(lesson))}`}>
                                               {formatPrice(getLessonPrice(lesson))}
@@ -738,7 +1464,11 @@ export default function DisplayLecture() {
                                               </span>
                                             )}
                                           </>
-                                        )}
+                                          ) : (
+                                            <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
+                                              غير قابل للشراء
+                                            </span>
+                                          )}
                                         <button
                                           onClick={(e) => {
                                             e.stopPropagation();
@@ -746,14 +1476,19 @@ export default function DisplayLecture() {
                                               openLessonDetailModal(lesson, item);
                                             } else if (isLessonPurchasedByUser(lesson)) {
                                               openLessonDetailModal(lesson, item);
-                                            } else {
+                                            } else if (isLessonPurchasable(lesson)) {
                                               openPurchaseModal(lesson, item);
+                                            } else {
+                                              // For non-purchasable items (like units), just show info
+                                              openLessonDetailModal(lesson, item);
                                             }
                                           }}
                                           className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${
                                             role === 'ADMIN' || isLessonPurchasedByUser(lesson)
                                               ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700'
-                                              : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700'
+                                              : isLessonPurchasable(lesson)
+                                              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700'
+                                              : 'bg-gradient-to-r from-gray-500 to-gray-600 text-white hover:from-gray-600 hover:to-gray-700'
                                           }`}
                                         >
                                           {role === 'ADMIN' ? (
@@ -766,10 +1501,15 @@ export default function DisplayLecture() {
                                               <FaPlay />
                                               مشاهدة
                                             </>
-                                          ) : (
+                                          ) : isLessonPurchasable(lesson) ? (
                                             <>
                                               <FaShoppingCart />
                                               شراء
+                                            </>
+                                          ) : (
+                                            <>
+                                              <FaEye />
+                                              عرض
                                             </>
                                           )}
                                         </button>
@@ -836,7 +1576,7 @@ export default function DisplayLecture() {
                                       اختبار نهائي
                                     </span>
                                   )}
-                                </div>
+                </div>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -913,11 +1653,11 @@ export default function DisplayLecture() {
                     <FaBookOpen className="text-4xl text-blue-500" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                    لا توجد دروس متاحة حالياً
+                      لا توجد دروس متاحة حالياً
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
                     سيتم إضافة الدروس والوحدات التعليمية قريباً. تحقق من هذه الصفحة لاحقاً للحصول على المحتوى الجديد.
-                  </p>
+                    </p>
                   </div>
                 )}
               </div>
@@ -926,6 +1666,16 @@ export default function DisplayLecture() {
 
         {/* Modals */}
         {showLessonDetailModal && selectedLesson && (
+          console.log('Rendering LessonDetailModal with props:', {
+            lesson: selectedLesson,
+            lessonId: getLessonId(selectedLesson),
+            lessonTitle: getLessonTitle(selectedLesson),
+            isPurchased: isLessonPurchasedByUser(selectedLesson),
+            canAfford: canAffordLesson(selectedLesson),
+            role: role,
+            balance: balance,
+            lessonPrice: getLessonPrice(selectedLesson)
+          }) || null,
           <LessonDetailModal
             lesson={selectedLesson}
             unit={selectedUnit}

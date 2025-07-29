@@ -1,23 +1,25 @@
-import { Router } from "express";
-const router = Router();
+import express from 'express';
 import { 
     purchaseLesson, 
-    checkLessonPurchase, 
-    getUserLessonPurchases, 
+    checkLessonAccess, 
+    getUserPurchases, 
     getLessonPurchaseStats 
 } from '../controllers/lessonPurchase.controller.js';
-import { isLoggedIn, authorisedRoles } from "../middleware/auth.middleware.js";
+import { isLoggedIn } from '../middleware/auth.middleware.js';
+import { authorisedRoles } from '../middleware/auth.middleware.js';
 
-// Purchase a lesson
+const router = express.Router();
+
+// Simple purchase lesson - only needs lessonId and userId
 router.post('/purchase', isLoggedIn, purchaseLesson);
 
-// Check if user has purchased a specific lesson
-router.get('/check/:courseId/:lessonId', isLoggedIn, checkLessonPurchase);
+// Check if user has access to lesson
+router.get('/access/:lessonId', isLoggedIn, checkLessonAccess);
 
-// Get user's lesson purchase history
-router.get('/user/history', isLoggedIn, getUserLessonPurchases);
+// Get user's purchased lessons
+router.get('/user-purchases', isLoggedIn, getUserPurchases);
 
 // Get lesson purchase statistics (admin only)
-router.get('/stats/:courseId', isLoggedIn, authorisedRoles('ADMIN'), getLessonPurchaseStats);
+router.get('/stats', isLoggedIn, authorisedRoles('ADMIN'), getLessonPurchaseStats);
 
 export default router; 

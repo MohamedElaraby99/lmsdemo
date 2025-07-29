@@ -123,12 +123,8 @@ export default function Sidebar({ hideBar = false }) {
                 <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400">
                   مركز التعلم
                 </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  بوابتك للمعرفة
-                </p>
               </div>
             </li>
-
             {/* Enhanced Wallet Balance Display */}
             {isLoggedIn && role !== "ADMIN" && (
               <li className="mb-3">

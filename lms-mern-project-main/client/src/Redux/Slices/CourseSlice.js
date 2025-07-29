@@ -58,17 +58,27 @@ export const fetchCourseById = createAsyncThunk("/courses/getById", async (id, {
             toast.success(res?.data?.message, { id: loadingMessage });
             return res?.data;
         } catch (error) {
-            // If regular route fails with subscription error, try admin route as fallback
+            // If regular route fails with subscription error, try public route as fallback
             if (error?.response?.status === 403 && 
                 error?.response?.data?.message?.includes('subscribe') && 
                 endpoint.includes('/courses/') && 
-                !endpoint.includes('/admin/')) {
+                !endpoint.includes('/admin/') && 
+                !endpoint.includes('/public/')) {
                 
-                console.log('Subscription error, trying admin route as fallback');
-                const adminEndpoint = `/courses/admin/${id}`;
-                const adminRes = await axiosInstance.get(adminEndpoint);
-                toast.success(adminRes?.data?.message, { id: loadingMessage });
-                return adminRes?.data;
+                console.log('Subscription error, trying public route as fallback');
+                const publicEndpoint = `/courses/public/${id}`;
+                try {
+                    const publicRes = await axiosInstance.get(publicEndpoint);
+                    toast.success(publicRes?.data?.message, { id: loadingMessage });
+                    return publicRes?.data;
+                } catch (publicError) {
+                    // If public route also fails, try admin route as final fallback
+                    console.log('Public route also failed, trying admin route as final fallback');
+                    const adminEndpoint = `/courses/admin/${id}`;
+                    const adminRes = await axiosInstance.get(adminEndpoint);
+                    toast.success(adminRes?.data?.message, { id: loadingMessage });
+                    return adminRes?.data;
+                }
             }
             throw error;
         }

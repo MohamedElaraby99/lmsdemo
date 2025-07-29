@@ -60,7 +60,7 @@ export default function CourseStructure() {
       
       if (courseDataFromState?.unifiedStructure && courseDataFromState.unifiedStructure.length > 0) {
         console.log('CourseStructure: Using unified structure from state:', courseDataFromState.unifiedStructure);
-        setUnifiedStructure(courseDataFromState.unifiedStructure);
+      setUnifiedStructure(courseDataFromState.unifiedStructure);
       } else if (courseDataFromState?.units && courseDataFromState.units.length > 0) {
         // Convert units from state to unified structure
         console.log('CourseStructure: Converting units from state to unified structure');
@@ -701,13 +701,13 @@ export default function CourseStructure() {
                                           <FaPlus />
                                         </button>
                                       )}
-                                      <button
-                                        onClick={() => deleteUnifiedItem(item.id)}
-                                        className="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-100 dark:hover:bg-red-900"
+                                    <button
+                                      onClick={() => deleteUnifiedItem(item.id)}
+                                      className="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-100 dark:hover:bg-red-900"
                                         title="حذف العنصر"
-                                      >
-                                        <FaTrash />
-                                      </button>
+                                    >
+                                      <FaTrash />
+                                    </button>
                                     </div>
                                   </div>
                                   

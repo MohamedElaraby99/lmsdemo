@@ -1,53 +1,68 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { axiosInstance } from '../../Helpers/axiosInstance';
 
-// Async thunks
+// Simple purchase lesson
 export const purchaseLesson = createAsyncThunk(
     'lessonPurchase/purchaseLesson',
-    async (purchaseData, { rejectWithValue }) => {
+    async ({ lessonId, amount = 10 }, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post('/lesson-purchases/purchase', purchaseData);
+            const response = await axiosInstance.post('/lesson-purchases/purchase', {
+                lessonId,
+                amount
+            });
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to purchase lesson');
+            return rejectWithValue(error.response?.data || 'Purchase failed');
         }
     }
 );
 
-export const checkLessonPurchase = createAsyncThunk(
-    'lessonPurchase/checkLessonPurchase',
-    async ({ courseId, lessonId }, { rejectWithValue }) => {
+// Check lesson access
+export const checkLessonAccess = createAsyncThunk(
+    'lessonPurchase/checkLessonAccess',
+    async (lessonId, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.get(`/lesson-purchases/check/${courseId}/${lessonId}`);
+            const response = await axiosInstance.get(`/lesson-purchases/access/${lessonId}`);
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to check lesson purchase');
+            return rejectWithValue(error.response?.data || 'Access check failed');
         }
     }
 );
 
-export const getUserLessonPurchases = createAsyncThunk(
-    'lessonPurchase/getUserLessonPurchases',
+// Get user purchases
+export const getUserPurchases = createAsyncThunk(
+    'lessonPurchase/getUserPurchases',
     async (_, { rejectWithValue }) => {
         try {
-            console.log('Fetching user lesson purchases...');
-            const response = await axiosInstance.get('/lesson-purchases/user/history');
-            console.log('User lesson purchases response:', response.data);
+            const response = await axiosInstance.get('/lesson-purchases/user-purchases');
             return response.data;
         } catch (error) {
-            console.error('Error fetching user lesson purchases:', error);
-            return rejectWithValue(error.response?.data?.message || 'Failed to get lesson purchases');
+            return rejectWithValue(error.response?.data || 'Failed to get purchases');
+        }
+    }
+);
+
+// Get purchase statistics (admin only)
+export const getPurchaseStats = createAsyncThunk(
+    'lessonPurchase/getPurchaseStats',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/lesson-purchases/stats');
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || 'Failed to get stats');
         }
     }
 );
 
 const initialState = {
     purchases: [],
-    purchaseHistory: [],
+    purchaseStats: null,
     loading: false,
     error: null,
     purchaseLoading: false,
-    purchaseError: null
+    accessLoading: false
 };
 
 const lessonPurchaseSlice = createSlice({
@@ -56,10 +71,9 @@ const lessonPurchaseSlice = createSlice({
     reducers: {
         clearError: (state) => {
             state.error = null;
-            state.purchaseError = null;
         },
-        clearPurchaseError: (state) => {
-            state.purchaseError = null;
+        clearPurchases: (state) => {
+            state.purchases = [];
         }
     },
     extraReducers: (builder) => {
@@ -67,69 +81,66 @@ const lessonPurchaseSlice = createSlice({
             // Purchase lesson
             .addCase(purchaseLesson.pending, (state) => {
                 state.purchaseLoading = true;
-                state.purchaseError = null;
+                state.error = null;
             })
             .addCase(purchaseLesson.fulfilled, (state, action) => {
                 state.purchaseLoading = false;
-                state.purchases.push(action.payload.data.purchase);
+                state.error = null;
+                // Add the new purchase to the list
+                if (action.payload.data?.purchase) {
+                    state.purchases.unshift(action.payload.data.purchase);
+                }
             })
             .addCase(purchaseLesson.rejected, (state, action) => {
                 state.purchaseLoading = false;
-                // Only set error if it's not an "already purchased" error
-                if (!action.payload?.includes('already purchased')) {
-                    state.purchaseError = action.payload;
-                }
+                state.error = action.payload?.message || 'Purchase failed';
             })
-            // Check lesson purchase
-            .addCase(checkLessonPurchase.pending, (state) => {
+            
+            // Check lesson access
+            .addCase(checkLessonAccess.pending, (state) => {
+                state.accessLoading = true;
+                state.error = null;
+            })
+            .addCase(checkLessonAccess.fulfilled, (state, action) => {
+                state.accessLoading = false;
+                state.error = null;
+            })
+            .addCase(checkLessonAccess.rejected, (state, action) => {
+                state.accessLoading = false;
+                state.error = action.payload?.message || 'Access check failed';
+            })
+            
+            // Get user purchases
+            .addCase(getUserPurchases.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(checkLessonPurchase.fulfilled, (state, action) => {
+            .addCase(getUserPurchases.fulfilled, (state, action) => {
                 state.loading = false;
-                const { hasPurchased, purchase } = action.payload.data;
-                if (hasPurchased) {
-                    // Add to purchases if not already present
-                    const existingPurchase = state.purchases.find(p => p.lessonId === purchase.lessonId);
-                    if (!existingPurchase) {
-                        state.purchases.push(purchase);
-                    }
-                }
+                state.error = null;
+                state.purchases = action.payload.data?.purchases || [];
             })
-            .addCase(checkLessonPurchase.rejected, (state, action) => {
+            .addCase(getUserPurchases.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload?.message || 'Failed to get purchases';
             })
-            // Get user lesson purchases
-            .addCase(getUserLessonPurchases.pending, (state) => {
+            
+            // Get purchase stats
+            .addCase(getPurchaseStats.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(getUserLessonPurchases.fulfilled, (state, action) => {
+            .addCase(getPurchaseStats.fulfilled, (state, action) => {
                 state.loading = false;
-                state.purchases = action.payload.data.purchases;
-                state.purchaseHistory = action.payload.data.purchases;
+                state.error = null;
+                state.purchaseStats = action.payload.data;
             })
-            .addCase(getUserLessonPurchases.rejected, (state, action) => {
+            .addCase(getPurchaseStats.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload?.message || 'Failed to get stats';
             });
     }
 });
 
-export const { clearError, clearPurchaseError } = lessonPurchaseSlice.actions;
-
-// Selectors
-export const selectLessonPurchases = (state) => state.lessonPurchase.purchases;
-export const selectPurchaseHistory = (state) => state.lessonPurchase.purchaseHistory;
-export const selectLessonPurchaseLoading = (state) => state.lessonPurchase.loading;
-export const selectLessonPurchaseError = (state) => state.lessonPurchase.error;
-export const selectPurchaseLoading = (state) => state.lessonPurchase.purchaseLoading;
-export const selectPurchaseError = (state) => state.lessonPurchase.purchaseError;
-
-// Helper selector to check if a lesson is purchased
-export const selectIsLessonPurchased = (state, lessonId) => {
-    return state.lessonPurchase.purchases.some(purchase => purchase.lessonId === lessonId);
-};
-
+export const { clearError, clearPurchases } = lessonPurchaseSlice.actions;
 export default lessonPurchaseSlice.reducer; 

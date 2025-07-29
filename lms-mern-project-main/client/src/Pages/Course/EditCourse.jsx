@@ -178,8 +178,8 @@ export default function EditCourse() {
             data: {
               title: unit.title,
               description: unit.description,
-              lessons: (unit.lessons || []).map(lesson => ({
-                ...lesson,
+            lessons: (unit.lessons || []).map(lesson => ({
+              ...lesson,
                 // Remove _id if it's a string to avoid MongoDB casting issues
                 _id: undefined,
                 id: lesson._id || lesson.id || `lesson-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
@@ -712,18 +712,18 @@ export default function EditCourse() {
 
     // Debug what we're passing
     const courseDataToPass = {
-      ...courseData,
-      title: userInput.title,
-      description: userInput.description,
-      subject: userInput.subject,
-      stage: userInput.stage,
-      createdBy: userInput.createdBy,
-      thumbnail: userInput.thumbnail,
-      previewImage: userInput.previewImage,
-      unifiedStructure: unifiedStructure,
-      units: courseStructure.units,
-      directLessons: courseStructure.directLessons,
-      structureType: structureMode === 'unified' ? 'unified' : 'legacy'
+          ...courseData,
+          title: userInput.title,
+          description: userInput.description,
+          subject: userInput.subject,
+          stage: userInput.stage,
+          createdBy: userInput.createdBy,
+          thumbnail: userInput.thumbnail,
+          previewImage: userInput.previewImage,
+          unifiedStructure: unifiedStructure,
+          units: courseStructure.units,
+          directLessons: courseStructure.directLessons,
+          structureType: structureMode === 'unified' ? 'unified' : 'legacy'
     };
     
     console.log('EditCourse: Passing course data to structure page:', courseDataToPass);
@@ -877,7 +877,7 @@ export default function EditCourse() {
                         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
                           <div className="flex items-start gap-3">
                             <FaInfo className="text-blue-500 mt-0.5 flex-shrink-0" />
-                            <div>
+                        <div>
                               <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
                                 معلومات المدرس
                               </h4>

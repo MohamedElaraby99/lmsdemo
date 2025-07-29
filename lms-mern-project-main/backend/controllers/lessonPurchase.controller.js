@@ -1,22 +1,15 @@
 import AppError from '../utils/error.utils.js';
 import lessonPurchaseModel from '../models/lessonPurchase.model.js';
-import courseModel from '../models/course.model.js';
 import userModel from '../models/user.model.js';
 
-// Purchase a single lesson
+// Simple purchase lesson - only needs lessonId and userId
 const purchaseLesson = async (req, res, next) => {
     try {
-        const { courseId, lessonId, unitId, lessonTitle, unitTitle, amount } = req.body;
+        const { lessonId, amount = 10 } = req.body;
         const userId = req.user.id;
 
-        if (!courseId || !lessonId || !lessonTitle || !amount) {
-            return next(new AppError('Course ID, Lesson ID, Lesson Title, and amount are required', 400));
-        }
-
-        // Verify course exists
-        const course = await courseModel.findById(courseId);
-        if (!course) {
-            return next(new AppError('Course not found', 404));
+        if (!lessonId) {
+            return next(new AppError('Lesson ID is required', 400));
         }
 
         // Verify user exists and get wallet balance
@@ -34,7 +27,6 @@ const purchaseLesson = async (req, res, next) => {
         // Check if user already purchased this lesson
         const existingPurchase = await lessonPurchaseModel.findOne({
             user: userId,
-            course: courseId,
             lessonId: lessonId,
             status: 'completed'
         });
@@ -51,7 +43,7 @@ const purchaseLesson = async (req, res, next) => {
             type: 'purchase',
             amount: -amount, // Negative for purchase
             code: `LESSON_${lessonId}`,
-            description: `Lesson purchase: ${lessonTitle}`,
+            description: `Lesson purchase: ${lessonId}`,
             date: new Date(),
             status: 'completed'
         };
@@ -64,18 +56,14 @@ const purchaseLesson = async (req, res, next) => {
         // Create lesson purchase record
         const lessonPurchase = await lessonPurchaseModel.create({
             user: userId,
-            course: courseId,
             lessonId: lessonId,
-            lessonTitle: lessonTitle,
-            unitId: unitId || null,
-            unitTitle: unitTitle || null,
+            lessonTitle: lessonId, // Using lessonId as title for simplicity
             amount: amount,
             currency: 'EGP',
             status: 'completed',
             transactionId: `LESSON_TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            description: `Purchase of lesson: ${lessonTitle}`,
+            description: `Purchase of lesson: ${lessonId}`,
             metadata: {
-                courseTitle: course.title,
                 lessonPrice: amount,
                 userEmail: user.email,
                 userName: user.fullName
@@ -103,34 +91,34 @@ const purchaseLesson = async (req, res, next) => {
                 }
             }
         });
-
     } catch (error) {
-        return next(new AppError(error.message, 500));
+        console.error('Error in purchaseLesson:', error);
+        next(new AppError('Failed to purchase lesson', 500));
     }
 };
 
-// Check if user has purchased a specific lesson
-const checkLessonPurchase = async (req, res, next) => {
+// Simple check if user has access to lesson
+const checkLessonAccess = async (req, res, next) => {
     try {
-        const { courseId, lessonId } = req.params;
+        const { lessonId } = req.params;
         const userId = req.user.id;
 
-        if (!courseId || !lessonId) {
-            return next(new AppError('Course ID and Lesson ID are required', 400));
+        if (!lessonId) {
+            return next(new AppError('Lesson ID is required', 400));
         }
 
+        // Check if user has purchased this lesson
         const purchase = await lessonPurchaseModel.findOne({
             user: userId,
-            course: courseId,
             lessonId: lessonId,
             status: 'completed'
         });
 
         res.status(200).json({
             success: true,
-            message: 'Lesson purchase status checked',
+            message: 'Lesson access checked',
             data: {
-                hasPurchased: !!purchase,
+                hasAccess: !!purchase,
                 purchase: purchase ? {
                     id: purchase._id,
                     lessonId: purchase.lessonId,
@@ -140,105 +128,102 @@ const checkLessonPurchase = async (req, res, next) => {
                 } : null
             }
         });
-
     } catch (error) {
-        return next(new AppError(error.message, 500));
+        console.error('Error in checkLessonAccess:', error);
+        next(new AppError('Failed to check lesson access', 500));
     }
 };
 
-// Get user's lesson purchase history
-const getUserLessonPurchases = async (req, res, next) => {
+// Get user's purchased lessons
+const getUserPurchases = async (req, res, next) => {
     try {
         const userId = req.user.id;
 
-        const purchases = await lessonPurchaseModel.find({ 
-            user: userId, 
-            status: 'completed' 
-        })
-        .populate('course', 'title description thumbnail')
-        .sort({ createdAt: -1 });
+        const purchases = await lessonPurchaseModel.find({
+            user: userId,
+            status: 'completed'
+        }).sort({ createdAt: -1 });
 
-        console.log('User lesson purchases found:', purchases.length);
-        
         res.status(200).json({
             success: true,
-            message: 'Lesson purchases retrieved successfully',
+            message: 'User purchases retrieved successfully',
             data: {
                 purchases: purchases.map(purchase => ({
                     id: purchase._id,
                     lessonId: purchase.lessonId,
                     lessonTitle: purchase.lessonTitle,
-                    unitTitle: purchase.unitTitle,
                     amount: purchase.amount,
                     currency: purchase.currency,
-                    course: purchase.course,
                     purchaseDate: purchase.createdAt,
                     transactionId: purchase.transactionId
                 })),
-                totalPurchases: purchases.length
+                totalPurchases: purchases.length,
+                totalSpent: purchases.reduce((sum, purchase) => sum + purchase.amount, 0)
             }
         });
-
     } catch (error) {
-        return next(new AppError(error.message, 500));
+        console.error('Error in getUserPurchases:', error);
+        next(new AppError('Failed to get user purchases', 500));
     }
 };
 
-// Get lesson purchase statistics for admin
+// Get lesson purchase statistics (for admin)
 const getLessonPurchaseStats = async (req, res, next) => {
     try {
-        const { courseId } = req.params;
-
-        if (!courseId) {
-            return next(new AppError('Course ID is required', 400));
-        }
-
         const stats = await lessonPurchaseModel.aggregate([
             {
-                $match: {
-                    course: courseId,
-                    status: 'completed'
-                }
+                $match: { status: 'completed' }
             },
             {
                 $group: {
-                    _id: '$lessonId',
-                    lessonTitle: { $first: '$lessonTitle' },
-                    unitTitle: { $first: '$unitTitle' },
+                    _id: null,
                     totalPurchases: { $sum: 1 },
                     totalRevenue: { $sum: '$amount' },
                     averagePrice: { $avg: '$amount' }
                 }
-            },
-            {
-                $sort: { totalPurchases: -1 }
             }
         ]);
 
-        const totalRevenue = stats.reduce((sum, stat) => sum + stat.totalRevenue, 0);
-        const totalPurchases = stats.reduce((sum, stat) => sum + stat.totalPurchases, 0);
+        const lessonStats = await lessonPurchaseModel.aggregate([
+            {
+                $match: { status: 'completed' }
+            },
+            {
+                $group: {
+                    _id: '$lessonId',
+                    purchaseCount: { $sum: 1 },
+                    totalRevenue: { $sum: '$amount' }
+                }
+            },
+            {
+                $sort: { purchaseCount: -1 }
+            },
+            {
+                $limit: 10
+            }
+        ]);
 
         res.status(200).json({
             success: true,
             message: 'Lesson purchase statistics retrieved successfully',
             data: {
-                lessonStats: stats,
-                summary: {
-                    totalRevenue,
-                    totalPurchases,
-                    averageRevenuePerLesson: totalPurchases > 0 ? totalRevenue / totalPurchases : 0
-                }
+                overall: stats[0] || {
+                    totalPurchases: 0,
+                    totalRevenue: 0,
+                    averagePrice: 0
+                },
+                topLessons: lessonStats
             }
         });
-
     } catch (error) {
-        return next(new AppError(error.message, 500));
+        console.error('Error in getLessonPurchaseStats:', error);
+        next(new AppError('Failed to get lesson purchase statistics', 500));
     }
 };
 
 export {
     purchaseLesson,
-    checkLessonPurchase,
-    getUserLessonPurchases,
+    checkLessonAccess,
+    getUserPurchases,
     getLessonPurchaseStats
 }; 
