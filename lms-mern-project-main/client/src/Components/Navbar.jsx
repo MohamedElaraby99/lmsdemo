@@ -24,28 +24,13 @@ export default function Navbar() {
 
   const toggleMenu = () => {
     // Trigger the Sidebar drawer instead of mobile menu
-    const drawerToggle = document.getElementById('my-drawer');
-    const drawerSide = document.getElementsByClassName("drawer-side");
+    const drawerToggle = document.getElementById('sidebar-drawer');
     
-    if (drawerToggle && drawerSide[0]) {
+    if (drawerToggle) {
       console.log("Navbar burger clicked - toggling drawer");
       drawerToggle.checked = !drawerToggle.checked;
-      
-      if (drawerToggle.checked) {
-        // Open drawer
-        drawerSide[0].style.width = "auto";
-        drawerSide[0].style.right = "0";
-        drawerSide[0].style.left = "auto";
-        drawerSide[0].classList.add("drawer-open");
-      } else {
-        // Close drawer
-        drawerSide[0].style.width = "0";
-        drawerSide[0].style.right = "0";
-        drawerSide[0].style.left = "auto";
-        drawerSide[0].classList.remove("drawer-open");
-      }
     } else {
-      console.log("Drawer elements not found");
+      console.log("Drawer element not found");
     }
   };
 

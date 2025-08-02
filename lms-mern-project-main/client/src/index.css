@@ -340,6 +340,53 @@ input::placeholder, textarea::placeholder {
   right: 0 !important;
 }
 
+/* RTL Drawer Styles - Ensure sidebar opens from right */
+.drawer.drawer-end .drawer-side {
+  right: 0 !important;
+  left: auto !important;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+  z-index: 50 !important;
+}
+
+.drawer.drawer-end .drawer-side.drawer-open {
+  transform: translateX(0) !important;
+  width: 320px !important;
+  z-index: 50 !important;
+}
+
+/* Drawer toggle mechanism - when checkbox is checked */
+.drawer-toggle:checked ~ .drawer-side {
+  transform: translateX(0) !important;
+  width: 320px !important;
+  z-index: 50 !important;
+}
+
+/* Ensure drawer overlay covers the right side but doesn't block sidebar */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  pointer-events: none;
+}
+
+/* When drawer is open, show overlay */
+.drawer-toggle:checked ~ .drawer-side .drawer-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Ensure sidebar content is clickable */
+.drawer.drawer-end .drawer-side > div {
+  z-index: 60 !important;
+  position: relative;
+  pointer-events: auto;
+}
+
 /* Menu slide animations */
 .menu-slide-enter {
   opacity: 0;
