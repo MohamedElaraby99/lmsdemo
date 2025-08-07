@@ -39,6 +39,8 @@ import StageDashboard from "./Pages/Dashboard/StageDashboard";
 import Instructors from "./Pages/Instructors";
 import InstructorDetail from "./Pages/InstructorDetail";
 import CourseContentManager from './Pages/Dashboard/CourseContentManager';
+import CoursesPage from './Pages/Courses/CoursesPage';
+import CourseDetail from './Pages/Courses/CourseDetail';
 
 import RequireAuth from "./Components/auth/RequireAuth";
 
@@ -96,6 +98,8 @@ function App() {
         <Route path="/qa/edit/:id" element={<QAEdit />} />
         <Route path="/qa/:id" element={<QADetail />} />
         <Route path="/subjects" element={<SubjectList />} />
+        <Route path="/courses" element={<CoursesPage />} />
+        <Route path="/courses/:id" element={<CourseDetail />} />
 
                   <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
                     <Route path="/exam-history" element={<ExamHistory />} />

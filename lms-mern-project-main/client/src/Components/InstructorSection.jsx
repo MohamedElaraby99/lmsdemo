@@ -43,7 +43,7 @@ const InstructorSection = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 dark:text-white mb-6">
-              تعلم من أفضل الخبراء في المجال
+            تعلم من أفضل الخبراء للتعلم
             </h2>
             <div className="w-24 h-1 bg-blue-500 mx-auto mb-6"></div>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
@@ -72,7 +72,7 @@ const InstructorSection = () => {
           {/* Header */}
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-gray-800 dark:text-white mb-6">
-              تعلم من أفضل الخبراء في المجال
+              تعلم من أفضل الخبراء  
             </h2>
             <div className="w-24 h-1 bg-blue-500 mx-auto mb-6"></div>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">

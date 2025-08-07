@@ -9,16 +9,16 @@ export const createCourse = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Title, instructor, stage, and subject are required' });
     }
     const course = await Course.create({
-      title,
-      description,
+            title,
+            description,
       instructor,
-      stage,
+            stage,
       subject,
       units: [],
       directLessons: []
     });
     return res.status(201).json({ success: true, message: 'Course created', data: { course } });
-  } catch (error) {
+            } catch (error) {
     return next(new AppError(error.message, 500));
   }
 };
@@ -39,7 +39,11 @@ export const getAllCourses = async (req, res, next) => {
 // Get featured courses
 export const getFeaturedCourses = async (req, res, next) => {
   try {
-    const courses = await Course.find().populate('instructor', 'name').populate('stage', 'name').limit(6);
+    const courses = await Course.find()
+      .populate('instructor', 'name')
+      .populate('stage', 'name')
+      .populate('subject', 'name')
+      .limit(6);
     return res.status(200).json({ success: true, data: { courses } });
   } catch (error) {
     return next(new AppError(error.message, 500));
@@ -54,7 +58,7 @@ export const getCourseById = async (req, res, next) => {
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'name');
-    if (!course) {
+        if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
     return res.status(200).json({ success: true, data: { course } });
@@ -77,7 +81,7 @@ export const updateCourse = async (req, res, next) => {
       .populate('stage', 'name')
       .populate('subject', 'name');
     
-    if (!course) {
+        if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
     return res.status(200).json({ success: true, message: 'Course updated', data: { course } });
@@ -91,13 +95,13 @@ export const deleteCourse = async (req, res, next) => {
   try {
     const { id } = req.params;
     const course = await Course.findByIdAndDelete(id);
-    if (!course) {
+        if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
     return res.status(200).json({ success: true, message: 'Course deleted' });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Get course stats
@@ -121,9 +125,9 @@ export const getCourseStats = async (req, res, next) => {
     };
     
     return res.status(200).json({ success: true, data: stats });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Add a unit to a course
@@ -135,40 +139,40 @@ export const addUnitToCourse = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Unit title is required' });
     }
     const course = await Course.findById(courseId);
-    if (!course) {
+        if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
     course.units.push({ title, description, price, lessons: [] });
-    await course.save();
+        await course.save();
     return res.status(200).json({ success: true, message: 'Unit added', data: { course } });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Add a lesson to a unit by unit ID
 export const addLessonToUnit = async (req, res, next) => {
-  try {
-    const { courseId, unitId } = req.params;
+    try {
+        const { courseId, unitId } = req.params;
     const { lessonData } = req.body;
     const { title, description, price, content } = lessonData;
-    if (!title) {
+        if (!title) {
       return res.status(400).json({ success: false, message: 'Lesson title is required' });
-    }
+        }
     const course = await Course.findById(courseId);
-    if (!course) {
+        if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
     const unit = course.units.id(unitId);
-    if (!unit) {
+        if (!unit) {
       return res.status(404).json({ success: false, message: 'Unit not found' });
     }
     unit.lessons.push({ title, description, price, content });
-    await course.save();
+        await course.save();
     return res.status(200).json({ success: true, message: 'Lesson added to unit', data: { course } });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Add a direct lesson to a course
@@ -181,15 +185,15 @@ export const addDirectLessonToCourse = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Lesson title is required' });
     }
     const course = await Course.findById(courseId);
-    if (!course) {
+        if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
     course.directLessons.push({ title, description, price, content });
-    await course.save();
+        await course.save();
     return res.status(200).json({ success: true, message: 'Direct lesson added', data: { course } });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Update a lesson by lesson ID
@@ -202,10 +206,10 @@ export const updateLesson = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Lesson title is required' });
     }
     const course = await Course.findById(courseId);
-    if (!course) {
+        if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
-    if (unitId) {
+        if (unitId) {
       // Update lesson in unit
       const unit = course.units.id(unitId);
       if (!unit) {
@@ -218,7 +222,7 @@ export const updateLesson = async (req, res, next) => {
       lesson.title = title;
       lesson.description = description;
       lesson.price = price;
-    } else {
+        } else {
       // Update direct lesson
       const lesson = course.directLessons.id(lessonId);
       if (!lesson) {
@@ -228,11 +232,11 @@ export const updateLesson = async (req, res, next) => {
       lesson.description = description;
       lesson.price = price;
     }
-    await course.save();
+        await course.save();
     return res.status(200).json({ success: true, message: 'Lesson updated', data: { course } });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Update a lesson content by lesson ID
@@ -243,11 +247,11 @@ export const updateLessonContent = async (req, res, next) => {
     const course = await Course.findById(courseId);
     if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
     let lesson;
-    if (unitId) {
+        if (unitId) {
       const unit = course.units.id(unitId);
       if (!unit) return res.status(404).json({ success: false, message: 'Unit not found' });
       lesson = unit.lessons.id(lessonId);
-    } else {
+        } else {
       lesson = course.directLessons.id(lessonId);
     }
     if (!lesson) return res.status(404).json({ success: false, message: 'Lesson not found' });
@@ -255,11 +259,11 @@ export const updateLessonContent = async (req, res, next) => {
     if (pdfs !== undefined) lesson.pdfs = pdfs;
     if (exams !== undefined) lesson.exams = exams;
     if (trainings !== undefined) lesson.trainings = trainings;
-    await course.save();
+        await course.save();
     return res.status(200).json({ success: true, message: 'Lesson content updated', data: { lesson } });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Delete a lesson by lesson ID
@@ -268,11 +272,11 @@ export const deleteLesson = async (req, res, next) => {
     const { courseId, lessonId } = req.params;
     const { unitId } = req.body;
     const course = await Course.findById(courseId);
-    if (!course) {
+        if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
-    
-    if (unitId) {
+
+        if (unitId) {
       // Delete lesson from unit
       const unit = course.units.id(unitId);
       if (!unit) {
@@ -283,28 +287,28 @@ export const deleteLesson = async (req, res, next) => {
         return res.status(404).json({ success: false, message: 'Lesson not found in unit' });
       }
       lesson.deleteOne();
-    } else {
+        } else {
       // Delete direct lesson
       const lesson = course.directLessons.id(lessonId);
       if (!lesson) {
         return res.status(404).json({ success: false, message: 'Direct lesson not found' });
       }
       lesson.deleteOne();
-    }
-    
-    await course.save();
+        }
+
+        await course.save();
     return res.status(200).json({ success: true, message: 'Lesson deleted', data: { course } });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Delete a unit by unit ID
 export const deleteUnit = async (req, res, next) => {
-  try {
+    try {
     const { courseId, unitId } = req.params;
     const course = await Course.findById(courseId);
-    if (!course) {
+        if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
     
@@ -341,11 +345,11 @@ export const updateUnit = async (req, res, next) => {
     unit.title = title;
     unit.description = description;
     unit.price = price;
-    await course.save();
+        await course.save();
     return res.status(200).json({ success: true, message: 'Unit updated', data: { course } });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Reorder lessons in a unit or direct lessons
@@ -354,11 +358,11 @@ export const reorderLessons = async (req, res, next) => {
     const { courseId } = req.params;
     const { unitId, lessonId, newIndex } = req.body;
     const course = await Course.findById(courseId);
-    if (!course) {
+        if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
-    }
-    
-    if (unitId) {
+        }
+
+        if (unitId) {
       // Reorder lesson in unit
       const unit = course.units.id(unitId);
       if (!unit) {
@@ -373,7 +377,7 @@ export const reorderLessons = async (req, res, next) => {
       lesson.deleteOne();
       // Insert at new position
       unit.lessons.splice(newIndex, 0, lesson);
-    } else {
+        } else {
       // Reorder direct lesson
       const lesson = course.directLessons.id(lessonId);
       if (!lesson) {
@@ -384,13 +388,13 @@ export const reorderLessons = async (req, res, next) => {
       lesson.deleteOne();
       // Insert at new position
       course.directLessons.splice(newIndex, 0, lesson);
-    }
-    
-    await course.save();
+        }
+
+        await course.save();
     return res.status(200).json({ success: true, message: 'Lesson reordered', data: { course } });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Take an exam
@@ -404,7 +408,7 @@ export const takeExam = async (req, res, next) => {
     if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
 
     let lesson;
-    if (unitId) {
+        if (unitId) {
       const unit = course.units.id(unitId);
       if (!unit) return res.status(404).json({ success: false, message: 'Unit not found' });
       lesson = unit.lessons.id(lessonId);
@@ -469,17 +473,17 @@ export const takeExam = async (req, res, next) => {
     await course.save();
 
     return res.status(200).json({
-      success: true,
+            success: true,
       message: 'Exam submitted successfully',
-      data: {
+            data: {
         score,
         totalQuestions: exam.questions.length,
         percentage: Math.round((score / exam.questions.length) * 100)
-      }
-    });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };
 
 // Get exam results for a user
@@ -510,9 +514,9 @@ export const getExamResults = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'No exam attempt found' });
     }
 
-    return res.status(200).json({
-      success: true,
-      data: {
+            return res.status(200).json({
+                success: true,
+                data: {
         exam: {
           title: exam.title,
           description: exam.description,
@@ -592,15 +596,15 @@ export const submitTrainingAttempt = async (req, res, next) => {
     await course.save();
 
     return res.status(200).json({
-      success: true,
+            success: true,
       message: 'Training attempt submitted successfully',
-      data: {
+            data: {
         score,
         totalQuestions: training.questions.length,
         percentage: Math.round((score / training.questions.length) * 100)
       }
     });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
 };

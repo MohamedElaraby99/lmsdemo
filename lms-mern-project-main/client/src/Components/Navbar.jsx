@@ -90,6 +90,7 @@ export default function Navbar() {
   const menuItems = [
     { name: "الرئيسية", path: "/", icon: FaHome },
     { name: "الكورسات", path: "/subjects", icon: FaGraduationCap },
+    { name: "الدورات", path: "/courses", icon: FaList },
     
     { name: "المدونة", path: "/blogs", icon: FaBlog },
     { name: "الأسئلة والأجوبة", path: "/qa", icon: FaQuestionCircle },

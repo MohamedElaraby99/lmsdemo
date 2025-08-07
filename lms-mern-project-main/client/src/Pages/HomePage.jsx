@@ -5,6 +5,7 @@ import Layout from "../Layout/Layout";
 import heroPng from "../assets/images/hero.png";
 import { getAllBlogs } from "../Redux/Slices/BlogSlice";
 import { getFeaturedSubjects } from "../Redux/Slices/SubjectSlice";
+import { getFeaturedCourses } from "../Redux/Slices/CourseSlice";
 
 import { 
   FaEye, 
@@ -43,6 +44,7 @@ export default function HomePage() {
   const dispatch = useDispatch();
   const { blogs } = useSelector((state) => state.blog);
   const { featuredSubjects } = useSelector((state) => state.subject);
+  const { courses } = useSelector((state) => state.course);
 
   const { role } = useSelector((state) => state.auth);
   const [isVisible, setIsVisible] = useState(false);
@@ -53,6 +55,8 @@ export default function HomePage() {
     dispatch(getAllBlogs({ page: 1, limit: 3 }));
     // Fetch featured subjects for homepage
     dispatch(getFeaturedSubjects());
+    // Fetch featured courses for homepage
+    dispatch(getFeaturedCourses());
 
     
     // Trigger animations
@@ -226,7 +230,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Courses Section */}
+      {/* Featured Subjects Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-900" dir="rtl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -261,6 +265,119 @@ export default function HomePage() {
               </p>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Featured Courses Section */}
+      <section className="py-20 bg-white dark:bg-gray-800" dir="rtl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              الدورات المتاحة
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              اكتشف مجموعة واسعة من الدورات التعليمية المميزة بقيادة خبراء الصناعة
+            </p>
+          </div>
+
+          {courses && courses.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {courses.slice(0, 6).map((course, index) => (
+                <div
+                  key={course._id}
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-200 dark:border-gray-700"
+                >
+                  {/* Course Image */}
+                  <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-600 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <FaBookOpen className="text-6xl text-white opacity-80" />
+                    </div>
+                    <div className="absolute top-4 right-4">
+                      <span className="px-2 py-1 bg-white bg-opacity-90 text-gray-800 text-xs font-medium rounded-full">
+                        {course.stage?.name || 'غير محدد'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Course Content */}
+                  <div className="p-6">
+                    {/* Course Title */}
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                      {course.title}
+                    </h3>
+
+                    {/* Course Description */}
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+                      {course.description}
+                    </p>
+
+                    {/* Course Meta */}
+                    <div className="space-y-3 mb-4">
+                      {/* Instructor */}
+                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <FaUser className="text-gray-400" />
+                        <span>{course.instructor?.name || 'غير محدد'}</span>
+                      </div>
+
+                                             {/* Subject */}
+                       <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                         <FaBookOpen className="text-gray-400" />
+                         <span>{course.subject?.title || 'غير محدد'}</span>
+                       </div>
+
+                                             {/* Lessons Count */}
+                       <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                         <FaPlay className="text-gray-400" />
+                         <span>
+                           {(course.directLessons?.length || 0) + 
+                            (course.units?.reduce((total, unit) => total + (unit.lessons?.length || 0), 0) || 0)} درس متاح
+                         </span>
+                       </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <Link
+                        to={`/courses/${course._id}`}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        <FaEye />
+                        <span>عرض التفاصيل</span>
+                      </Link>
+                      <Link
+                        to="/courses"
+                        className="px-4 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center"
+                      >
+                        <FaArrowRight />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4 animate-pulse">📚</div>
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+                لا توجد دورات متاحة حالياً
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                سيتم إضافة دورات جديدة قريباً!
+              </p>
+            </div>
+          )}
+
+          {/* View All Courses Button */}
+          <div className="text-center mt-12">
+            <Link
+              to="/courses"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+            >
+              <span>عرض جميع الدورات</span>
+              <FaArrowRight />
+            </Link>
+          </div>
         </div>
       </section>
       
