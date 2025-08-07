@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 
 const courseSchema = new Schema({
     title: {
@@ -40,6 +40,10 @@ const courseSchema = new Schema({
     },
     units: [
         {
+            _id: {
+                type: mongoose.Schema.Types.ObjectId,
+                default: () => new mongoose.Types.ObjectId()
+            },
             title: {
                 type: String,
                 required: true,
@@ -51,6 +55,10 @@ const courseSchema = new Schema({
             },
             lessons: [
                 {
+                    _id: {
+                        type: mongoose.Schema.Types.ObjectId,
+                        default: () => new mongoose.Types.ObjectId()
+                    },
                     title: {
                         type: String,
                         required: true,
@@ -173,7 +181,11 @@ const courseSchema = new Schema({
                         type: Number,
                         default: 10, // Default price for individual lessons
                         min: 0
-                    }
+                    },
+                    paidStudents: [{
+                        type: mongoose.Schema.Types.ObjectId,
+                        ref: 'User'
+                    }]
                 }
             ],
             order: {
@@ -189,6 +201,10 @@ const courseSchema = new Schema({
     ],
     directLessons: [
         {
+            _id: {
+                type: mongoose.Schema.Types.ObjectId,
+                default: () => new mongoose.Types.ObjectId()
+            },
             title: {
                 type: String,
                 required: true,
@@ -311,7 +327,11 @@ const courseSchema = new Schema({
                 type: Number,
                 default: 10, // Default price for individual lessons
                 min: 0
-            }
+            },
+            paidStudents: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User'
+            }]
         }
     ],
     // Unified structure for flexible course organization
@@ -328,7 +348,25 @@ const courseSchema = new Schema({
             },
             data: {
                 type: Schema.Types.Mixed,
-                required: true
+                required: true,
+                // Define the structure for lessons within unified structure
+                validate: {
+                    validator: function(data) {
+                        // If this is a lesson, ensure it has an _id
+                        if (this.type === 'lesson' && !data._id) {
+                            data._id = new mongoose.Types.ObjectId();
+                        }
+                        // If this is a unit with lessons, ensure each lesson has an _id
+                        if (this.type === 'unit' && data.lessons && Array.isArray(data.lessons)) {
+                            data.lessons.forEach(lesson => {
+                                if (!lesson._id) {
+                                    lesson._id = new mongoose.Types.ObjectId();
+                                }
+                            });
+                        }
+                        return true;
+                    }
+                }
             },
             order: {
                 type: Number,

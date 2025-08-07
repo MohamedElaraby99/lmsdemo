@@ -4,7 +4,7 @@ import { getAllBlogsForAdmin, deleteBlog, createBlog, updateBlog } from "../../R
 import Layout from "../../Layout/Layout";
 import { FaPlus, FaEdit, FaTrash, FaEye, FaHeart, FaCalendar, FaUser, FaSearch, FaFilter } from "react-icons/fa";
 import { placeholderImages } from "../../utils/placeholderImages";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
 export default function BlogDashboard() {
   const dispatch = useDispatch();

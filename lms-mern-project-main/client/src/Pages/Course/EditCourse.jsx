@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { updateCourse } from "../../Redux/Slices/CourseSlice";
 import Layout from "../../Layout/Layout";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import InputBox from "../../Components/InputBox/InputBox";
 import TextArea from "../../Components/InputBox/TextArea";
 import { 

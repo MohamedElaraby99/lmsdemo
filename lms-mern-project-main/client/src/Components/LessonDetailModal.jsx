@@ -61,18 +61,18 @@ const LessonDetailModal = ({
 
   // Helper function to safely get lesson title
   const getLessonTitle = (lesson) => {
-    if (!lesson) return 'Untitled Lesson';
+    if (!lesson) return 'درس بدون عنوان';
     if (typeof lesson.title === 'string') return lesson.title;
     if (lesson.title && typeof lesson.title === 'object' && lesson.title.title) return lesson.title.title;
-    return lesson.title || 'Untitled Lesson';
+    return lesson.title || 'درس بدون عنوان';
   };
 
   // Helper function to safely get lesson description
   const getLessonDescription = (lesson) => {
-    if (!lesson) return 'No description available for this lesson.';
+    if (!lesson) return 'لا يوجد وصف متاح لهذا الدرس.';
     if (typeof lesson.description === 'string') return lesson.description;
     if (lesson.description && typeof lesson.description === 'object' && lesson.description.description) return lesson.description.description;
-    return lesson.description || 'No description available for this lesson.';
+    return lesson.description || 'لا يوجد وصف متاح لهذا الدرس.';
   };
 
   // Helper function to safely get lesson duration
@@ -265,19 +265,19 @@ const LessonDetailModal = ({
 
   const handlePurchase = () => {
     if (role === 'ADMIN') {
-      toast.success('Admin can access all content');
+      toast.success('يمكن للمدير الوصول لجميع المحتويات');
       onClose();
       return;
     }
     
     if (isPurchased) {
-      toast.success('You already own this lesson');
+      toast.success('أنت تملك هذا الدرس بالفعل');
       onClose();
       return;
     }
 
     if (!canAfford) {
-      toast.error('Insufficient balance');
+      toast.error('رصيد غير كافي');
       return;
     }
 
@@ -320,11 +320,11 @@ const LessonDetailModal = ({
         setExamHistory(result);
         setShowExamHistory(true);
       } else {
-        toast.error('No exam history found for this lesson');
+        toast.error('لا يوجد تاريخ امتحان لهذا الدرس');
       }
     } catch (error) {
       console.error('Error fetching exam history:', error);
-      toast.error('Failed to load exam history');
+      toast.error('فشل في تحميل تاريخ الامتحان');
     } finally {
       setLoadingHistory(false);
     }
@@ -360,7 +360,7 @@ const LessonDetailModal = ({
                 </h2>
                 {safeUnit && (
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
-                    Unit: {safeUnit.title && typeof safeUnit.title === 'string' ? safeUnit.title : 'Unknown Unit'}
+                    الوحدة: {safeUnit.title && typeof safeUnit.title === 'string' ? safeUnit.title : 'وحدة غير معروفة'}
                   </p>
                 )}
               </div>
@@ -380,7 +380,7 @@ const LessonDetailModal = ({
               <div className="w-full flex items-center justify-center">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                  <p className="text-gray-600 dark:text-gray-400">Checking purchase status...</p>
+                  <p className="text-gray-600 dark:text-gray-400">جاري التحقق من حالة الشراء...</p>
                 </div>
               </div>
             ) : (
@@ -388,7 +388,7 @@ const LessonDetailModal = ({
                 {/* Left Side - Tabs */}
                 <div className="w-full lg:w-1/3 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                   <div className="p-3 sm:p-4">
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 text-sm sm:text-base">Lesson Content</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 text-sm sm:text-base">محتوى الدرس</h3>
                     
                     {/* Show different content based on purchase status */}
                     {console.log('LessonDetailModal Debug:', {
@@ -413,7 +413,7 @@ const LessonDetailModal = ({
                           >
                             <div className="flex items-center gap-2 sm:gap-3">
                               <FaEye className="text-sm sm:text-base" />
-                              <span className="text-xs sm:text-sm">Overview</span>
+                              <span className="text-xs sm:text-sm">نظرة عامة</span>
                             </div>
                           </button>
 
@@ -427,7 +427,7 @@ const LessonDetailModal = ({
                           >
                             <div className="flex items-center gap-2 sm:gap-3">
                               <FaVideo className="text-sm sm:text-base" />
-                              <span className="text-xs sm:text-sm">Video Lecture</span>
+                              <span className="text-xs sm:text-sm">محاضرة فيديو</span>
                             </div>
                           </button>
 
@@ -441,7 +441,7 @@ const LessonDetailModal = ({
                           >
                             <div className="flex items-center gap-2 sm:gap-3">
                                 <FaFilePdf className="text-sm sm:text-base" />
-                                <span className="text-xs sm:text-sm">Study Material</span>
+                                <span className="text-xs sm:text-sm">المادة الدراسية</span>
                             </div>
                           </button>
 
@@ -455,7 +455,7 @@ const LessonDetailModal = ({
                           >
                             <div className="flex items-center gap-2 sm:gap-3">
                               <FaClipboardCheck className="text-sm sm:text-base" />
-                              <span className="text-xs sm:text-sm">Training Exam</span>
+                              <span className="text-xs sm:text-sm">امتحان تدريبي</span>
                             </div>
                           </button>
 
@@ -469,7 +469,7 @@ const LessonDetailModal = ({
                           >
                             <div className="flex items-center gap-2 sm:gap-3">
                               <FaExam className="text-sm sm:text-base" />
-                              <span className="text-xs sm:text-sm">Final Exam</span>
+                              <span className="text-xs sm:text-sm">الامتحان النهائي</span>
                             </div>
                           </button>
                         </div>
@@ -480,26 +480,26 @@ const LessonDetailModal = ({
                         <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
                           <div className="flex items-center gap-2 mb-2 sm:mb-3">
                             <FaLock className="text-gray-500 text-sm sm:text-base" />
-                            <h4 className="font-medium text-gray-700 dark:text-gray-300 text-sm sm:text-base">Lesson Preview</h4>
+                            <h4 className="font-medium text-gray-700 dark:text-gray-300 text-sm sm:text-base">معاينة الدرس</h4>
                           </div>
                           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                            Purchase this lesson to unlock all content including video lectures, study materials, and exams.
+                            اشتر هذا الدرس لفتح جميع المحتويات بما في ذلك الفيديوهات المرئية والمواد الدراسية والامتحانات.
                           </p>
                         </div>
 
                         <div className="space-y-2 sm:space-y-3">
                           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                             <FaEye className="text-sm sm:text-base" />
-                            <span>Lesson Overview</span>
+                            <span>نظرة عامة على الدرس</span>
                           </div>
                           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                             <FaClock className="text-sm sm:text-base" />
-                            <span>Duration: {getLessonDuration(lesson)} minutes</span>
+                            <span>المدة: {getLessonDuration(lesson)} دقيقة</span>
                           </div>
                           {hasVideo(lesson) && (
                             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                               <FaVideo className="text-green-500 text-sm sm:text-base" />
-                              <span>Video Lecture</span>
+                              <span>محاضرة فيديو</span>
                             </div>
                           )}
                         </div>
@@ -516,11 +516,11 @@ const LessonDetailModal = ({
                       {/* Active tab content */}
                       {activeTab === 'overview' && (
                         <div className="space-y-4 sm:space-y-6">
-                          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Lesson Overview</h3>
+                          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">نظرة عامة على الدرس</h3>
                           
                           {/* Lesson Description */}
                           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 sm:p-6">
-                            <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">About this lesson</h4>
+                            <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">حول هذا الدرس</h4>
                             <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
                               {getLessonDescription(actualLesson)}
                             </p>
@@ -531,15 +531,15 @@ const LessonDetailModal = ({
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600">
                               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                                 <FaClock className="text-blue-500 text-sm sm:text-base" />
-                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Duration</h5>
+                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">المدة</h5>
                               </div>
-                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{getLessonDuration(actualLesson)} minutes</p>
+                                                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{getLessonDuration(actualLesson)} دقيقة</p>
                             </div>
 
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600">
                               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                                 <FaDollarSign className="text-green-500 text-sm sm:text-base" />
-                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Price</h5>
+                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">السعر</h5>
                               </div>
                               <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">{formatPrice(getLessonPrice(actualLesson))}</p>
                             </div>
@@ -547,54 +547,54 @@ const LessonDetailModal = ({
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600">
                               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                                 <FaVideo className="text-blue-500 text-sm sm:text-base" />
-                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Video</h5>
+                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">الفيديو</h5>
                               </div>
                               <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                                {hasVideo(actualLesson) ? 'Available' : 'Not available'}
+                                {hasVideo(actualLesson) ? 'متاح' : 'غير متاح'}
                               </p>
                             </div>
 
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600">
                               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                                 <FaFilePdf className="text-red-500 text-sm sm:text-base" />
-                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Study Material</h5>
+                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">المادة الدراسية</h5>
                               </div>
-                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                                {hasPdf(actualLesson) ? 'Available' : 'Not available'}
-                              </p>
+                                                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                                  {hasPdf(actualLesson) ? 'متاح' : 'غير متاح'}
+                                </p>
                             </div>
 
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600">
                               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                                 <FaClipboardCheck className="text-purple-500 text-sm sm:text-base" />
-                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Training Exam</h5>
+                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">الامتحان التدريبي</h5>
                               </div>
-                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                                {hasTrainingExam(actualLesson) ? 'Available' : 'Not available'}
-                              </p>
+                                                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                                  {hasTrainingExam(actualLesson) ? 'متاح' : 'غير متاح'}
+                                </p>
                             </div>
 
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600">
                               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                                 <FaExam className="text-red-500 text-sm sm:text-base" />
-                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Final Exam</h5>
+                                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">الامتحان النهائي</h5>
                               </div>
-                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                                {hasFinalExam(actualLesson) ? 'Available' : 'Not available'}
-                              </p>
+                                                              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                                  {hasFinalExam(actualLesson) ? 'متاح' : 'غير متاح'}
+                                </p>
                             </div>
                           </div>
 
                           {/* Unit Information */}
                           {safeUnit && (
                             <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6">
-                              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Unit Information</h4>
+                              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">معلومات الوحدة</h4>
                               <div className="flex items-center gap-3">
                                 <FaFolder className="text-blue-500" />
                                 <div>
                                   <h5 className="font-medium text-gray-900 dark:text-white">{safeUnit.title && typeof safeUnit.title === 'string' ? safeUnit.title : 'Unknown Unit'}</h5>
                                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {safeUnit.description || 'Unit description not available'}
+                                    {safeUnit.description || 'وصف الوحدة غير متاح'}
                                   </p>
                                 </div>
                               </div>
@@ -604,35 +604,35 @@ const LessonDetailModal = ({
                           {/* Course Information */}
                           {courseData && (
                             <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg p-6">
-                              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Course Information</h4>
+                              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">معلومات الدورة</h4>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                  <h5 className="font-medium text-gray-900 dark:text-white">Course Title</h5>
+                                  <h5 className="font-medium text-gray-900 dark:text-white">عنوان الدورة</h5>
                                   <p className="text-sm text-gray-600 dark:text-gray-400">{courseData.title}</p>
                                 </div>
                                 <div>
-                                  <h5 className="font-medium text-gray-900 dark:text-white">Category</h5>
+                                  <h5 className="font-medium text-gray-900 dark:text-white">الفئة</h5>
                                   <p className="text-sm text-gray-600 dark:text-gray-400">{courseData.category}</p>
                                 </div>
                                 <div>
-                                  <h5 className="font-medium text-gray-900 dark:text-white">Subject</h5>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {courseData.subject && typeof courseData.subject === 'object' && courseData.subject.name 
-                                      ? courseData.subject.name 
-                                      : (courseData.subject && typeof courseData.subject === 'string' 
-                                        ? courseData.subject 
-                                        : 'Unknown Subject')}
-                                  </p>
+                                  <h5 className="font-medium text-gray-900 dark:text-white">المادة</h5>
+                                                                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                                      {courseData.subject && typeof courseData.subject === 'object' && courseData.subject.name 
+                                        ? courseData.subject.name 
+                                        : (courseData.subject && typeof courseData.subject === 'string' 
+                                          ? courseData.subject 
+                                          : 'مادة غير معروفة')}
+                                    </p>
                                 </div>
                                 <div>
-                                  <h5 className="font-medium text-gray-900 dark:text-white">Stage</h5>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {courseData.stage && typeof courseData.stage === 'object' && courseData.stage.name 
-                                      ? courseData.stage.name 
-                                      : (courseData.stage && typeof courseData.stage === 'string' 
-                                        ? courseData.stage 
-                                        : 'Unknown Stage')}
-                                  </p>
+                                  <h5 className="font-medium text-gray-900 dark:text-white">المرحلة</h5>
+                                                                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                                      {courseData.stage && typeof courseData.stage === 'object' && courseData.stage.name 
+                                        ? courseData.stage.name 
+                                        : (courseData.stage && typeof courseData.stage === 'string' 
+                                          ? courseData.stage 
+                                          : 'مرحلة غير معروفة')}
+                                    </p>
                                 </div>
                               </div>
                             </div>
@@ -642,7 +642,7 @@ const LessonDetailModal = ({
 
                       {activeTab === 'video' && (
                         <div className="space-y-3 sm:space-y-4">
-                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Video Lecture</h3>
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">محاضرة فيديو</h3>
                           {hasVideo(actualLesson) ? (
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
                               {/* Video Thumbnail */}
@@ -671,8 +671,8 @@ const LessonDetailModal = ({
                               <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                                 <FaVideo className="text-lg sm:text-2xl text-blue-500" />
                                 <div>
-                                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">{actualLesson.lecture.title || 'Video Lecture'}</h4>
-                                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{actualLesson.lecture.description || 'Video content'}</p>
+                                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">{actualLesson.lecture.title || 'محاضرة فيديو'}</h4>
+                                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{actualLesson.lecture.description || 'محتوى الفيديو'}</p>
                                 </div>
                               </div>
                               <button
@@ -680,22 +680,22 @@ const LessonDetailModal = ({
                                 className="w-full bg-blue-500 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                               >
                                 <FaPlay className="text-sm sm:text-base" />
-                                <span className="hidden sm:inline">Watch Video</span>
-                                <span className="sm:hidden">Watch</span>
+                                <span className="hidden sm:inline">مشاهدة الفيديو</span>
+                                <span className="sm:hidden">مشاهدة</span>
                               </button>
                             </div>
                           ) : (
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 sm:p-6 text-center">
                               <FaVideo className="text-3xl sm:text-4xl text-gray-400 mx-auto mb-3 sm:mb-4" />
-                              <h4 className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Video Available</h4>
-                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 mb-4">Video content has not been added to this lesson yet.</p>
+                              <h4 className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">لا يوجد فيديو متاح</h4>
+                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 mb-4">لم يتم إضافة محتوى الفيديو لهذا الدرس بعد.</p>
                               {role === 'ADMIN' && onAddVideo && (
                                 <button
                                   onClick={() => onAddVideo(lesson, safeUnit)}
                                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 mx-auto"
                                 >
                                   <FaPlus className="text-sm" />
-                                  Add Video
+                                  إضافة فيديو
                                 </button>
                               )}
                             </div>
@@ -705,14 +705,14 @@ const LessonDetailModal = ({
 
                       {activeTab === 'pdf' && (
                         <div className="space-y-4">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Study Material</h3>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">المادة الدراسية</h3>
                           {hasPdf(actualLesson) ? (
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
                               <div className="flex items-center gap-3 mb-4">
                                 <FaFilePdf className="text-2xl text-red-500" />
                                 <div>
-                                  <h4 className="font-medium text-gray-900 dark:text-white">{actualLesson.pdf.title || 'Study Material'}</h4>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">PDF Document</p>
+                                  <h4 className="font-medium text-gray-900 dark:text-white">{actualLesson.pdf.title || 'المادة الدراسية'}</h4>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">مستند PDF</p>
                                 </div>
                               </div>
                               <button
@@ -720,21 +720,21 @@ const LessonDetailModal = ({
                                 className="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
                               >
                                 <FaDownload />
-                                Download PDF
+                                تحميل PDF
                               </button>
                             </div>
                           ) : (
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-6 text-center">
                               <FaFilePdf className="text-4xl text-gray-400 mx-auto mb-4" />
-                              <h4 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Study Material Available</h4>
-                              <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">PDF study materials have not been added to this lesson yet.</p>
+                              <h4 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">لا توجد مادة دراسية متاحة</h4>
+                              <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">لم يتم إضافة المواد الدراسية PDF لهذا الدرس بعد.</p>
                               {role === 'ADMIN' && onAddPdf && (
                                 <button
                                   onClick={() => onAddPdf(lesson, safeUnit)}
                                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 mx-auto"
                                 >
                                   <FaPlus className="text-sm" />
-                                  Add PDF
+                                  إضافة PDF
                                 </button>
                               )}
                             </div>
@@ -744,24 +744,24 @@ const LessonDetailModal = ({
 
                       {activeTab === 'training' && (
                         <div className="space-y-3 sm:space-y-4">
-                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Training Exam</h3>
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">الامتحان التدريبي</h3>
                           {hasTrainingExam(actualLesson) ? (
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
                               <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                                 <FaClipboardCheck className="text-lg sm:text-2xl text-purple-500" />
                                 <div>
-                                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">Practice Exam</h4>
-                                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{actualLesson.trainingExam.questions.length} questions • {actualLesson.trainingExam.timeLimit} minutes</p>
+                                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">امتحان تدريبي</h4>
+                                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{actualLesson.trainingExam.questions.length} سؤال • {actualLesson.trainingExam.timeLimit} دقيقة</p>
                                 </div>
                               </div>
                               <div className="space-y-2 mb-3 sm:mb-4">
                                 <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                                   <FaClock className="text-sm sm:text-base" />
-                                  <span>Time Limit: {actualLesson.trainingExam.timeLimit} minutes</span>
+                                  <span>الحد الزمني: {actualLesson.trainingExam.timeLimit} دقيقة</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                                   <FaStar className="text-sm sm:text-base" />
-                                  <span>Passing Score: {actualLesson.trainingExam.passingScore}%</span>
+                                  <span>الدرجة المطلوبة: {actualLesson.trainingExam.passingScore}%</span>
                                 </div>
                               </div>
                               
@@ -770,10 +770,10 @@ const LessonDetailModal = ({
                                   <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-700">
                                     <div className="flex items-center gap-2 mb-2">
                                       <FaCheck className="text-green-500 text-sm sm:text-base" />
-                                      <span className="text-sm sm:text-base font-medium text-green-700 dark:text-green-300">Exam Completed</span>
+                                      <span className="text-sm sm:text-base font-medium text-green-700 dark:text-green-300">تم الانتهاء من الامتحان</span>
                                     </div>
                                     <div className="text-xs sm:text-sm text-green-600 dark:text-green-400">
-                                      Score: {trainingExamResult?.score}% • {trainingExamResult?.passed ? 'PASSED' : 'FAILED'}
+                                      الدرجة: {trainingExamResult?.score}% • {trainingExamResult?.passed ? 'ناجح' : 'راسب'}
                                     </div>
                                   </div>
                                   <div className="flex gap-2">
@@ -782,15 +782,15 @@ const LessonDetailModal = ({
                                       className="flex-1 bg-purple-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                                     >
                                       <FaHistory className="text-sm sm:text-base" />
-                                      <span className="hidden sm:inline">View History</span>
-                                      <span className="sm:hidden">History</span>
+                                      <span className="hidden sm:inline">عرض التاريخ</span>
+                                      <span className="sm:hidden">التاريخ</span>
                                     </button>
                                     <button
                                       onClick={handleStartTrainingExam}
                                       className="flex-1 bg-gray-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors text-sm sm:text-base"
                                       disabled
                                     >
-                                      Already Taken
+                                      تم الإجابة عليه
                                     </button>
                                   </div>
                                 </div>
@@ -800,23 +800,23 @@ const LessonDetailModal = ({
                                   className="w-full bg-purple-500 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                                 >
                                   <FaClipboardCheck className="text-sm sm:text-base" />
-                                  <span className="hidden sm:inline">Start Training Exam</span>
-                                  <span className="sm:hidden">Start Exam</span>
+                                  <span className="hidden sm:inline">بدء الامتحان التدريبي</span>
+                                  <span className="sm:hidden">بدء الامتحان</span>
                                 </button>
                               )}
                             </div>
                           ) : (
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 sm:p-6 text-center">
                               <FaClipboardCheck className="text-3xl sm:text-4xl text-gray-400 mx-auto mb-3 sm:mb-4" />
-                              <h4 className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Training Exam Available</h4>
-                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 mb-4">Training exam has not been added to this lesson yet.</p>
+                              <h4 className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">لا يوجد امتحان تدريبي متاح</h4>
+                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 mb-4">لم يتم إضافة الامتحان التدريبي لهذا الدرس بعد.</p>
                               {role === 'ADMIN' && onAddTrainingExam && (
                                 <button
                                   onClick={() => onAddTrainingExam(lesson, safeUnit)}
                                   className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-2 mx-auto"
                                 >
                                   <FaPlus className="text-sm" />
-                                  Add Training Exam
+                                  إضافة امتحان تدريبي
                                 </button>
                               )}
                             </div>
@@ -826,24 +826,24 @@ const LessonDetailModal = ({
 
                       {activeTab === 'final' && (
                         <div className="space-y-3 sm:space-y-4">
-                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Final Exam</h3>
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">الامتحان النهائي</h3>
                           {hasFinalExam(actualLesson) ? (
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
                               <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                                 <FaExam className="text-lg sm:text-2xl text-red-500" />
                                 <div>
-                                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">Final Assessment</h4>
-                                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{actualLesson.finalExam.questions.length} questions • {actualLesson.finalExam.timeLimit} minutes</p>
+                                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">التقييم النهائي</h4>
+                                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{actualLesson.finalExam.questions.length} سؤال • {actualLesson.finalExam.timeLimit} دقيقة</p>
                                 </div>
                               </div>
                               <div className="space-y-2 mb-3 sm:mb-4">
                                 <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                                   <FaClock className="text-sm sm:text-base" />
-                                  <span>Time Limit: {actualLesson.finalExam.timeLimit} minutes</span>
+                                  <span>الحد الزمني: {actualLesson.finalExam.timeLimit} دقيقة</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                                   <FaStar className="text-sm sm:text-base" />
-                                  <span>Passing Score: {actualLesson.finalExam.passingScore}%</span>
+                                  <span>الدرجة المطلوبة: {actualLesson.finalExam.passingScore}%</span>
                                 </div>
                               </div>
                               
@@ -852,10 +852,10 @@ const LessonDetailModal = ({
                                   <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-700">
                                     <div className="flex items-center gap-2 mb-2">
                                       <FaCheck className="text-green-500 text-sm sm:text-base" />
-                                      <span className="text-sm sm:text-base font-medium text-green-700 dark:text-green-300">Exam Completed</span>
+                                      <span className="text-sm sm:text-base font-medium text-green-700 dark:text-green-300">تم الانتهاء من الامتحان</span>
                                     </div>
                                     <div className="text-xs sm:text-sm text-green-600 dark:text-green-400">
-                                      Score: {finalExamResult?.score}% • {finalExamResult?.passed ? 'PASSED' : 'FAILED'}
+                                      الدرجة: {finalExamResult?.score}% • {finalExamResult?.passed ? 'ناجح' : 'راسب'}
                                     </div>
                                   </div>
                                   <div className="flex gap-2">
@@ -864,15 +864,15 @@ const LessonDetailModal = ({
                                       className="flex-1 bg-red-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                                     >
                                       <FaHistory className="text-sm sm:text-base" />
-                                      <span className="hidden sm:inline">View History</span>
-                                      <span className="sm:hidden">History</span>
+                                      <span className="hidden sm:inline">عرض التاريخ</span>
+                                      <span className="sm:hidden">التاريخ</span>
                                     </button>
                                     <button
                                       onClick={handleStartFinalExam}
                                       className="flex-1 bg-gray-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors text-sm sm:text-base"
                                       disabled
                                     >
-                                      Already Taken
+                                      تم الإجابة عليه
                                     </button>
                                   </div>
                                 </div>
@@ -882,23 +882,23 @@ const LessonDetailModal = ({
                                   className="w-full bg-red-500 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                                 >
                                   <FaExam className="text-sm sm:text-base" />
-                                  <span className="hidden sm:inline">Start Final Exam</span>
-                                  <span className="sm:hidden">Start Exam</span>
+                                  <span className="hidden sm:inline">بدء الامتحان النهائي</span>
+                                  <span className="sm:hidden">بدء الامتحان</span>
                                 </button>
                               )}
                             </div>
                           ) : (
                             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 sm:p-6 text-center">
                               <FaExam className="text-3xl sm:text-4xl text-gray-400 mx-auto mb-3 sm:mb-4" />
-                              <h4 className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Final Exam Available</h4>
-                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 mb-4">Final exam has not been added to this lesson yet.</p>
+                              <h4 className="text-base sm:text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">لا يوجد امتحان نهائي متاح</h4>
+                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 mb-4">لم يتم إضافة الامتحان النهائي لهذا الدرس بعد.</p>
                               {role === 'ADMIN' && onAddFinalExam && (
                                 <button
                                   onClick={() => onAddFinalExam(lesson, safeUnit)}
                                   className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 mx-auto"
                                 >
                                   <FaPlus className="text-sm" />
-                                  Add Final Exam
+                                  إضافة امتحان نهائي
                                 </button>
                               )}
                             </div>
@@ -914,14 +914,14 @@ const LessonDetailModal = ({
                           <FaLock className="text-lg sm:text-2xl text-gray-400" />
                         </div>
                         <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                          Content Locked
+                          المحتوى مقفل
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
-                          Purchase this lesson to unlock all content including video lectures, study materials, and exams.
+                          اشتر هذا الدرس لفتح جميع المحتويات بما في ذلك الدروسالمرئية والمواد الدراسية والامتحانات.
                         </p>
                         <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg">
                           <p className="font-semibold text-sm sm:text-base">{formatPrice(lessonPrice)}</p>
-                          <p className="text-xs sm:text-sm opacity-90">Click "Purchase Lesson" below to unlock</p>
+                          <p className="text-xs sm:text-sm opacity-90">اضغط على "شراء الدرس" أدناه للفتح</p>
                         </div>
                       </div>
                     </div>
@@ -937,14 +937,14 @@ const LessonDetailModal = ({
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="text-center">
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Price</p>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">السعر</p>
                     <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
                       {formatPrice(lessonPrice)}
                     </p>
                   </div>
                   {role === 'USER' && (
                     <div className="text-center">
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Your Balance</p>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">رصيدك</p>
                       <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                         {formatPrice(balance)}
                       </p>
@@ -959,8 +959,8 @@ const LessonDetailModal = ({
                       className="bg-green-500 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold hover:bg-green-600 transition-colors flex items-center gap-2 text-sm sm:text-base"
                     >
                       <FaUnlock className="text-sm sm:text-base" />
-                      <span className="hidden sm:inline">Access Content</span>
-                      <span className="sm:hidden">Access</span>
+                      <span className="hidden sm:inline">الوصول للمحتوى</span>
+                      <span className="sm:hidden">الوصول</span>
                     </button>
                   ) : (
                     <button
@@ -975,14 +975,14 @@ const LessonDetailModal = ({
                       {purchaseLoading ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          <span className="hidden sm:inline">Purchasing...</span>
+                          <span className="hidden sm:inline">جاري الشراء...</span>
                           <span className="sm:hidden">...</span>
                         </>
                       ) : (
                         <>
                           <FaShoppingCart className="text-sm sm:text-base" />
-                          <span className="hidden sm:inline">Purchase Lesson</span>
-                          <span className="sm:hidden">Purchase</span>
+                          <span className="hidden sm:inline">شراء الدرس</span>
+                          <span className="sm:hidden">شراء</span>
                         </>
                       )}
                     </button>
@@ -1001,8 +1001,8 @@ const LessonDetailModal = ({
                   className="bg-green-500 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-xl font-semibold hover:bg-green-600 transition-colors flex items-center gap-2 text-sm sm:text-base"
                 >
                   <FaCheck className="text-sm sm:text-base" />
-                  <span className="hidden sm:inline">Already Purchased - Access Content</span>
-                  <span className="sm:hidden">Already Purchased</span>
+                  <span className="hidden sm:inline">تم الشراء مسبقاً - الوصول للمحتوى</span>
+                  <span className="sm:hidden">تم الشراء مسبقاً</span>
                 </button>
               </div>
             </div>
@@ -1045,10 +1045,10 @@ const LessonDetailModal = ({
                 <FaHistory className="text-2xl text-blue-500" />
                 <div>
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                    Exam History
+                    تاريخ الامتحان
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {getLessonTitle(actualLesson)} • {examHistory.examType === 'training' ? 'Training' : 'Final'} Exam
+                    {getLessonTitle(actualLesson)} • {examHistory.examType === 'training' ? 'تدريبي' : 'نهائي'} امتحان
                   </p>
                 </div>
               </div>
@@ -1070,10 +1070,10 @@ const LessonDetailModal = ({
                       {examHistory.score}%
                     </div>
                     <div className={`text-lg font-semibold mb-2 ${examHistory.passed ? 'text-green-600' : 'text-red-600'}`}>
-                      {examHistory.passed ? 'PASSED' : 'FAILED'}
+                      {examHistory.passed ? 'ناجح' : 'راسب'}
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {examHistory.correctAnswers} out of {examHistory.totalQuestions} questions correct
+                      {examHistory.correctAnswers} من أصل {examHistory.totalQuestions} سؤال صحيح
                     </p>
                   </div>
                 </div>
@@ -1083,15 +1083,15 @@ const LessonDetailModal = ({
                   <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                     <div className="flex items-center gap-2 mb-2">
                       <FaClock className="text-blue-500" />
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Time Taken</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">الوقت المستغرق</h4>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400">{examHistory.timeTaken} minutes</p>
+                                          <p className="text-gray-600 dark:text-gray-400">{examHistory.timeTaken} دقيقة</p>
                   </div>
 
                   <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                     <div className="flex items-center gap-2 mb-2">
                       <FaStar className="text-yellow-500" />
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Passing Score</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">الدرجة المطلوبة</h4>
                     </div>
                     <p className="text-gray-600 dark:text-gray-400">{examHistory.passingScore}%</p>
                   </div>
@@ -1099,7 +1099,7 @@ const LessonDetailModal = ({
                   <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                     <div className="flex items-center gap-2 mb-2">
                       <FaCheck className="text-green-500" />
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Correct Answers</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">الإجابات الصحيحة</h4>
                     </div>
                     <p className="text-gray-600 dark:text-gray-400">{examHistory.correctAnswers}</p>
                   </div>
@@ -1107,7 +1107,7 @@ const LessonDetailModal = ({
                   <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                     <div className="flex items-center gap-2 mb-2">
                       <FaTimes className="text-red-500" />
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Wrong Answers</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">الإجابات الخاطئة</h4>
                     </div>
                     <p className="text-gray-600 dark:text-gray-400">{examHistory.wrongAnswers}</p>
                   </div>
@@ -1117,7 +1117,7 @@ const LessonDetailModal = ({
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <FaCalendarAlt className="text-gray-500" />
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Exam Date</h4>
+                                          <h4 className="font-semibold text-gray-900 dark:text-white">تاريخ الامتحان</h4>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400">
                     {new Date(examHistory.createdAt).toLocaleDateString('en-US', {

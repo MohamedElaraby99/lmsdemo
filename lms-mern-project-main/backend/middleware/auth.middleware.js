@@ -3,17 +3,29 @@ import jwt from "jsonwebtoken";
 import userModel from '../models/user.model.js';
 
 const isLoggedIn = async (req, res, next) => {
+    console.log('=== IS LOGGED IN MIDDLEWARE ===');
+    console.log('URL:', req.url);
+    console.log('Method:', req.method);
+    console.log('Cookies:', req.cookies);
+    
     const { token } = req.cookies;
 
     if (!token) {
+        console.log('No token found in cookies');
         return next(new AppError("Unauthenticated, please login again", 400))
     }
 
-    const userDetails = await jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Decoded user details:', userDetails);
-    req.user = userDetails;
-
-    next();
+    try {
+        const userDetails = await jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Decoded user details:', userDetails);
+        console.log('User role from JWT:', userDetails.role);
+        req.user = userDetails;
+        console.log('Set req.user:', req.user);
+        next();
+    } catch (error) {
+        console.log('JWT verification failed:', error.message);
+        return next(new AppError("Invalid token, please login again", 400));
+    }
 }
 
 // authorised roles

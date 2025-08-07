@@ -10,17 +10,17 @@ import {
 
 const router = express.Router();
 
-// Get or create video progress for a user
-router.get("/:courseId/:videoId", isLoggedIn, getVideoProgress);
-
-// Update video progress
-router.put("/:courseId/:videoId", isLoggedIn, updateVideoProgress);
-
 // Get user's progress for all videos in a course
 router.get("/course/:courseId", isLoggedIn, getCourseProgress);
 
 // Get all users' progress for a specific video (admin only)
 router.get("/admin/video/:videoId", isLoggedIn, getVideoProgressForAllUsers);
+
+// Get or create video progress for a user
+router.get("/:courseId/:videoId", isLoggedIn, getVideoProgress);
+
+// Update video progress
+router.put("/:courseId/:videoId", isLoggedIn, updateVideoProgress);
 
 // Reset video progress
 router.delete("/:videoId", isLoggedIn, resetVideoProgress);

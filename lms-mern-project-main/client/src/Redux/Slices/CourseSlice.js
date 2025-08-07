@@ -48,39 +48,39 @@ export const fetchCourseById = createAsyncThunk("/courses/getById", async (id, {
             throw new Error('User not logged in');
         }
         
-        // Use admin route for admin users to bypass subscription check
-        const endpoint = userRole === 'ADMIN' ? `/courses/admin/${id}` : `/courses/${id}`;
+        // Use the course structure endpoint which includes purchase status
+        const endpoint = `/courses/${id}/structure`;
         
-        console.log('Using endpoint:', endpoint);
+        console.log('Using course structure endpoint:', endpoint);
         
         try {
             const res = await axiosInstance.get(endpoint);
             toast.success(res?.data?.message, { id: loadingMessage });
             return res?.data;
         } catch (error) {
-            // If regular route fails with subscription error, try public route as fallback
-            if (error?.response?.status === 403 && 
-                error?.response?.data?.message?.includes('subscribe') && 
-                endpoint.includes('/courses/') && 
-                !endpoint.includes('/admin/') && 
-                !endpoint.includes('/public/')) {
-                
-                console.log('Subscription error, trying public route as fallback');
-                const publicEndpoint = `/courses/public/${id}`;
-                try {
+            // If structure endpoint fails, try the regular course endpoint as fallback
+            console.log('Structure endpoint failed, trying regular course endpoint as fallback');
+            const regularEndpoint = userRole === 'ADMIN' ? `/courses/admin/${id}` : `/courses/${id}`;
+            try {
+                const regularRes = await axiosInstance.get(regularEndpoint);
+                toast.success(regularRes?.data?.message, { id: loadingMessage });
+                return regularRes?.data;
+            } catch (regularError) {
+                // If regular route also fails, try public route as final fallback
+                if (regularError?.response?.status === 403 && 
+                    regularError?.response?.data?.message?.includes('subscribe') && 
+                    regularEndpoint.includes('/courses/') && 
+                    !regularEndpoint.includes('/admin/') && 
+                    !regularEndpoint.includes('/public/')) {
+                    
+                    console.log('Subscription error, trying public route as final fallback');
+                    const publicEndpoint = `/courses/public/${id}`;
                     const publicRes = await axiosInstance.get(publicEndpoint);
                     toast.success(publicRes?.data?.message, { id: loadingMessage });
                     return publicRes?.data;
-                } catch (publicError) {
-                    // If public route also fails, try admin route as final fallback
-                    console.log('Public route also failed, trying admin route as final fallback');
-                    const adminEndpoint = `/courses/admin/${id}`;
-                    const adminRes = await axiosInstance.get(adminEndpoint);
-                    toast.success(adminRes?.data?.message, { id: loadingMessage });
-                    return adminRes?.data;
                 }
+                throw regularError;
             }
-            throw error;
         }
     } catch (error) {
         toast.error(error?.response?.data?.message, { id: loadingMessage });

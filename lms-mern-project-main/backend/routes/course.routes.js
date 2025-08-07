@@ -1,13 +1,12 @@
 import { Router } from "express";
 const router = Router();
-import { getAllCourses, getLecturesByCourseId, getCourseStructure, createCourse, updateCourse, removeCourse, addLectureToCourseById, deleteCourseLecture, updateCourseLecture, updateUnit, updateLesson, updateDirectLesson, simulateCourseSale, scheduleVideoPublish, updateCourseStructure, deleteUnit, deleteLesson, deleteDirectLesson, addLessonToUnit, addPdfToLesson, addTrainingExam, addFinalExam, deletePdfFromLesson, deleteTrainingExam, deleteFinalExam } from '../controllers/course.controller.js'
+import { getAllCourses, getLecturesByCourseId, getCourseStructure, createCourse, updateCourse, removeCourse, addLectureToCourseById, updateCourseLecture, updateUnit, simulateCourseSale, scheduleVideoPublish, updateCourseStructure, deleteUnit, addTrainingExam, addFinalExam, deletePdfFromLesson, deleteTrainingExam, deleteFinalExam, grantContentAccess, purchaseLessonAccess } from '../controllers/course.controller.js'
 import { isLoggedIn, authorisedRoles, authorizeSubscriber } from "../middleware/auth.middleware.js";
 import upload from "../middleware/multer.middleware.js"; 
 
 router.route('/')
     .get(getAllCourses)
     .post(isLoggedIn, authorisedRoles('ADMIN'), upload.single("thumbnail"), createCourse)
-    .delete(isLoggedIn, authorisedRoles('ADMIN'), deleteCourseLecture)
     .put(isLoggedIn, authorisedRoles('ADMIN'), upload.single("lecture"), updateCourseLecture)
 
 router.route('/:id/structure')
@@ -31,39 +30,27 @@ router.route('/public/:id')
 router.route('/:courseId/structure/update')
     .put(isLoggedIn, authorisedRoles("ADMIN"), updateCourseStructure);
 
-// Unit and lesson update routes
+// Unit update and delete
 router.route('/:courseId/units/:unitId')
     .put(isLoggedIn, authorisedRoles("ADMIN"), updateUnit)
     .delete(isLoggedIn, authorisedRoles("ADMIN"), deleteUnit);
 
-router.route('/:courseId/units/:unitId/lessons')
-    .post(isLoggedIn, authorisedRoles("ADMIN"), addLessonToUnit);
-
-router.route('/:courseId/units/:unitId/lessons/:lessonId')
-    .put(isLoggedIn, authorisedRoles("ADMIN"), updateLesson)
-    .delete(isLoggedIn, authorisedRoles("ADMIN"), deleteLesson);
-
-router.route('/:courseId/direct-lessons/:lessonId')
-    .put(isLoggedIn, authorisedRoles("ADMIN"), updateDirectLesson)
-    .delete(isLoggedIn, authorisedRoles("ADMIN"), deleteDirectLesson);
-
-// Video scheduling routes
+// Video scheduling
 router.route('/:courseId/lessons/:lessonId/schedule/:lessonType')
     .put(isLoggedIn, authorisedRoles("ADMIN"), scheduleVideoPublish);
 
+// Simulate course sale
 router.route('/:courseId/simulate-sale')
     .post(isLoggedIn, authorisedRoles("ADMIN"), simulateCourseSale);
 
-// PDF management routes
+// PDF management
 router.route('/:courseId/units/:unitId/lessons/:lessonId/pdf')
-    .post(isLoggedIn, authorisedRoles("ADMIN"), upload.single("pdf"), addPdfToLesson)
     .delete(isLoggedIn, authorisedRoles("ADMIN"), deletePdfFromLesson);
 
 router.route('/:courseId/direct-lessons/:lessonId/pdf')
-    .post(isLoggedIn, authorisedRoles("ADMIN"), upload.single("pdf"), addPdfToLesson)
     .delete(isLoggedIn, authorisedRoles("ADMIN"), deletePdfFromLesson);
 
-// Training exam management routes
+// Training exam management
 router.route('/:courseId/units/:unitId/lessons/:lessonId/training-exam')
     .post(isLoggedIn, authorisedRoles("ADMIN"), addTrainingExam)
     .delete(isLoggedIn, authorisedRoles("ADMIN"), deleteTrainingExam);
@@ -72,7 +59,7 @@ router.route('/:courseId/direct-lessons/:lessonId/training-exam')
     .post(isLoggedIn, authorisedRoles("ADMIN"), addTrainingExam)
     .delete(isLoggedIn, authorisedRoles("ADMIN"), deleteTrainingExam);
 
-// Final exam management routes
+// Final exam management
 router.route('/:courseId/units/:unitId/lessons/:lessonId/final-exam')
     .post(isLoggedIn, authorisedRoles("ADMIN"), addFinalExam)
     .delete(isLoggedIn, authorisedRoles("ADMIN"), deleteFinalExam);
@@ -81,4 +68,12 @@ router.route('/:courseId/direct-lessons/:lessonId/final-exam')
     .post(isLoggedIn, authorisedRoles("ADMIN"), addFinalExam)
     .delete(isLoggedIn, authorisedRoles("ADMIN"), deleteFinalExam);
 
-export default router
+// Add simple route to grant content access (admin only)
+router.route('/grant-access')
+    .post(isLoggedIn, authorisedRoles("ADMIN"), grantContentAccess);
+
+// Route for users to purchase lesson access with wallet points
+router.route('/purchase-lesson')
+    .post(isLoggedIn, purchaseLessonAccess);
+
+export default router;

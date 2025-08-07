@@ -2,6 +2,10 @@ import courseModel from '../models/course.model.js'
 import AppError from '../utils/error.utils.js';
 import cloudinary from 'cloudinary';
 import fs from 'fs';
+import mongoose from 'mongoose';
+import userModel from '../models/user.model.js';
+
+
 
 // Function to extract YouTube video ID from various YouTube URL formats
 const extractYouTubeVideoId = (url) => {
@@ -43,6 +47,7 @@ const getLecturesByCourseId = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { role } = req.user || {}; // Get user role if available
+        const userId = req.user?.id; // Get user ID if available
 
         const course = await courseModel.findById(id)
             .populate('subject', 'title')
@@ -51,9 +56,11 @@ const getLecturesByCourseId = async (req, res, next) => {
             return next(new AppError('course not found', 500));
         }
 
-        // Helper function to filter scheduled videos
-        const filterScheduledVideos = (lessons, isAdmin = false) => {
-            return lessons.map(lesson => {
+        // Helper function to filter scheduled videos and add purchase status
+        const filterScheduledVideos = async (lessons, isAdmin = false) => {
+            const filteredLessons = [];
+            
+            for (const lesson of lessons) {
                 const lessonCopy = { ...lesson.toObject() };
                 
                 // Check if video is scheduled and not yet published
@@ -77,19 +84,40 @@ const getLecturesByCourseId = async (req, res, next) => {
                 } else {
                     lessonCopy.isScheduled = false;
                 }
+
+                // Add access status for authenticated users
+                if (userId && !isAdmin) {
+                    // Check if user has purchased the course
+                    const user = await userModel.findById(userId);
+                    const hasCourseAccess = user?.hasPurchasedCourse?.includes(id);
+                    
+                    // Check if user has purchased this specific content
+                    const hasContentAccess = user?.purchasedContentIds?.includes(lesson._id.toString());
+                    
+                    lessonCopy.hasAccess = hasCourseAccess || hasContentAccess;
+                } else {
+                    lessonCopy.hasAccess = isAdmin; // Admin has access to all
+                }
                 
-                return lessonCopy;
-            });
+                filteredLessons.push(lessonCopy);
+            }
+            
+            return filteredLessons;
         };
 
         // Filter scheduled videos based on user role
         const isAdmin = role === 'ADMIN';
-        const filteredUnits = course.units.map(unit => ({
-            ...unit.toObject(),
-            lessons: filterScheduledVideos(unit.lessons || [], isAdmin)
-        }));
+        const filteredUnits = [];
         
-        const filteredDirectLessons = filterScheduledVideos(course.directLessons || [], isAdmin);
+        for (const unit of course.units) {
+            const filteredLessons = await filterScheduledVideos(unit.lessons || [], isAdmin);
+            filteredUnits.push({
+                ...unit.toObject(),
+                lessons: filteredLessons
+            });
+        }
+        
+        const filteredDirectLessons = await filterScheduledVideos(course.directLessons || [], isAdmin);
 
         const filteredCourse = {
             ...course.toObject(),
@@ -113,15 +141,18 @@ const getCourseStructure = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { role } = req.user || {}; // Get user role if available
+        const userId = req.user?.id; // Get user ID if available
 
-        const course = await courseModel.findById(id).select('title description units directLessons numberOfLectures');
+        const course = await courseModel.findById(id).select('title description units directLessons unifiedStructure numberOfLectures');
         if (!course) {
             return next(new AppError('Course not found', 404));
         }
 
-        // Helper function to filter scheduled videos
-        const filterScheduledVideos = (lessons, isAdmin = false) => {
-            return lessons.map(lesson => {
+        // Helper function to filter scheduled videos and add purchase status
+        const filterScheduledVideos = async (lessons, isAdmin = false, courseId) => {
+            const filteredLessons = [];
+            
+            for (const lesson of lessons) {
                 const lessonCopy = { ...lesson.toObject() };
                 
                 // Check if video is scheduled and not yet published
@@ -145,24 +176,88 @@ const getCourseStructure = async (req, res, next) => {
                 } else {
                     lessonCopy.isScheduled = false;
                 }
+
+                // Add access status for authenticated users
+                if (userId && !isAdmin) {
+                    // Check if user has purchased the course
+                    const user = await userModel.findById(userId);
+                    const hasCourseAccess = user?.hasPurchasedCourse?.includes(courseId);
+                    
+                    // Check if user has purchased this specific content
+                    const hasContentAccess = user?.purchasedContentIds?.includes(lesson._id.toString());
+                    
+                    lessonCopy.hasAccess = hasCourseAccess || hasContentAccess;
+                } else {
+                    lessonCopy.hasAccess = isAdmin; // Admin has access to all
+                }
                 
-                return lessonCopy;
-            });
+                filteredLessons.push(lessonCopy);
+            }
+            
+            return filteredLessons;
         };
 
         // Filter scheduled videos based on user role
         const isAdmin = role === 'ADMIN';
-        const filteredUnits = course.units.map(unit => ({
-            ...unit.toObject(),
-            lessons: filterScheduledVideos(unit.lessons || [], isAdmin)
-        }));
+        const filteredUnits = [];
         
-        const filteredDirectLessons = filterScheduledVideos(course.directLessons || [], isAdmin);
+        for (const unit of course.units) {
+            const filteredLessons = await filterScheduledVideos(unit.lessons || [], isAdmin, course._id);
+            filteredUnits.push({
+                ...unit.toObject(),
+                lessons: filteredLessons
+            });
+        }
+        
+        const filteredDirectLessons = await filterScheduledVideos(course.directLessons || [], isAdmin, course._id);
+
+        // Process unified structure
+        let processedUnifiedStructure = [];
+        if (course.unifiedStructure && Array.isArray(course.unifiedStructure)) {
+            for (const item of course.unifiedStructure) {
+                if (item.type === 'lesson' && item.data) {
+                    // Add access status for lesson in unified structure
+                    if (userId && role !== 'ADMIN') {
+                        // Check if user has purchased the course
+                        const user = await userModel.findById(userId);
+                        const hasCourseAccess = user?.hasPurchasedCourse?.includes(id);
+                        
+                        // Check if user has purchased this specific content
+                        const hasContentAccess = user?.purchasedContentIds?.includes(item.data._id?.toString());
+                        
+                        item.data.hasAccess = hasCourseAccess || hasContentAccess;
+                    } else {
+                        item.data.hasAccess = role === 'ADMIN';
+                    }
+                } else if (item.type === 'unit' && item.data && item.data.lessons) {
+                                            // Add access status for lessons in unit within unified structure
+                        for (const lesson of item.data.lessons) {
+                            if (userId && role !== 'ADMIN') {
+                                // Check if user has purchased the course
+                                const user = await userModel.findById(userId);
+                                const hasCourseAccess = user?.hasPurchasedCourse?.includes(id);
+                                
+                                // Check if user has purchased this specific content
+                                const hasContentAccess = user?.purchasedContentIds?.includes(lesson._id?.toString());
+                                
+                                lesson.hasAccess = hasCourseAccess || hasContentAccess;
+                            } else {
+                                lesson.hasAccess = role === 'ADMIN';
+                            }
+                        }
+                }
+                processedUnifiedStructure.push(item);
+            }
+        }
 
         // Calculate total lessons from structure (including scheduled ones)
         const totalUnitLessons = filteredUnits.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
         const totalDirectLessons = filteredDirectLessons.length;
-        const totalLessons = totalUnitLessons + totalDirectLessons;
+        const totalUnifiedLessons = processedUnifiedStructure.filter(item => item.type === 'lesson').length;
+        const totalUnifiedUnitLessons = processedUnifiedStructure
+            .filter(item => item.type === 'unit')
+            .reduce((sum, unit) => sum + (unit.data.lessons?.length || 0), 0);
+        const totalLessons = totalUnitLessons + totalDirectLessons + totalUnifiedLessons + totalUnifiedUnitLessons;
 
         res.status(200).json({
             success: true,
@@ -173,6 +268,7 @@ const getCourseStructure = async (req, res, next) => {
                 description: course.description,
                 units: filteredUnits,
                 directLessons: filteredDirectLessons,
+                unifiedStructure: processedUnifiedStructure,
                 totalLessons: totalLessons,
                 numberOfLectures: course.numberOfLectures
             }
@@ -208,8 +304,9 @@ const createCourse = async (req, res, next) => {
                     // Convert unified structure to separate structure for backward compatibility
                     unifiedStructure.forEach((item, index) => {
                         if (item.type === 'unit') {
-                            // Clean lessons to remove problematic IDs
+                            // Clean lessons to remove problematic IDs and ensure each has a proper _id
                             const cleanLessons = (item.data.lessons || []).map(lesson => ({
+                                _id: new mongoose.Types.ObjectId(), // Ensure each lesson has a unique ID
                                 title: lesson.title,
                                 description: lesson.description,
                                 lecture: lesson.lecture || {},
@@ -218,6 +315,7 @@ const createCourse = async (req, res, next) => {
                             }));
                             
                             units.push({
+                                _id: new mongoose.Types.ObjectId(), // Ensure each unit has a unique ID
                                 title: item.data.title,
                                 description: item.data.description,
                                 lessons: cleanLessons,
@@ -225,6 +323,7 @@ const createCourse = async (req, res, next) => {
                             });
                         } else if (item.type === 'lesson') {
                             directLessons.push({
+                                _id: new mongoose.Types.ObjectId(), // Ensure each direct lesson has a unique ID
                                 title: item.data.title,
                                 description: item.data.description,
                                 lecture: item.data.lecture || {},
@@ -241,6 +340,32 @@ const createCourse = async (req, res, next) => {
                     // Handle legacy structure
                     units = structure.units || [];
                     directLessons = structure.directLessons || [];
+                    
+                    // Ensure all units and lessons have proper IDs
+                    units = units.map(unit => ({
+                        _id: unit._id || new mongoose.Types.ObjectId(),
+                        title: unit.title,
+                        description: unit.description,
+                        lessons: (unit.lessons || []).map(lesson => ({
+                            _id: lesson._id || new mongoose.Types.ObjectId(),
+                            title: lesson.title,
+                            description: lesson.description,
+                            lecture: lesson.lecture || {},
+                            duration: lesson.duration || 0,
+                            price: lesson.price || 10
+                        })),
+                        order: unit.order || 0
+                    }));
+                    
+                    directLessons = directLessons.map(lesson => ({
+                        _id: lesson._id || new mongoose.Types.ObjectId(),
+                        title: lesson.title,
+                        description: lesson.description,
+                        lecture: lesson.lecture || {},
+                        duration: lesson.duration || 0,
+                        price: lesson.price || 10,
+                        order: lesson.order || 0
+                    }));
                     
                     // Recalculate total lessons from structure
                     const totalUnitLessons = units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
@@ -362,8 +487,9 @@ const updateCourse = async (req, res, next) => {
                     
                     course.unifiedStructure.forEach((item, index) => {
                         if (item.type === 'unit') {
-                            // Clean lessons to remove problematic IDs
+                            // Clean lessons to remove problematic IDs and ensure each has a proper _id
                             const cleanLessons = (item.data.lessons || []).map(lesson => ({
+                                _id: lesson._id || new mongoose.Types.ObjectId(), // Preserve existing ID or create new one
                                 title: lesson.title,
                                 description: lesson.description,
                                 lecture: lesson.lecture || {},
@@ -372,6 +498,7 @@ const updateCourse = async (req, res, next) => {
                             }));
                             
                             units.push({
+                                _id: item.data._id || new mongoose.Types.ObjectId(), // Preserve existing ID or create new one
                                 title: item.data.title,
                                 description: item.data.description,
                                 lessons: cleanLessons,
@@ -379,6 +506,7 @@ const updateCourse = async (req, res, next) => {
                             });
                         } else if (item.type === 'lesson') {
                             directLessons.push({
+                                _id: item.data._id || new mongoose.Types.ObjectId(), // Preserve existing ID or create new one
                                 title: item.data.title,
                                 description: item.data.description,
                                 lecture: item.data.lecture || {},
@@ -396,8 +524,34 @@ const updateCourse = async (req, res, next) => {
                     course.numberOfLectures = course.unifiedStructure.filter(item => item.type === 'lesson').length;
                 } else {
                     // Handle legacy structure
-                    course.units = structure.units || [];
-                    course.directLessons = structure.directLessons || [];
+                    const units = structure.units || [];
+                    const directLessons = structure.directLessons || [];
+                    
+                    // Ensure all units and lessons have proper IDs
+                    course.units = units.map(unit => ({
+                        _id: unit._id || new mongoose.Types.ObjectId(),
+                        title: unit.title,
+                        description: unit.description,
+                        lessons: (unit.lessons || []).map(lesson => ({
+                            _id: lesson._id || new mongoose.Types.ObjectId(),
+                            title: lesson.title,
+                            description: lesson.description,
+                            lecture: lesson.lecture || {},
+                            duration: lesson.duration || 0,
+                            price: lesson.price || 10
+                        })),
+                        order: unit.order || 0
+                    }));
+                    
+                    course.directLessons = directLessons.map(lesson => ({
+                        _id: lesson._id || new mongoose.Types.ObjectId(),
+                        title: lesson.title,
+                        description: lesson.description,
+                        lecture: lesson.lecture || {},
+                        duration: lesson.duration || 0,
+                        price: lesson.price || 10,
+                        order: lesson.order || 0
+                    }));
                     
                     // Recalculate total lessons from structure
                     const totalUnitLessons = course.units.reduce((sum, unit) => sum + (unit.lessons?.length || 0), 0);
@@ -615,37 +769,7 @@ const addLectureToCourseById = async (req, res, next) => {
     }
 }
 
-// delete lecture by course id and lecture id
-const deleteCourseLecture = async (req, res, next) => {
-    try {
-        const { courseId, lectureId } = req.query;
 
-        const course = await courseModel.findById(courseId);
-
-        if (!course) {
-            return next(new AppError('Course not found', 404));
-        }
-
-        const lectureIndex = course.lectures.findIndex(lecture => lecture._id.toString() === lectureId);
-
-        if (lectureIndex === -1) {
-            return next(new AppError('Lecture not found in the course', 404));
-        }
-
-        course.lectures.splice(lectureIndex, 1);
-
-        course.numberOfLectures = course.lectures.length;
-
-        await course.save();
-
-        res.status(200).json({
-            success: true,
-            message: 'Lecture deleted successfully'
-        });
-    } catch (e) {
-        return next(new AppError(e.message, 500));
-    }
-};
 
 
 // update lecture by course id and lecture id
@@ -790,110 +914,7 @@ const updateUnit = async (req, res, next) => {
     }
 };
 
-// Update lesson name and description
-const updateLesson = async (req, res, next) => {
-    try {
-        const { courseId, unitId, lessonId } = req.params;
-        const { title, description, duration, lecture } = req.body;
 
-        if (!title && !description && duration === undefined && !lecture) {
-            return next(new AppError('At least one field is required', 400));
-        }
-
-        const course = await courseModel.findById(courseId);
-        if (!course) {
-            return next(new AppError('Course not found', 404));
-        }
-
-        // Find the unit
-        const unitIndex = course.units.findIndex(unit => 
-            unit._id.toString() === unitId || unit.id === unitId
-        );
-
-        if (unitIndex === -1) {
-            return next(new AppError('Unit not found', 404));
-        }
-
-        // Find the lesson within the unit
-        const lessonIndex = course.units[unitIndex].lessons.findIndex(lesson => 
-            lesson._id.toString() === lessonId || lesson.id === lessonId
-        );
-
-        if (lessonIndex === -1) {
-            return next(new AppError('Lesson not found', 404));
-        }
-
-        // Update lesson fields
-        if (title) course.units[unitIndex].lessons[lessonIndex].title = title;
-        if (description) course.units[unitIndex].lessons[lessonIndex].description = description;
-        if (duration !== undefined) course.units[unitIndex].lessons[lessonIndex].duration = duration;
-        if (lecture) {
-            course.units[unitIndex].lessons[lessonIndex].lecture = {
-                ...course.units[unitIndex].lessons[lessonIndex].lecture,
-                ...lecture
-            };
-        }
-
-        await course.save();
-
-        res.status(200).json({
-            success: true,
-            message: 'Lesson updated successfully',
-            lesson: course.units[unitIndex].lessons[lessonIndex]
-        });
-
-    } catch (e) {
-        return next(new AppError(e.message, 500));
-    }
-};
-
-// Update direct lesson name and description
-const updateDirectLesson = async (req, res, next) => {
-    try {
-        const { courseId, lessonId } = req.params;
-        const { title, description, duration, lecture } = req.body;
-
-        if (!title && !description && duration === undefined && !lecture) {
-            return next(new AppError('At least one field is required', 400));
-        }
-
-        const course = await courseModel.findById(courseId);
-        if (!course) {
-            return next(new AppError('Course not found', 404));
-        }
-
-        // Find the direct lesson
-        const lessonIndex = course.directLessons.findIndex(lesson => 
-            lesson._id.toString() === lessonId || lesson.id === lessonId
-        );
-
-        if (lessonIndex === -1) {
-            return next(new AppError('Direct lesson not found', 404));
-        }
-
-        // Update lesson fields
-        if (title) course.directLessons[lessonIndex].title = title;
-        if (description) course.directLessons[lessonIndex].description = description;
-        if (duration !== undefined) course.directLessons[lessonIndex].duration = duration;
-        if (lecture) {
-            course.directLessons[lessonIndex].lecture = {
-                ...course.directLessons[lessonIndex].lecture,
-                ...lecture
-            };
-        }
-
-        await course.save();
-
-        res.status(200).json({
-            success: true,
-            message: 'Direct lesson updated successfully',
-            lesson: course.directLessons[lessonIndex]
-        });
-
-    } catch (e) {
-        return next(new AppError(e.message, 500));
-    }
-};
 
 // Simulate course sale for testing
 const simulateCourseSale = async (req, res, next) => {
@@ -1590,6 +1611,179 @@ const deleteFinalExam = async (req, res, next) => {
     }
 };
 
+// Add simple function to grant access to content (admin only)
+const grantContentAccess = async (req, res, next) => {
+    try {
+        const { userId, contentIds } = req.body;
+        
+        if (!userId || !contentIds || !Array.isArray(contentIds)) {
+            return next(new AppError("User ID and content IDs array are required", 400));
+        }
+    
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return next(new AppError("User not found", 404));
+        }
+    
+        // Add content IDs to user's purchased content (avoid duplicates)
+        const newContentIds = contentIds.filter(id => !user.purchasedContentIds.includes(id));
+        user.purchasedContentIds.push(...newContentIds);
+        
+        await user.save();
+    
+        res.status(200).json({
+            success: true,
+            message: "Content access granted successfully",
+            data: {
+                grantedIds: newContentIds,
+                totalPurchasedContent: user.purchasedContentIds.length
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Function for users to purchase lesson access with wallet points
+const purchaseLessonAccess = async (req, res, next) => {
+    try {
+        console.log('=== PURCHASE LESSON ACCESS ===');
+        console.log('Request body:', req.body);
+        console.log('User from req.user:', req.user);
+        console.log('User ID:', req.user?.id);
+        console.log('User role:', req.user?.role);
+        
+        const { contentId, courseId } = req.body;
+        const userId = req.user.id;
+        
+        if (!contentId || !courseId) {
+            return next(new AppError("Content ID and Course ID are required", 400));
+        }
+        
+        // Find the user
+        const user = await userModel.findById(userId);
+        console.log('Found user from database:', user ? 'Yes' : 'No');
+        console.log('User role from database:', user?.role);
+        
+        if (!user) {
+            return next(new AppError("User not found", 404));
+        }
+        
+        // Admin users have unlimited access - no need to purchase
+        if (user.role === 'ADMIN') {
+            console.log('Admin user detected, granting unlimited access');
+            return res.status(200).json({
+                success: true,
+                message: "Admin users have unlimited access to all content",
+                data: {
+                    lessonId: contentId,
+                    adminAccess: true
+                }
+            });
+        }
+        
+        // Check if user already has access to this content
+        if (user.purchasedContentIds.includes(contentId)) {
+            return next(new AppError("You already have access to this content", 400));
+        }
+        
+        // Find the course to get the lesson price
+        const course = await courseModel.findById(courseId);
+        if (!course) {
+            return next(new AppError("Course not found", 404));
+        }
+        
+        // Find the lesson in the course structure
+        let lesson = null;
+        let lessonPrice = 0;
+        
+        // Search in direct lessons
+        if (course.directLessons) {
+            lesson = course.directLessons.find(l => l._id.toString() === contentId);
+            if (lesson) {
+                lessonPrice = lesson.price || 0;
+            }
+        }
+        
+        // Search in units
+        if (!lesson && course.units) {
+            for (const unit of course.units) {
+                if (unit.lessons) {
+                    lesson = unit.lessons.find(l => l._id.toString() === contentId);
+                    if (lesson) {
+                        lessonPrice = lesson.price || 0;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Search in unified structure
+        if (!lesson && course.unifiedStructure) {
+            for (const item of course.unifiedStructure) {
+                if (item.type === 'lesson' && item.data._id.toString() === contentId) {
+                    lesson = item.data;
+                    lessonPrice = lesson.price || 0;
+                    break;
+                } else if (item.type === 'unit' && item.data.lessons) {
+                    lesson = item.data.lessons.find(l => l._id.toString() === contentId);
+                    if (lesson) {
+                        lessonPrice = lesson.price || 0;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (!lesson) {
+            return next(new AppError("Lesson not found in course", 404));
+        }
+        
+        // Check if lesson is free
+        if (lessonPrice === 0) {
+            return next(new AppError("This lesson is free and doesn't require purchase", 400));
+        }
+        
+        // Check if user has enough wallet balance
+        if (user.wallet.balance < lessonPrice) {
+            return next(new AppError(`Insufficient wallet balance. Required: ${lessonPrice} points, Available: ${user.wallet.balance} points`, 400));
+        }
+        
+        // Deduct points from wallet
+        user.wallet.balance -= lessonPrice;
+        
+        // Add transaction record
+        user.wallet.transactions.push({
+            type: 'purchase',
+            amount: -lessonPrice, // Negative for purchase
+            code: `LESSON_${contentId}`,
+            description: `Purchase access to lesson: ${lesson.title}`,
+            date: new Date(),
+            status: 'completed'
+        });
+        
+        // Add content ID to purchased content
+        user.purchasedContentIds.push(contentId);
+        
+        await user.save();
+        
+        res.status(200).json({
+            success: true,
+            message: "Lesson access purchased successfully",
+            data: {
+                lessonId: contentId,
+                lessonTitle: lesson.title,
+                price: lessonPrice,
+                newBalance: user.wallet.balance,
+                transactionId: user.wallet.transactions[user.wallet.transactions.length - 1]._id
+            }
+        });
+        
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
 export {
     getAllCourses,
     getLecturesByCourseId,
@@ -1598,22 +1792,21 @@ export {
     updateCourse,
     removeCourse,
     addLectureToCourseById,
-    deleteCourseLecture,
     updateCourseLecture,
     updateUnit,
-    updateLesson,
-    updateDirectLesson,
     simulateCourseSale,
     scheduleVideoPublish,
     updateCourseStructure,
     deleteUnit,
     deleteLesson,
-    deleteDirectLesson,
     addLessonToUnit,
+    deleteDirectLesson,
     addPdfToLesson,
     addTrainingExam,
     addFinalExam,
     deletePdfFromLesson,
     deleteTrainingExam,
-    deleteFinalExam
-}
+    deleteFinalExam,
+    grantContentAccess,
+    purchaseLessonAccess
+};

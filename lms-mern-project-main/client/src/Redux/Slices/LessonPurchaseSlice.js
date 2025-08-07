@@ -1,36 +1,31 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { axiosInstance } from '../../Helpers/axiosInstance';
+import { axiosInstance } from '../../Helpers/axiosInstance.js';
 
-// Simple purchase lesson
+// Async thunks
 export const purchaseLesson = createAsyncThunk(
     'lessonPurchase/purchaseLesson',
-    async ({ lessonId, amount = 10 }, { rejectWithValue }) => {
+    async (purchaseData, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post('/lesson-purchases/purchase', {
-                lessonId,
-                amount
-            });
+            const response = await axiosInstance.post('/lesson-purchases/purchase', purchaseData);
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Purchase failed');
+            return rejectWithValue(error.response?.data || { message: 'Purchase failed' });
         }
     }
 );
 
-// Check lesson access
 export const checkLessonAccess = createAsyncThunk(
     'lessonPurchase/checkLessonAccess',
-    async (lessonId, { rejectWithValue }) => {
+    async ({ courseId, lessonId }, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.get(`/lesson-purchases/access/${lessonId}`);
+            const response = await axiosInstance.get(`/lesson-purchases/access/${courseId}/${lessonId}`);
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Access check failed');
+            return rejectWithValue(error.response?.data || { message: 'Access check failed' });
         }
     }
 );
 
-// Get user purchases
 export const getUserPurchases = createAsyncThunk(
     'lessonPurchase/getUserPurchases',
     async (_, { rejectWithValue }) => {
@@ -38,31 +33,32 @@ export const getUserPurchases = createAsyncThunk(
             const response = await axiosInstance.get('/lesson-purchases/user-purchases');
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Failed to get purchases');
+            return rejectWithValue(error.response?.data || { message: 'Failed to get purchases' });
         }
     }
 );
 
-// Get purchase statistics (admin only)
-export const getPurchaseStats = createAsyncThunk(
-    'lessonPurchase/getPurchaseStats',
-    async (_, { rejectWithValue }) => {
+export const getLessonDetails = createAsyncThunk(
+    'lessonPurchase/getLessonDetails',
+    async ({ courseId, lessonId }, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.get('/lesson-purchases/stats');
+            const response = await axiosInstance.get(`/lesson-purchases/lesson/${courseId}/${lessonId}`);
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Failed to get stats');
+            return rejectWithValue(error.response?.data || { message: 'Failed to get lesson details' });
         }
     }
 );
 
 const initialState = {
     purchases: [],
-    purchaseStats: null,
+    currentPurchase: null,
+    lessonAccess: {},
+    lessonDetails: {},
     loading: false,
     error: null,
-    purchaseLoading: false,
-    accessLoading: false
+    totalPurchases: 0,
+    totalSpent: 0
 };
 
 const lessonPurchaseSlice = createSlice({
@@ -72,75 +68,86 @@ const lessonPurchaseSlice = createSlice({
         clearError: (state) => {
             state.error = null;
         },
-        clearPurchases: (state) => {
-            state.purchases = [];
+        clearCurrentPurchase: (state) => {
+            state.currentPurchase = null;
+        },
+        clearLessonDetails: (state) => {
+            state.lessonDetails = {};
+        },
+        setLessonAccess: (state, action) => {
+            const { courseId, lessonId, hasAccess, isInPaidStudents } = action.payload;
+            state.lessonAccess[`${courseId}-${lessonId}`] = hasAccess || isInPaidStudents;
         }
     },
     extraReducers: (builder) => {
         builder
-            // Purchase lesson
+            // Purchase Lesson
             .addCase(purchaseLesson.pending, (state) => {
-                state.purchaseLoading = true;
+                state.loading = true;
                 state.error = null;
             })
             .addCase(purchaseLesson.fulfilled, (state, action) => {
-                state.purchaseLoading = false;
-                state.error = null;
-                // Add the new purchase to the list
-                if (action.payload.data?.purchase) {
-                    state.purchases.unshift(action.payload.data.purchase);
-                }
+                state.loading = false;
+                state.currentPurchase = action.payload.data.purchase;
+                state.purchases.unshift(action.payload.data.purchase);
+                state.totalPurchases += 1;
+                state.totalSpent += action.payload.data.purchase.amount;
             })
             .addCase(purchaseLesson.rejected, (state, action) => {
-                state.purchaseLoading = false;
+                state.loading = false;
                 state.error = action.payload?.message || 'Purchase failed';
             })
             
-            // Check lesson access
+            // Check Lesson Access
             .addCase(checkLessonAccess.pending, (state) => {
-                state.accessLoading = true;
+                state.loading = true;
                 state.error = null;
             })
             .addCase(checkLessonAccess.fulfilled, (state, action) => {
-                state.accessLoading = false;
-                state.error = null;
+                state.loading = false;
+                const { courseId, lessonId } = action.meta.arg;
+                const hasAccess = action.payload.data.hasAccess;
+                const isInPaidStudents = action.payload.data.isInPaidStudents;
+                state.lessonAccess[`${courseId}-${lessonId}`] = hasAccess || isInPaidStudents;
             })
             .addCase(checkLessonAccess.rejected, (state, action) => {
-                state.accessLoading = false;
+                state.loading = false;
                 state.error = action.payload?.message || 'Access check failed';
             })
             
-            // Get user purchases
+            // Get User Purchases
             .addCase(getUserPurchases.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
             .addCase(getUserPurchases.fulfilled, (state, action) => {
                 state.loading = false;
-                state.error = null;
-                state.purchases = action.payload.data?.purchases || [];
+                state.purchases = action.payload.data.purchases;
+                state.totalPurchases = action.payload.data.totalPurchases;
+                state.totalSpent = action.payload.data.totalSpent;
             })
             .addCase(getUserPurchases.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload?.message || 'Failed to get purchases';
             })
             
-            // Get purchase stats
-            .addCase(getPurchaseStats.pending, (state) => {
+            // Get Lesson Details
+            .addCase(getLessonDetails.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(getPurchaseStats.fulfilled, (state, action) => {
+            .addCase(getLessonDetails.fulfilled, (state, action) => {
                 state.loading = false;
-                state.error = null;
-                state.purchaseStats = action.payload.data;
+                const { courseId, lessonId } = action.meta.arg;
+                state.lessonDetails[`${courseId}-${lessonId}`] = action.payload.data;
             })
-            .addCase(getPurchaseStats.rejected, (state, action) => {
+            .addCase(getLessonDetails.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload?.message || 'Failed to get stats';
+                state.error = action.payload?.message || 'Failed to get lesson details';
             });
     }
 });
 
-export const { clearError, clearPurchases } = lessonPurchaseSlice.actions;
+export const { clearError, clearCurrentPurchase, clearLessonDetails, setLessonAccess } = lessonPurchaseSlice.actions;
+
 export default lessonPurchaseSlice.reducer; 

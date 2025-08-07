@@ -123,6 +123,11 @@ const getCourseProgress = async (req, res, next) => {
     const { courseId } = req.params;
     const userId = req.user.id;
 
+    // Validate courseId is a valid ObjectId
+    if (!courseId || !/^[0-9a-fA-F]{24}$/.test(courseId)) {
+      return next(new AppError("Invalid course ID format", 400));
+    }
+
     const progress = await videoProgressModel.find({ userId, courseId })
       .populate('userId', 'username fullName')
       .sort({ updatedAt: -1 });

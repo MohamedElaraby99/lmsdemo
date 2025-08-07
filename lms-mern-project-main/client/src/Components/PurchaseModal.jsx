@@ -195,7 +195,7 @@ const PurchaseModal = ({
               <div className="flex items-center gap-2">
                 <FaCoins className="text-yellow-500" />
                 <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {price} جنيه
+                  {price} نقطة
                 </span>
               </div>
             </div>
@@ -205,7 +205,7 @@ const PurchaseModal = ({
               <div className="flex items-center gap-2">
                 <FaWallet className="text-green-500" />
                 <span className={`font-semibold ${canAfford ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {balance} جنيه
+                  {balance} نقطة
                 </span>
               </div>
             </div>
@@ -215,7 +215,7 @@ const PurchaseModal = ({
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">الرصيد المتبقي</span>
                   <span className="font-semibold text-green-600 dark:text-green-400">
-                    {remainingBalance} جنيه
+                    {remainingBalance} نقطة
                   </span>
                 </div>
               </div>
@@ -232,7 +232,7 @@ const PurchaseModal = ({
                 <div>
                   <h4 className="font-semibold text-red-800 dark:text-red-200">رصيد غير كافي</h4>
                   <p className="text-sm text-red-600 dark:text-red-400">
-                    تحتاج {price - balance} جنيه إضافية لشراء هذا الدرس
+                    تحتاج {price - balance} نقطة إضافية لشراء هذا الدرس
                   </p>
                 </div>
               </div>

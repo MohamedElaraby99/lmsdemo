@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { createNewCourse, updateCourse } from '../../Redux/Slices/CourseSlice';
 import Layout from '../../Layout/Layout';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { axiosInstance } from '../../Helpers/axiosInstance';
 import { 
   FaBook, 

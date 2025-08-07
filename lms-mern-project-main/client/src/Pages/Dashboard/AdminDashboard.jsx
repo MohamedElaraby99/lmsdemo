@@ -45,6 +45,8 @@ import {
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { axiosInstance } from "../../Helpers/axiosInstance";
+import { toast } from "react-hot-toast";
 
 import Layout from "../../Layout/Layout";
 import { getAllCourses, deleteCourse } from "../../Redux/Slices/CourseSlice";
@@ -112,10 +114,10 @@ export default function AdminDashboard() {
 
   // Enhanced chart data for platform growth
   const platformGrowthData = {
-    labels: ["Users", "Courses", "Lectures", "Revenue (K)", "Payments"],
+    labels: ["المستخدمين", "الدورات", "المحاضرات", "الإيرادات (ألف)", "المدفوعات"],
     datasets: [
       {
-        label: "Platform Growth Metrics",
+        label: "مقاييس نمو المنصة",
         data: [allUsersCount, totalCourses, totalLectures, totalRevenue / 1000, totalPayments],
         backgroundColor: "rgba(59, 130, 246, 0.6)",
         borderColor: "rgba(59, 130, 246, 1)",
@@ -178,7 +180,7 @@ export default function AdminDashboard() {
   }, [myCourses]);
 
   async function onCourseDelete(id) {
-    if (window.confirm("Are you sure you want to delete this course?")) {
+    if (window.confirm("هل أنت متأكد من حذف هذه الدورة؟")) {
       const res = await dispatch(deleteCourse(id));
       if (res?.payload?.success) {
         await dispatch(getAllCourses());
@@ -251,9 +253,43 @@ export default function AdminDashboard() {
     }
   ];
 
+  // Add state for content access management
+  const [selectedUser, setSelectedUser] = useState('');
+  const [contentIds, setContentIds] = useState('');
+  const [grantingAccess, setGrantingAccess] = useState(false);
+
+  // Add function to grant content access
+  const handleGrantContentAccess = async () => {
+    if (!selectedUser || !contentIds.trim()) {
+      toast.error('يرجى اختيار المستخدم وإدخال معرفات المحتوى');
+      return;
+    }
+
+    const idsArray = contentIds.split(',').map(id => id.trim()).filter(id => id);
+    
+    setGrantingAccess(true);
+    try {
+      const response = await axiosInstance.post('/courses/grant-access', {
+        userId: selectedUser,
+        contentIds: idsArray
+      });
+
+      if (response.data.success) {
+        toast.success('تم منح الوصول للمحتوى بنجاح');
+        setSelectedUser('');
+        setContentIds('');
+      }
+    } catch (error) {
+      console.error('Error granting access:', error);
+      toast.error(error.response?.data?.message || 'فشل في منح الوصول');
+    } finally {
+      setGrantingAccess(false);
+    }
+  };
+
   return (
-    <Layout hideFooter={true}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" dir="rtl">
         {/* Hero Section */}
         <section className="relative py-16 px-4 overflow-hidden">
           {/* Background Pattern */}
@@ -268,11 +304,11 @@ export default function AdminDashboard() {
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 mb-4">
                 لوحة تحكم الإدارة
-        </h1>
+              </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
                 مرحباً بعودتك! إليك نظرة عامة على أداء منصة التعلم والمقاييس الرئيسية.
               </p>
-              </div>
+            </div>
 
             {/* Statistics Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-12">
@@ -293,15 +329,15 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                   </div>
-                  <h3 className="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                  <h3 className="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white mb-1 text-right">
                     {card.value}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs lg:text-sm">
+                  <p className="text-gray-600 dark:text-gray-400 text-xs lg:text-sm text-right">
                     {card.title}
                   </p>
                 </div>
               ))}
-                </div>
+            </div>
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-12">
@@ -311,16 +347,16 @@ export default function AdminDashboard() {
                   <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                     <FaChartLine className="text-blue-600 dark:text-blue-400 text-lg lg:text-xl" />
                   </div>
-                  <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
-                     المراحل الدراسية
+                  <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white text-right">
+                    المراحل الدراسية
                   </h3>
                 </div>
                 <div className="h-48 sm:h-56 lg:h-64 w-full">
                   <Pie
                     data={stagesData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
                       plugins: {
                         legend: {
                           position: 'bottom',
@@ -335,8 +371,8 @@ export default function AdminDashboard() {
                           }
                         }
                       }
-                  }}
-                />
+                    }}
+                  />
                 </div>
               </div>
 
@@ -346,7 +382,7 @@ export default function AdminDashboard() {
                   <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                     <FaRocket className="text-green-600 dark:text-green-400 text-lg lg:text-xl" />
                   </div>
-                  <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
+                  <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white text-right">
                     نمو المنصة
                   </h3>
                 </div>
@@ -394,13 +430,13 @@ export default function AdminDashboard() {
                       }
                     }}
                   />
+                </div>
               </div>
             </div>
-          </div>
 
             {/* Quick Actions */}
             <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl p-4 lg:p-6 mb-8 lg:mb-12">
-              <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-6 flex items-center gap-3">
+              <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-6 flex items-center gap-3 text-right">
                 <FaCog className="text-blue-500" />
                 الإجراءات السريعة
               </h3>
@@ -467,10 +503,6 @@ export default function AdminDashboard() {
             {/* Course Management Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl p-4 lg:p-6">
               <div className="flex items-center justify-between mb-4 lg:mb-6">
-                <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                  <FaBook className="text-blue-500" />
-                  إدارة الكورسات
-                </h3>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setViewMode("grid")}
@@ -497,12 +529,16 @@ export default function AdminDashboard() {
                     </svg>
                   </button>
                 </div>
+                <h3 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 text-right">
+                  <FaBook className="text-blue-500" />
+                  إدارة الكورسات
+                </h3>
               </div>
 
               {/* Search and Filters */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-4 lg:mb-6">
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <FaSearch className="h-4 w-4 lg:h-5 lg:w-5 text-gray-400" />
                   </div>
                   <input
@@ -510,14 +546,14 @@ export default function AdminDashboard() {
                     placeholder="البحث في الكورسات..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 lg:pl-10 pr-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base"
+                    className="w-full pr-9 lg:pr-10 pl-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base text-right"
                   />
                 </div>
 
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base"
+                  className="px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base text-right"
                 >
                   <option value="all">جميع الفئات</option>
                   {uniqueCategories.map(category => (
@@ -528,7 +564,7 @@ export default function AdminDashboard() {
                 <select
                   value={instructorFilter}
                   onChange={(e) => setInstructorFilter(e.target.value)}
-                  className="px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base"
+                  className="px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base text-right"
                 >
                   <option value="all">جميع المدرسين</option>
                   {uniqueInstructors.map(instructor => (
@@ -539,7 +575,7 @@ export default function AdminDashboard() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base"
+                  className="px-3 lg:px-4 py-2 lg:py-3 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm lg:text-base text-right"
                 >
                   <option value="title">ترتيب حسب العنوان</option>
                   <option value="category">ترتيب حسب الفئة</option>
@@ -550,7 +586,7 @@ export default function AdminDashboard() {
 
               {/* Results Info */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs lg:text-sm text-gray-600 dark:text-gray-400 mb-4 lg:mb-6 gap-2">
-                <span>
+                <span className="text-right">
                   عرض {filteredAndSortedCourses.length} من {myCourses?.length || 0} دورة
                 </span>
                 {(searchTerm || categoryFilter !== "all" || instructorFilter !== "all") && (
@@ -560,7 +596,7 @@ export default function AdminDashboard() {
                       setCategoryFilter("all");
                       setInstructorFilter("all");
                     }}
-                    className="text-blue-600 dark:text-blue-400 hover:underline text-left sm:text-right"
+                    className="text-blue-600 dark:text-blue-400 hover:underline text-right"
                   >
                     مسح الفلاتر
                   </button>
@@ -577,29 +613,29 @@ export default function AdminDashboard() {
                           <FaBook className="text-white text-lg lg:text-2xl" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-base lg:text-lg font-bold text-gray-900 dark:text-white mb-1 truncate">
+                          <h4 className="text-base lg:text-lg font-bold text-gray-900 dark:text-white mb-1 truncate text-right">
                             {course?.title}
                           </h4>
-                          <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                          <p className="text-xs lg:text-sm text-gray-600 dark:text-gray-300 line-clamp-2 text-right">
                             {course?.description}
                           </p>
                         </div>
                       </div>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3 mb-3 lg:mb-4 text-xs lg:text-sm">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 justify-end">
                           <FaBook className="text-blue-500 text-xs lg:text-sm" />
-                          <span className="text-gray-600 dark:text-gray-300">{course?.category || 'General'}</span>
+                          <span className="text-gray-600 dark:text-gray-300">{course?.category || 'عام'}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 justify-end">
                           <FaUsers className="text-green-500 text-xs lg:text-sm" />
-                          <span className="text-gray-600 dark:text-gray-300">{course?.createdBy || 'Admin'}</span>
+                          <span className="text-gray-600 dark:text-gray-300">{course?.createdBy || 'المدير'}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 justify-end">
                           <FaPlay className="text-purple-500 text-xs lg:text-sm" />
                           <span className="text-gray-600 dark:text-gray-300">{course?.numberOfLectures || 0} محاضرة</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 justify-end">
                           <FaDollarSign className="text-orange-500 text-xs lg:text-sm" />
                           <span className="text-gray-600 dark:text-gray-300">
                             {course?.isPaid ? `${course?.price || 0} جنيه` : 'مجاني'}
@@ -615,17 +651,17 @@ export default function AdminDashboard() {
                           <FaEye className="w-3 h-3 lg:w-4 lg:h-4" />
                           <span className="font-medium">عرض</span>
                         </button>
-                          <button
+                        <button
                           onClick={() => navigate(`/course/edit/${course._id}`, { state: { ...course } })}
                           className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 text-xs lg:text-sm"
                         >
                           <FaEdit className="w-3 h-3 lg:w-4 lg:h-4" />
                           <span className="font-medium">تعديل</span>
-                          </button>
-                          <button
-                            onClick={() => onCourseDelete(course?._id)}
+                        </button>
+                        <button
+                          onClick={() => onCourseDelete(course?._id)}
                           className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-2 px-3 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center justify-center gap-2 text-xs lg:text-sm"
-                          >
+                        >
                           <FaTrashAlt className="w-3 h-3 lg:w-4 lg:h-4" />
                           <span className="font-medium">حذف</span>
                         </button>
@@ -645,13 +681,15 @@ export default function AdminDashboard() {
                     className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg lg:rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm lg:text-base"
                   >
                     إنشاء دورتك الأولى
-                          </button>
+                  </button>
                 </div>
               )}
             </div>
+
+        
           </div>
         </section>
-        </div>
+      </div>
     </Layout>
   );
 }

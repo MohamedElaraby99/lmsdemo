@@ -95,6 +95,15 @@ const userSchema = new Schema({
         id: String,
         status: String
     },
+    // Track purchased courses and lessons
+    hasPurchasedCourse: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Course'
+    }],
+    purchasedContentIds: [{
+        type: Schema.Types.ObjectId,
+        required: true
+    }],
     wallet: {
         balance: {
             type: Number,
