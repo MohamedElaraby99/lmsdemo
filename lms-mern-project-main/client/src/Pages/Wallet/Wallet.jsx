@@ -462,7 +462,7 @@ export default function Wallet() {
                                                             : 'text-red-600 dark:text-red-400'
                                                     }`}>
                                                         {transaction.type === 'recharge' || transaction.type === 'refund' ? '+' : '-'}
-                                                        {transaction.amount.toFixed(2)} جنيه
+                                                        {Math.abs(transaction.amount).toFixed(2)} جنيه
                                                     </p>
                                                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                                         transaction.status === 'completed'

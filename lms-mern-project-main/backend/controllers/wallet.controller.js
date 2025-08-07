@@ -21,12 +21,15 @@ const getWallet = async (req, res, next) => {
             await user.save();
         }
 
+        // Sort transactions by date (newest first)
+        const sortedTransactions = (user.wallet.transactions || []).sort((a, b) => new Date(b.date) - new Date(a.date));
+
         res.status(200).json({
             success: true,
             message: "Wallet retrieved successfully",
             data: {
                 balance: user.wallet.balance || 0,
-                transactions: user.wallet.transactions || []
+                transactions: sortedTransactions
             }
         });
     } catch (error) {
@@ -122,13 +125,16 @@ const getTransactionHistory = async (req, res, next) => {
         }
 
         const transactions = user.wallet?.transactions || [];
+        
+        // Sort transactions by date (newest first)
+        const sortedTransactions = transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         res.status(200).json({
             success: true,
             message: "Transaction history retrieved successfully",
             data: {
-                transactions: transactions,
-                totalTransactions: transactions.length
+                transactions: sortedTransactions,
+                totalTransactions: sortedTransactions.length
             }
         });
     } catch (error) {

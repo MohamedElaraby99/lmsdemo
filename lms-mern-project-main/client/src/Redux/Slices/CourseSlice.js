@@ -312,6 +312,21 @@ const courseSlice = createSlice({
     },
     setCurrentPage: (state, action) => {
       state.pagination.page = action.payload;
+    },
+    clearCourseState: (state) => {
+      state.courses = [];
+      state.currentCourse = null;
+      state.courseStats = null;
+      state.pagination = {
+        page: 1,
+        limit: 10,
+        total: 0
+      };
+      state.loading = false;
+      state.createLoading = false;
+      state.updateLoading = false;
+      state.deleteLoading = false;
+      state.error = null;
     }
   },
   extraReducers: (builder) => {

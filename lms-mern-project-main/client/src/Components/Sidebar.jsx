@@ -115,6 +115,14 @@ export default function Sidebar({ hideBar = false }) {
               </Link>
             </li>
 
+            {/* Courses Section */}
+            <li>
+              <Link to="/courses" className="flex gap-4 items-center" onClick={closeSidebar}>
+                <FaList size={18} className="text-gray-500 dark:text-slate-100" />
+                {role === "ADMIN" ? "جميع الكورسات" : "كورساتي"}
+              </Link>
+            </li>
+
             {isLoggedIn && role !== "ADMIN" && (
               <li>
                 <Link to="/wallet" className="flex gap-4 items-center" onClick={closeSidebar}>

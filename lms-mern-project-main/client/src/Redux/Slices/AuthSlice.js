@@ -151,6 +151,29 @@ const authSlice = createSlice({
             } catch (error) {
                 console.error("Error syncing from localStorage:", error);
             }
+        },
+        // Clear all user data (called from other slices)
+        clearAllUserData: (state) => {
+            // Clear localStorage
+            localStorage.removeItem("data");
+            localStorage.removeItem("role");
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("walletBalance");
+            localStorage.removeItem("purchaseHistory");
+            localStorage.removeItem("purchasedContent");
+            localStorage.removeItem("courseProgress");
+            localStorage.removeItem("examResults");
+            localStorage.removeItem("userPreferences");
+            
+            // Clear sessionStorage
+            sessionStorage.clear();
+            
+            // Clear auth state
+            state.data = {};
+            state.role = "";
+            state.isLoggedIn = false;
+            
+            console.log("All user data cleared from auth slice");
         }
     },
     extraReducers: (builder) => {
@@ -176,12 +199,28 @@ const authSlice = createSlice({
 
         // for logout
         builder.addCase(logout.fulfilled, (state, action) => {
+            // Clear localStorage
             localStorage.removeItem("data");
             localStorage.removeItem("role");
             localStorage.removeItem("isLoggedIn");
+            
+            // Clear auth state
             state.data = {};
             state.role = "";
             state.isLoggedIn = false;
+            
+            // Clear all other user-related data from localStorage
+            localStorage.removeItem("walletBalance");
+            localStorage.removeItem("purchaseHistory");
+            localStorage.removeItem("purchasedContent");
+            localStorage.removeItem("courseProgress");
+            localStorage.removeItem("examResults");
+            localStorage.removeItem("userPreferences");
+            
+            // Clear sessionStorage as well
+            sessionStorage.clear();
+            
+            console.log("Logout completed - all user data cleared");
         })
 
         // for get user data
@@ -206,5 +245,5 @@ const authSlice = createSlice({
     }
 })
 
-export const { syncFromLocalStorage } = authSlice.actions;
+export const { syncFromLocalStorage, clearAllUserData } = authSlice.actions;
 export default authSlice.reducer;

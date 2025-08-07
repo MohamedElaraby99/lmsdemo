@@ -7,6 +7,7 @@ const isLoggedIn = async (req, res, next) => {
     console.log('URL:', req.url);
     console.log('Method:', req.method);
     console.log('Cookies:', req.cookies);
+    console.log('Full URL:', req.originalUrl);
     
     const { token } = req.cookies;
 

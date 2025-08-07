@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../../Layout/Layout';
 import { getCourseById } from '../../Redux/Slices/CourseSlice';
+import { 
+  purchaseContent, 
+  checkPurchaseStatus, 
+  getWalletBalance 
+} from '../../Redux/Slices/PaymentSlice';
+import { PaymentSuccessAlert, PaymentErrorAlert } from '../../Components/ModernAlert';
+import WatchButton from '../../Components/WatchButton';
+import LessonContentModal from '../../Components/LessonContentModal';
 import { 
   FaBookOpen, 
   FaUser, 
@@ -18,21 +26,80 @@ import {
   FaShoppingCart,
   FaList,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
+  FaLock,
+  FaUnlock,
+  FaWallet,
+  FaTimes
 } from 'react-icons/fa';
 
 export default function CourseDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { currentCourse, loading } = useSelector((state) => state.course);
+  const { walletBalance, purchaseStatus, loading: paymentLoading } = useSelector((state) => state.payment);
+  const { data: user, isLoggedIn } = useSelector((state) => state.auth);
 
   const [expandedUnits, setExpandedUnits] = useState(new Set());
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewItem, setPreviewItem] = useState(null);
+  const [showLessonModal, setShowLessonModal] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState(null);
 
   useEffect(() => {
     if (id) {
       dispatch(getCourseById(id));
     }
   }, [dispatch, id]);
+
+  // Fetch wallet balance only when user is logged in
+  useEffect(() => {
+    if (user && isLoggedIn && user.role !== 'ADMIN') {
+      dispatch(getWalletBalance());
+    }
+  }, [dispatch, user, isLoggedIn]);
+
+  // Check purchase status for all items when course loads
+  useEffect(() => {
+    if (currentCourse && user && isLoggedIn) {
+      // Check direct lessons
+      currentCourse.directLessons?.forEach(lesson => {
+        if (lesson.price > 0) {
+          dispatch(checkPurchaseStatus({
+            courseId: currentCourse._id,
+            purchaseType: 'lesson',
+            itemId: lesson._id
+          }));
+        }
+      });
+
+      // Check units and their lessons
+      currentCourse.units?.forEach(unit => {
+        if (unit.price > 0) {
+          dispatch(checkPurchaseStatus({
+            courseId: currentCourse._id,
+            purchaseType: 'unit',
+            itemId: unit._id
+          }));
+        }
+        unit.lessons?.forEach(lesson => {
+          if (lesson.price > 0) {
+            dispatch(checkPurchaseStatus({
+              courseId: currentCourse._id,
+              purchaseType: 'lesson',
+              itemId: lesson._id
+            }));
+          }
+        });
+      });
+    }
+  }, [currentCourse, user, isLoggedIn, dispatch]);
 
   const toggleUnit = (unitId) => {
     setExpandedUnits(prev => {
@@ -84,9 +151,130 @@ export default function CourseDetail() {
   };
 
   const getTotalDuration = (course) => {
-    // This would be calculated based on actual video durations
-    // For now, returning a placeholder
     return getTotalLessons(course) * 45; // Assuming 45 minutes per lesson
+  };
+
+  const isItemPurchased = (purchaseType, itemId) => {
+    // Admin users have access to all content
+    if (user?.role === 'ADMIN') {
+      return true;
+    }
+    const key = `${currentCourse._id}-${purchaseType}-${itemId}`;
+    return purchaseStatus[key] || false;
+  };
+
+  const handlePurchaseClick = (item, purchaseType) => {
+    if (!user || !isLoggedIn) {
+      setAlertMessage('يرجى تسجيل الدخول أولاً للوصول إلى هذا المحتوى');
+      setShowErrorAlert(true);
+      setTimeout(() => {
+        navigate('/login', { state: { from: `/courses/${id}` } });
+      }, 2000);
+      return;
+    }
+    
+    // Admin users have access to all content, no need to purchase
+    if (user.role === 'ADMIN') {
+      setAlertMessage('أنت مدير النظام - لديك صلاحية الوصول لجميع المحتوى');
+      setShowSuccessAlert(true);
+      return;
+    }
+    
+    if (item.price <= 0) {
+      setAlertMessage('هذا المحتوى مجاني');
+      setShowSuccessAlert(true);
+      return;
+    }
+
+    setSelectedItem({ ...item, purchaseType });
+    setShowPurchaseModal(true);
+  };
+
+  const handlePreviewClick = (item, purchaseType) => {
+    // Allow preview for all users (logged in or not)
+    setPreviewItem({ ...item, purchaseType });
+    setShowPreviewModal(true);
+  };
+
+  const handlePurchaseConfirm = async () => {
+    if (!selectedItem) return;
+
+    try {
+      await dispatch(purchaseContent({
+        courseId: currentCourse._id,
+        purchaseType: selectedItem.purchaseType,
+        itemId: selectedItem._id
+      })).unwrap();
+      
+      setShowPurchaseModal(false);
+      setSelectedItem(null);
+      setAlertMessage('تم الشراء بنجاح!');
+      setShowSuccessAlert(true);
+    } catch (error) {
+      setAlertMessage(error.message || 'حدث خطأ أثناء الشراء');
+      setShowErrorAlert(true);
+    }
+  };
+
+  const handleWatchClick = (item, purchaseType) => {
+    setSelectedLesson(item);
+    setShowLessonModal(true);
+  };
+
+  const renderPurchaseButton = (item, purchaseType) => {
+    // Admin users have access to all content
+    if (user?.role === 'ADMIN') {
+      return (
+        <WatchButton
+          item={item}
+          purchaseType={purchaseType}
+          onWatch={handleWatchClick}
+          variant="primary"
+        />
+      );
+    }
+
+    if (item.price <= 0) {
+      return (
+        <WatchButton
+          item={item}
+          purchaseType={purchaseType}
+          onWatch={handleWatchClick}
+          variant="primary"
+        />
+      );
+    }
+
+    if (isItemPurchased(purchaseType, item._id)) {
+      return (
+        <WatchButton
+          item={item}
+          purchaseType={purchaseType}
+          onWatch={handleWatchClick}
+          variant="primary"
+        />
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <button 
+          onClick={() => handlePreviewClick(item, purchaseType)}
+          className="text-purple-600 hover:text-purple-700 flex items-center gap-1"
+        >
+          <FaEye />
+          <span>معاينة</span>
+        </button>
+        <button 
+          onClick={() => handlePurchaseClick(item, purchaseType)}
+          className="text-blue-600 hover:text-blue-700 flex items-center gap-1"
+          disabled={paymentLoading}
+        >
+          <FaLock />
+          <span>شراء</span>
+        </button>
+      </div>
+    );
   };
 
   if (loading) {
@@ -194,7 +382,7 @@ export default function CourseDetail() {
                       <div className="text-2xl font-bold text-yellow-600 mb-1">
                         {currentCourse.directLessons?.length || 0}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">درس مباشر</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">درس تمهيدي</div>
                     </div>
                   </div>
 
@@ -215,34 +403,40 @@ export default function CourseDetail() {
                 {/* Sidebar */}
                 <div className="lg:col-span-1">
                   <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 sticky top-6">
-                                         <div className="text-center mb-6">
-                       <div className="text-3xl font-bold text-blue-600 mb-2">
-                         {getTotalLessons(currentCourse)}
+                                         {/* Wallet Balance */}
+                     {user && isLoggedIn && user.role !== 'ADMIN' && (
+                       <div className="text-center mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                         <div className="flex items-center justify-center gap-2 mb-2">
+                           <FaWallet className="text-green-600" />
+                           <span className="text-sm text-gray-600 dark:text-gray-400">رصيد المحفظة</span>
+                         </div>
+                         <div className="text-2xl font-bold text-green-600">
+                           {walletBalance} جنيه
+                         </div>
                        </div>
-                       <p className="text-gray-600 dark:text-gray-400">إجمالي الدروس</p>
-                     </div>
+                     )}
 
                     <div className="space-y-3 mb-6">
-                                             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                         <FaBookOpen className="text-gray-400" />
-                         <span>المادة: {currentCourse.subject?.title || 'غير محدد'}</span>
-                       </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <FaBookOpen className="text-gray-400" />
+                        <span>المادة: {currentCourse.subject?.title || 'غير محدد'}</span>
+                      </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                         <FaGraduationCap className="text-gray-400" />
                         <span>المرحلة: {currentCourse.stage?.name || 'غير محدد'}</span>
                       </div>
                     </div>
 
-                                         <div className="space-y-3">
-                       <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
-                         <FaEye />
-                         <span>استعراض الدروس</span>
-                       </button>
-                       <button className="w-full border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
-                         <FaBookOpen />
-                         <span>عرض التفاصيل</span>
-                       </button>
-                     </div>
+                    <div className="space-y-3">
+                      <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                        <FaEye />
+                        <span>استعراض الدروس</span>
+                      </button>
+                      <button className="w-full border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                        <FaBookOpen />
+                        <span>عرض التفاصيل</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -265,7 +459,7 @@ export default function CourseDetail() {
               {currentCourse.directLessons && currentCourse.directLessons.length > 0 && (
                 <div className="mb-8">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                    الدروس المباشرة
+                    الدروس التمهيدية
                   </h3>
                   <div className="space-y-3">
                     {currentCourse.directLessons.map((lesson, index) => (
@@ -287,12 +481,12 @@ export default function CourseDetail() {
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="text-sm font-medium text-green-600">
-                            {lesson.price || 0} ريال
-                          </span>
-                          <button className="text-blue-600 hover:text-blue-700">
-                            <FaEye />
-                          </button>
+                          {lesson.price > 0 && (
+                            <span className="text-sm font-medium text-green-600">
+                              {lesson.price} جنيه
+                            </span>
+                          )}
+                          {renderPurchaseButton(lesson, 'lesson')}
                         </div>
                       </div>
                     ))}
@@ -331,9 +525,12 @@ export default function CourseDetail() {
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
-                            <span className="text-sm font-medium text-green-600">
-                              {unit.price || 0} ريال
-                            </span>
+                            {unit.price > 0 && (
+                              <span className="text-sm font-medium text-green-600">
+                                {unit.price} جنيه
+                              </span>
+                            )}
+                            {renderPurchaseButton(unit, 'unit')}
                             {expandedUnits.has(unit._id || unitIndex) ? (
                               <FaChevronUp className="text-gray-400" />
                             ) : (
@@ -365,12 +562,12 @@ export default function CourseDetail() {
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-4">
-                                    <span className="text-sm font-medium text-green-600">
-                                      {lesson.price || 0} ريال
-                                    </span>
-                                    <button className="text-blue-600 hover:text-blue-700">
-                                      <FaEye />
-                                    </button>
+                                    {lesson.price > 0 && (
+                                      <span className="text-sm font-medium text-green-600">
+                                        {lesson.price} جنيه
+                                      </span>
+                                    )}
+                                    {renderPurchaseButton(lesson, 'lesson')}
                                   </div>
                                 </div>
                               ))}
@@ -399,7 +596,263 @@ export default function CourseDetail() {
             </div>
           </div>
         </div>
-      </div>
-    </Layout>
-  );
-}
+
+        {/* Purchase Modal */}
+        {showPurchaseModal && selectedItem && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  تأكيد الشراء
+                </h3>
+                <button
+                  onClick={() => setShowPurchaseModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+              
+              <div className="mb-4">
+                <p className="text-gray-600 dark:text-gray-300 mb-2">
+                  {selectedItem.purchaseType === 'lesson' ? 'درس:' : 'وحدة:'}
+                </p>
+                <p className="font-medium text-gray-900 dark:text-white mb-2">
+                  {selectedItem.title}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  {selectedItem.description}
+                </p>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <span className="text-gray-600 dark:text-gray-300">السعر:</span>
+                  <span className="font-semibold text-green-600">{selectedItem.price} جنيه</span>
+                </div>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg mt-2">
+                  <span className="text-gray-600 dark:text-gray-300">رصيد المحفظة:</span>
+                  <span className="font-semibold text-blue-600">{walletBalance} جنيه</span>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowPurchaseModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={handlePurchaseConfirm}
+                  disabled={paymentLoading || walletBalance < selectedItem.price}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {paymentLoading ? 'جاري الشراء...' : 'تأكيد الشراء'}
+                </button>
+              </div>
+              
+              {walletBalance < selectedItem.price && (
+                <p className="text-red-600 text-sm mt-2 text-center">
+                  رصيد المحفظة غير كافي
+                </p>
+              )}
+            </div>
+          </div>
+                 )}
+
+         {/* Preview Modal */}
+         {showPreviewModal && previewItem && (
+           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+               <div className="flex items-center justify-between mb-4">
+                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                   معاينة الدرس
+                 </h3>
+                 <button
+                   onClick={() => setShowPreviewModal(false)}
+                   className="text-gray-400 hover:text-gray-600"
+                 >
+                   <FaTimes />
+                 </button>
+               </div>
+               
+               <div className="mb-6">
+                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                   {previewItem.title}
+                 </h4>
+                 <p className="text-gray-600 dark:text-gray-300 mb-4">
+                   {previewItem.description}
+                 </p>
+                 
+                 <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg mb-4">
+                   <span className="text-gray-600 dark:text-gray-300">السعر:</span>
+                   <span className="font-semibold text-green-600">{previewItem.price} جنيه</span>
+                 </div>
+               </div>
+
+               {/* Preview Content */}
+               <div className="mb-6">
+                 <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                   محتوى الدرس
+                 </h5>
+                 
+                 {/* Videos Preview */}
+                 {previewItem.videos && previewItem.videos.length > 0 && (
+                   <div className="mb-4">
+                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">الفيديوهات ({previewItem.videos.length})</h6>
+                     <div className="space-y-2">
+                       {previewItem.videos.slice(0, 2).map((video, index) => (
+                         <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                           <div className="flex items-center gap-2">
+                             <FaPlay className="text-blue-600" />
+                             <span className="text-sm text-gray-700 dark:text-gray-300">{video.title}</span>
+                           </div>
+                         </div>
+                       ))}
+                       {previewItem.videos.length > 2 && (
+                         <p className="text-sm text-gray-500 dark:text-gray-400">
+                           + {previewItem.videos.length - 2} فيديو آخر
+                         </p>
+                       )}
+                     </div>
+                   </div>
+                 )}
+
+                 {/* PDFs Preview */}
+                 {previewItem.pdfs && previewItem.pdfs.length > 0 && (
+                   <div className="mb-4">
+                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">الملفات PDF ({previewItem.pdfs.length})</h6>
+                     <div className="space-y-2">
+                       {previewItem.pdfs.slice(0, 2).map((pdf, index) => (
+                         <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                           <div className="flex items-center gap-2">
+                             <FaBookOpen className="text-red-600" />
+                             <span className="text-sm text-gray-700 dark:text-gray-300">{pdf.title}</span>
+                           </div>
+                         </div>
+                       ))}
+                       {previewItem.pdfs.length > 2 && (
+                         <p className="text-sm text-gray-500 dark:text-gray-400">
+                           + {previewItem.pdfs.length - 2} ملف آخر
+                         </p>
+                       )}
+                     </div>
+                   </div>
+                 )}
+
+                 {/* Exams Preview */}
+                 {previewItem.exams && previewItem.exams.length > 0 && (
+                   <div className="mb-4">
+                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">الاختبارات ({previewItem.exams.length})</h6>
+                     <div className="space-y-2">
+                       {previewItem.exams.slice(0, 2).map((exam, index) => (
+                         <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                           <div className="flex items-center gap-2">
+                             <FaGraduationCap className="text-yellow-600" />
+                             <span className="text-sm text-gray-700 dark:text-gray-300">{exam.title}</span>
+                           </div>
+                         </div>
+                       ))}
+                       {previewItem.exams.length > 2 && (
+                         <p className="text-sm text-gray-500 dark:text-gray-400">
+                           + {previewItem.exams.length - 2} اختبار آخر
+                         </p>
+                       )}
+                     </div>
+                   </div>
+                 )}
+
+                 {/* Trainings Preview */}
+                 {previewItem.trainings && previewItem.trainings.length > 0 && (
+                   <div className="mb-4">
+                     <h6 className="font-medium text-gray-900 dark:text-white mb-2">التدريبات ({previewItem.trainings.length})</h6>
+                     <div className="space-y-2">
+                       {previewItem.trainings.slice(0, 2).map((training, index) => (
+                         <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                           <div className="flex items-center gap-2">
+                             <FaStar className="text-green-600" />
+                             <span className="text-sm text-gray-700 dark:text-gray-300">{training.title}</span>
+                           </div>
+                         </div>
+                       ))}
+                       {previewItem.trainings.length > 2 && (
+                         <p className="text-sm text-gray-500 dark:text-gray-400">
+                           + {previewItem.trainings.length - 2} تدريب آخر
+                         </p>
+                       )}
+                     </div>
+                   </div>
+                 )}
+
+                 {(!previewItem.videos || previewItem.videos.length === 0) &&
+                  (!previewItem.pdfs || previewItem.pdfs.length === 0) &&
+                  (!previewItem.exams || previewItem.exams.length === 0) &&
+                  (!previewItem.trainings || previewItem.trainings.length === 0) && (
+                   <div className="text-center py-8">
+                     <div className="text-4xl mb-2">📚</div>
+                     <p className="text-gray-500 dark:text-gray-400">سيتم إضافة المحتوى قريباً</p>
+                   </div>
+                 )}
+               </div>
+               
+                               <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowPreviewModal(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  >
+                    إغلاق
+                  </button>
+                  {user && isLoggedIn ? (
+                    <button
+                      onClick={() => {
+                        setShowPreviewModal(false);
+                        setSelectedItem({ ...previewItem, purchaseType: previewItem.purchaseType });
+                        setShowPurchaseModal(true);
+                      }}
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      شراء الدرس
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setShowPreviewModal(false);
+                        setAlertMessage('يرجى تسجيل الدخول أولاً للشراء');
+                        setShowErrorAlert(true);
+                        setTimeout(() => {
+                          navigate('/login', { state: { from: `/courses/${id}` } });
+                        }, 2000);
+                      }}
+                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    >
+                      تسجيل الدخول للشراء
+                    </button>
+                  )}
+                </div>
+             </div>
+           </div>
+         )}
+
+         {/* Lesson Content Modal */}
+         <LessonContentModal
+           isOpen={showLessonModal}
+           onClose={() => setShowLessonModal(false)}
+           lesson={selectedLesson}
+         />
+
+         {/* Modern Alerts */}
+         <PaymentSuccessAlert
+           isVisible={showSuccessAlert}
+           message={alertMessage}
+           onClose={() => setShowSuccessAlert(false)}
+         />
+         
+         <PaymentErrorAlert
+           isVisible={showErrorAlert}
+           message={alertMessage}
+           onClose={() => setShowErrorAlert(false)}
+         />
+       </div>
+     </Layout>
+   );
+ }

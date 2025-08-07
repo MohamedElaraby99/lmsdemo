@@ -64,6 +64,8 @@ const CustomVideoPlayer = ({
   const [displayUserName, setDisplayUserName] = useState('');
   const [player, setPlayer] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
+  const [showDurationModal, setShowDurationModal] = useState(false);
+  const [manualDurationInput, setManualDurationInput] = useState('');
 
   const iframeRef = useRef(null);
   const progressBarRef = useRef(null);
@@ -97,46 +99,119 @@ const CustomVideoPlayer = ({
 
   // YouTube IFrame API implementation
   useEffect(() => {
-    // Check if YouTube IFrame API is loaded
-    if (typeof YT === 'undefined' || !YT.Player) {
-      console.log('YouTube IFrame API not loaded yet');
-      return;
-    }
-
-    if (youtubeVideoId && !player) {
-      console.log('Creating YouTube player for video:', youtubeVideoId);
-      
-      const newPlayer = new YT.Player('youtube-player', {
-        height: '100%',
-        width: '100%',
-        videoId: youtubeVideoId,
-        playerVars: {
-          autoplay: 0,
-          controls: 0,
-          modestbranding: 1,
-          rel: 0,
-          showinfo: 0,
-          iv_load_policy: 3,
-          cc_load_policy: 0,
-          fs: 0,
-          playsinline: 1,
-          enablejsapi: 1,
-          origin: window.location.origin
-        },
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange,
-          'onError': onPlayerError
+    // Function to load YouTube API if not already loaded
+    const loadYouTubeAPI = () => {
+      return new Promise((resolve, reject) => {
+        if (typeof YT !== 'undefined' && YT.Player) {
+          console.log('YouTube API already loaded');
+          resolve();
+          return;
         }
+
+        console.log('Loading YouTube IFrame API...');
+        
+        // Check if script is already loading
+        if (window.YTLoading) {
+          console.log('YouTube API already loading, waiting...');
+          const checkLoaded = setInterval(() => {
+            if (typeof YT !== 'undefined' && YT.Player) {
+              clearInterval(checkLoaded);
+              console.log('YouTube API loaded successfully');
+              resolve();
+            }
+          }, 100);
+          return;
+        }
+
+        window.YTLoading = true;
+        
+        // Create script element
+        const script = document.createElement('script');
+        script.src = 'https://www.youtube.com/iframe_api';
+        script.async = true;
+        
+        script.onload = () => {
+          console.log('YouTube API script loaded');
+          // Wait for YT object to be available
+          const checkYT = setInterval(() => {
+            if (typeof YT !== 'undefined' && YT.Player) {
+              clearInterval(checkYT);
+              window.YTLoading = false;
+              console.log('YouTube API ready');
+              resolve();
+            }
+          }, 100);
+          
+          // Timeout after 10 seconds
+          setTimeout(() => {
+            clearInterval(checkYT);
+            window.YTLoading = false;
+            reject(new Error('YouTube API failed to load'));
+          }, 10000);
+        };
+        
+        script.onerror = () => {
+          window.YTLoading = false;
+          reject(new Error('Failed to load YouTube API script'));
+        };
+        
+        document.head.appendChild(script);
       });
-      
-      setPlayer(newPlayer);
+    };
+
+    // Load API and create player
+    const initializePlayer = async () => {
+      try {
+        await loadYouTubeAPI();
+        
+        if (youtubeVideoId && !player) {
+          console.log('Creating YouTube player for video:', youtubeVideoId);
+          
+          const newPlayer = new YT.Player('youtube-player', {
+            height: '100%',
+            width: '100%',
+            videoId: youtubeVideoId,
+            playerVars: {
+              autoplay: 0,
+              controls: 0,
+              modestbranding: 1,
+              rel: 0,
+              showinfo: 0,
+              iv_load_policy: 3,
+              cc_load_policy: 0,
+              fs: 0,
+              playsinline: 1,
+              enablejsapi: 1,
+              origin: window.location.origin
+            },
+            events: {
+              'onReady': onPlayerReady,
+              'onStateChange': onPlayerStateChange,
+              'onError': onPlayerError
+            }
+          });
+          
+          setPlayer(newPlayer);
+        }
+      } catch (error) {
+        console.error('Failed to initialize YouTube player:', error);
+        setVideoState(prev => ({ ...prev, error: 'Failed to load video player' }));
+        setIsLoading(false);
+      }
+    };
+
+    if (youtubeVideoId) {
+      initializePlayer();
     }
 
     return () => {
       if (player) {
         console.log('Destroying YouTube player');
-        player.destroy();
+        try {
+          player.destroy();
+        } catch (error) {
+          console.log('Error destroying player:', error);
+        }
         setPlayer(null);
         setPlayerReady(false);
       }
@@ -149,14 +224,36 @@ const CustomVideoPlayer = ({
     setPlayerReady(true);
     setIsLoading(false);
     
-    // Get the real duration
-    const videoDuration = event.target.getDuration();
-    console.log('Real video duration:', videoDuration, 'seconds');
+    // Get the real duration with retry mechanism
+    const getDurationWithRetry = () => {
+      const videoDuration = event.target.getDuration();
+      console.log('Attempting to get duration:', videoDuration, 'seconds');
+      
+      if (videoDuration > 0 && videoDuration < 7200) {
+        setDuration(videoDuration);
+        console.log('Duration set successfully:', videoDuration);
+        return true;
+      } else {
+        console.log('Invalid duration received:', videoDuration);
+        return false;
+      }
+    };
     
-    if (videoDuration > 0 && videoDuration < 7200) {
-      setDuration(videoDuration);
-    } else {
-      console.log('Invalid duration received:', videoDuration);
+    // Try to get duration immediately
+    if (!getDurationWithRetry()) {
+      // If failed, retry after a short delay
+      setTimeout(() => {
+        if (!getDurationWithRetry()) {
+          // If still failed, try again after longer delay
+          setTimeout(() => {
+            if (!getDurationWithRetry()) {
+              console.log('Failed to get duration after multiple attempts');
+              // For live videos, set a default duration or show as live
+              setDuration(0);
+            }
+          }, 2000);
+        }
+      }, 1000);
     }
     
     // Set initial volume
@@ -242,6 +339,7 @@ const CustomVideoPlayer = ({
   }, []);
 
   const initializeVideo = () => {
+    console.log('Initializing video with object:', video);
     setIsLoading(true);
     setCurrentTime(0);
     setIsPlaying(false);
@@ -251,7 +349,9 @@ const CustomVideoPlayer = ({
     
     // Extract YouTube video ID
     const videoUrl = getVideoUrl(video);
+    console.log('Extracted video URL:', videoUrl);
     const videoId = extractYouTubeVideoId(videoUrl);
+    console.log('Extracted YouTube video ID:', videoId);
     
     if (videoId) {
       console.log('YouTube video detected with ID:', videoId);
@@ -261,24 +361,78 @@ const CustomVideoPlayer = ({
       console.log('Video ID detected, YouTube IFrame API will handle duration');
     } else {
       console.log('No YouTube video found');
+      console.log('Video object structure:', JSON.stringify(video, null, 2));
       setYoutubeVideoId(null);
+      setIsLoading(false);
+      setVideoState(prev => ({ ...prev, error: 'No valid YouTube URL found' }));
     }
   };
 
   const extractYouTubeVideoId = (url) => {
-    if (!url) return null;
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
-    return match ? match[1] : null;
+    if (!url) {
+      console.log('No URL provided to extractYouTubeVideoId');
+      return null;
+    }
+    
+    console.log('Extracting YouTube ID from URL:', url);
+    
+    // Handle different YouTube URL formats including live URLs
+    const patterns = [
+      // Regular YouTube URLs
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&\n?#]+)/,
+      /youtube\.com\/watch\?.*v=([^&\n?#]+)/,
+      /youtu\.be\/([^&\n?#]+)/,
+      /youtube\.com\/embed\/([^&\n?#]+)/,
+      /youtube\.com\/v\/([^&\n?#]+)/,
+      // YouTube Live URLs
+      /youtube\.com\/live\/([^&\n?#]+)/,
+      /youtube\.com\/watch\?.*v=([^&\n?#]+).*&si=/,
+      // YouTube Shorts
+      /youtube\.com\/shorts\/([^&\n?#]+)/,
+      // Specific pattern for live URLs with si parameter
+      /youtube\.com\/live\/([^&\n?#]+)\?si=/
+    ];
+    
+    for (let i = 0; i < patterns.length; i++) {
+      const match = url.match(patterns[i]);
+      if (match) {
+        const videoId = match[1];
+        console.log(`Pattern ${i + 1} matched, extracted video ID:`, videoId);
+        return videoId;
+      }
+    }
+    
+    console.log('No YouTube video ID found in URL:', url);
+    return null;
   };
 
   const getVideoUrl = (video) => {
-    if (video?.lecture?.youtubeUrl) {
-      return video.lecture.youtubeUrl;
+    console.log('Getting video URL from object:', video);
+    
+    // Check for different possible URL properties
+    if (video?.url) {
+      console.log('Found URL in video.url:', video.url);
+      return video.url;
     }
     if (video?.youtubeUrl) {
+      console.log('Found URL in video.youtubeUrl:', video.youtubeUrl);
       return video.youtubeUrl;
     }
-    return video?.lecture?.secure_url || video?.secure_url || '';
+    if (video?.lecture?.youtubeUrl) {
+      console.log('Found URL in video.lecture.youtubeUrl:', video.lecture.youtubeUrl);
+      return video.lecture.youtubeUrl;
+    }
+    if (video?.lecture?.secure_url) {
+      console.log('Found URL in video.lecture.secure_url:', video.lecture.secure_url);
+      return video.lecture.secure_url;
+    }
+    if (video?.secure_url) {
+      console.log('Found URL in video.secure_url:', video.secure_url);
+      return video.secure_url;
+    }
+    
+    console.log('No URL found in video object');
+    return '';
   };
 
   const getYouTubeEmbedUrl = (videoId) => {
@@ -668,6 +822,31 @@ const CustomVideoPlayer = ({
     return positions[watermarkPosition];
   };
 
+  const handleManualDurationSubmit = () => {
+    if (manualDurationInput) {
+      let seconds = 0;
+      if (manualDurationInput.includes(':')) {
+        // Format: MM:SS or HH:MM:SS
+        const parts = manualDurationInput.split(':');
+        if (parts.length === 2) {
+          // MM:SS
+          seconds = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        } else if (parts.length === 3) {
+          // HH:MM:SS
+          seconds = parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+        }
+      } else {
+        // Just seconds
+        seconds = parseInt(manualDurationInput);
+      }
+      if (seconds > 0) {
+        setDuration(seconds);
+        console.log('Manual duration set:', seconds, 'seconds');
+        setShowDurationModal(false);
+        setManualDurationInput('');
+      }
+    }
+  };
 
 
   if (!isOpen || !video) return null;
@@ -982,7 +1161,13 @@ const CustomVideoPlayer = ({
 
                     <div className="flex items-center gap-2 text-white text-sm">
                       <FaClock className="text-gray-400" />
-                      <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+                      <span>
+                        {duration === 0 ? (
+                          <span className="text-red-400 font-semibold">LIVE</span>
+                        ) : (
+                          `${formatTime(currentTime)} / ${formatTime(duration)}`
+                        )}
+                      </span>
                       {duration === 0 && youtubeVideoId && (
                         <button
                           onClick={requestDuration}
@@ -992,36 +1177,16 @@ const CustomVideoPlayer = ({
                           Get Duration
                         </button>
                       )}
-                      {(duration === 0 || duration > 3600) && youtubeVideoId && (
+                      {duration === 0 && youtubeVideoId && (
                         <button
                           onClick={() => {
-                            const manualDuration = prompt('Enter video duration (e.g., 3:45 or 225 for 3 minutes 45 seconds):');
-                            if (manualDuration) {
-                              let seconds = 0;
-                              if (manualDuration.includes(':')) {
-                                // Format: MM:SS or HH:MM:SS
-                                const parts = manualDuration.split(':');
-                                if (parts.length === 2) {
-                                  // MM:SS
-                                  seconds = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-                                } else if (parts.length === 3) {
-                                  // HH:MM:SS
-                                  seconds = parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
-                                }
-                              } else {
-                                // Just seconds
-                                seconds = parseInt(manualDuration);
-                              }
-                              if (seconds > 0) {
-                                setDuration(seconds);
-                                console.log('Manual duration set:', seconds, 'seconds');
-                              }
-                            }
+                            setShowDurationModal(true);
+                            setManualDurationInput('');
                           }}
                           className="ml-1 px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
                           title="Manual Duration"
                         >
-                          Fix Duration
+                          Set Duration
                         </button>
                       )}
                     </div>
@@ -1105,7 +1270,53 @@ const CustomVideoPlayer = ({
             </div>
           )}
 
+          {/* Duration Modal */}
+          {showDurationModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999]">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                  Set Video Duration
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  Enter the video duration in one of these formats:
+                  <br />• MM:SS (e.g., 3:45)
+                  <br />• HH:MM:SS (e.g., 1:23:45)
+                  <br />• Seconds (e.g., 225)
+                </p>
+                <input
+                  type="text"
+                  value={manualDurationInput}
+                  onChange={(e) => setManualDurationInput(e.target.value)}
+                  placeholder="e.g., 3:45"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleManualDurationSubmit();
+                    }
+                  }}
+                />
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={handleManualDurationSubmit}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Set Duration
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDurationModal(false);
+                      setManualDurationInput('');
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
+        </div>
       </div>
     </div>
   );

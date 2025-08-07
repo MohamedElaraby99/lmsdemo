@@ -61,9 +61,16 @@ app.get('/test-uploads', (req, res) => {
   });
 });
 
+// Simple test route
+app.get('/api/test', (req, res) => {
+  console.log('=== API TEST ROUTE HIT ===');
+  res.json({ message: 'API is working!' });
+});
+
 app.use('/api/v1/user', userRoutes); 
 app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/payments', paymentRoutes);
+console.log('Payment routes registered at /api/v1/payments');
 app.use('/api/v1/', miscellaneousRoutes);
 app.use('/api/v1/', blogRoutes);
 app.use('/api/v1/', qaRoutes);
