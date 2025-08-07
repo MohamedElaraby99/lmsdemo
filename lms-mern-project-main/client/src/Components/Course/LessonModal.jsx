@@ -9,7 +9,7 @@ const LessonModal = ({ lesson, unitId, lessonId, courseId, onClose, isOpen }) =>
   const [formData, setFormData] = useState({
     title: lesson?.title || '',
     description: lesson?.description || '',
-    price: lesson?.price || ''
+    price: lesson?.price !== undefined ? lesson.price : ''
   });
 
   useEffect(() => {
@@ -17,7 +17,7 @@ const LessonModal = ({ lesson, unitId, lessonId, courseId, onClose, isOpen }) =>
       setFormData({
         title: lesson.title || '',
         description: lesson.description || '',
-        price: lesson.price || ''
+        price: lesson.price !== undefined ? lesson.price : ''
       });
     }
   }, [lesson]);

@@ -23,7 +23,81 @@ const lessonSchema = new mongoose.Schema({
     type: String,
     trim: true,
     default: ''
-  }
+  },
+  videos: [
+    {
+      url: { type: String, required: true },
+      title: { type: String, default: '' },
+      description: { type: String, default: '' }
+    }
+  ],
+  pdfs: [
+    {
+      url: { type: String, required: true },
+      title: { type: String, default: '' }
+    }
+  ],
+  exams: [
+    {
+      title: { type: String, required: true },
+      description: { type: String, default: '' },
+      openDate: { type: Date },
+      closeDate: { type: Date },
+      questions: [
+        {
+          question: { type: String, required: true },
+          options: [{ type: String, required: true }],
+          correctAnswer: { type: Number, required: true },
+          image: { type: String, default: '' }
+        }
+      ],
+      userAttempts: [
+        {
+          userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+          takenAt: { type: Date, default: Date.now },
+          score: { type: Number, required: true },
+          totalQuestions: { type: Number, required: true },
+          answers: [
+            {
+              questionIndex: { type: Number, required: true },
+              selectedAnswer: { type: Number, required: true },
+              isCorrect: { type: Boolean, required: true }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  trainings: [
+    {
+      title: { type: String, default: '' },
+      description: { type: String, default: '' },
+      openDate: { type: Date },
+      questions: [
+        {
+          question: { type: String, required: true },
+          options: [{ type: String, required: true }],
+          correctAnswer: { type: Number, required: true },
+          image: { type: String, default: '' }
+        }
+      ],
+      userAttempts: [
+        {
+          userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+          takenAt: { type: Date, default: Date.now },
+          score: { type: Number, required: true },
+          totalQuestions: { type: Number, required: true },
+          answers: [
+            {
+              questionIndex: { type: Number, required: true },
+              selectedAnswer: { type: Number, required: true },
+              isCorrect: { type: Boolean, required: true }
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }, {
   timestamps: true
 });

@@ -191,7 +191,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
               <option value="">Select subject</option>
               {subjects?.map((subject) => (
                 <option key={subject._id} value={subject._id}>
-                  {subject.name}
+                  {subject.name || subject.title || subject._id}
                 </option>
               ))}
             </select>

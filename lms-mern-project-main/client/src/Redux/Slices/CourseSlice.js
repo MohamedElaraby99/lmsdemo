@@ -279,6 +279,24 @@ export const reorderLessons = createAsyncThunk(
   }
 );
 
+// Update lesson content (videos, pdfs, exams, trainings)
+export const updateLessonContent = createAsyncThunk(
+  'course/updateLessonContent',
+  async ({ courseId, unitId, lessonId, contentData }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.put(`/courses/${courseId}/lessons/${lessonId}/content`, {
+        unitId,
+        ...contentData
+      });
+      toast.success('Lesson content updated successfully');
+      return response.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update lesson content');
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
 const courseSlice = createSlice({
   name: 'course',
   initialState,

@@ -16,7 +16,9 @@ import {
   deleteLesson,
   reorderLessons,
   deleteUnit,
-  updateUnit
+  updateUnit,
+  updateLessonContent,
+  submitTrainingAttempt
 } from '../controllers/course.controller.js';
 
 const router = express.Router();
@@ -71,7 +73,12 @@ router.put('/:courseId/lessons/:lessonId',
   updateLesson
 );
 
+router.put('/:courseId/lessons/:lessonId/content', isLoggedIn, authorisedRoles('ADMIN', 'INSTRUCTOR'), updateLessonContent);
+
 router.delete('/:courseId/lessons/:lessonId', isLoggedIn, authorisedRoles('ADMIN', 'INSTRUCTOR'), deleteLesson);
 router.put('/:courseId/reorder-lessons', isLoggedIn, authorisedRoles('ADMIN', 'INSTRUCTOR'), reorderLessons);
+
+// Training attempt submission
+router.post('/:courseId/lessons/:lessonId/trainings/:trainingIndex/submit', isLoggedIn, submitTrainingAttempt);
 
 export default router;

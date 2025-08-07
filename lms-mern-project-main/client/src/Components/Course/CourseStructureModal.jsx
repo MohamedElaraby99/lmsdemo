@@ -439,7 +439,7 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
                   <label className="block text-sm font-medium mb-1">Price</label>
                   <input
                     type="number"
-                    value={selectedUnit.price || ''}
+                    value={selectedUnit.price !== undefined ? selectedUnit.price : ''}
                     onChange={(e) => setSelectedUnit({ ...selectedUnit, price: e.target.value })}
                     className="w-full p-2 border border-gray-300 rounded-md"
                     placeholder="Enter unit price"
