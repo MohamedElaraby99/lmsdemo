@@ -1,7 +1,7 @@
 import AppError from '../utils/error.utils.js';
 import sendEmail from '../utils/sendEmail.js';
 import userModel from '../models/user.model.js';
-import courseModel from '../models/course.model.js';
+
 import paymentModel from '../models/payment.model.js';
 
 const contactUs = async (req, res, next) => {
@@ -47,10 +47,7 @@ const stats = async (req, res, next) => {
         const allUsersCount = allUsers.length;
         const subscribedUsersCount = allUsers.filter((user) => user.subscription?.status === 'active').length;
         
-        // Get all courses
-        const allCourses = await courseModel.find({});
-        const totalCourses = allCourses.length;
-        const totalLectures = allCourses.reduce((sum, course) => sum + (course.numberOfLectures || 0), 0);
+
         
         // Calculate revenue from actual payment records
         const allPayments = await paymentModel.find({ status: 'completed' });
@@ -73,12 +70,11 @@ const stats = async (req, res, next) => {
         // Recent activities (actual payments)
         const recentPayments = await paymentModel.find({ status: 'completed' })
             .populate('user', 'fullName email')
-            .populate('course', 'title price')
             .sort({ createdAt: -1 })
             .limit(5)
             .then(payments => payments.map(payment => ({
                 id: payment._id,
-                title: payment.course?.title || 'Unknown Course',
+                title: 'Payment',
                 amount: payment.amount,
                 currency: payment.currency,
                 userName: payment.user?.fullName || 'Unknown User',
@@ -86,23 +82,16 @@ const stats = async (req, res, next) => {
                 date: payment.createdAt,
                 transactionId: payment.transactionId
             })));
-            
-        const recentCourses = await courseModel.find({})
-            .sort({ createdAt: -1 })
-            .limit(5);
  
         res.status(200).json({
             success: true,
             message: 'Stats retrieved successfully with actual payment data',
             allUsersCount,
             subscribedUsersCount,
-            totalCourses,
-            totalLectures,
             totalPayments,
             totalRevenue,
             monthlySalesData,
-            recentPayments,
-            recentCourses
+            recentPayments
         })
     } catch (e) {
         return next(new AppError(e.message, 500));

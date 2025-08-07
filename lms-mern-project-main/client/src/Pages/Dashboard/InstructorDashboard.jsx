@@ -5,11 +5,9 @@ import {
   createInstructor, 
   updateInstructor, 
   deleteInstructor,
-  addCourseToInstructor,
-  removeCourseFromInstructor,
   getInstructorStats
 } from '../../Redux/Slices/InstructorSlice';
-import { getAllCourses } from '../../Redux/Slices/CourseSlice';
+
 import { 
   FaPlus, 
   FaEdit, 
@@ -34,16 +32,14 @@ import Layout from '../../Layout/Layout';
 const InstructorDashboard = () => {
   const dispatch = useDispatch();
   const { instructors, loading, pagination } = useSelector((state) => state.instructor);
-  const { courses } = useSelector((state) => state.course);
+
   const { role } = useSelector((state) => state.auth);
 
   const [showModal, setShowModal] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterFeatured, setFilterFeatured] = useState('');
-  const [showCourseModal, setShowCourseModal] = useState(false);
-  const [selectedInstructor, setSelectedInstructor] = useState(null);
-  const [selectedCourse, setSelectedCourse] = useState('');
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -62,7 +58,7 @@ const InstructorDashboard = () => {
 
   useEffect(() => {
     dispatch(getAllInstructors({ page: 1, limit: 50 }));
-    dispatch(getAllCourses());
+
   }, [dispatch]);
 
   const handleSubmit = async (e) => {
@@ -136,38 +132,7 @@ const InstructorDashboard = () => {
     }
   };
 
-  const handleAddCourse = async () => {
-    if (!selectedCourse) {
-      toast.error('يرجى اختيار دورة');
-      return;
-    }
 
-    try {
-      await dispatch(addCourseToInstructor({
-        instructorId: selectedInstructor._id,
-        courseId: selectedCourse
-      })).unwrap();
-      setShowCourseModal(false);
-      setSelectedInstructor(null);
-      setSelectedCourse('');
-    } catch (error) {
-      console.error('Error adding course to instructor:', error);
-    }
-  };
-
-  const handleRemoveCourse = async (instructorId, courseId) => {
-    if (window.confirm('هل أنت متأكد من إزالة هذه الدورة من المدرس؟')) {
-      try {
-        await dispatch(removeCourseFromInstructor({
-          instructorId,
-          courseId
-        })).unwrap();
-        toast.success('تم إزالة الدورة من المدرس بنجاح');
-      } catch (error) {
-        console.error('Error removing course from instructor:', error);
-      }
-    }
-  };
 
   const resetForm = () => {
     setFormData({
@@ -332,10 +297,7 @@ const InstructorDashboard = () => {
                     <FaUsers className="ml-1" />
                     <span>{instructor.totalStudents} طالب</span>
                   </div>
-                  <div className="flex items-center text-gray-600 dark:text-gray-400">
-                    <FaGraduationCap className="ml-1" />
-                    <span>{instructor.courses?.length || 0} دورة</span>
-                  </div>
+                  
                 </div>
 
                 {/* Social Links */}
@@ -384,16 +346,7 @@ const InstructorDashboard = () => {
                     >
                       <FaEdit />
                     </button>
-                    <button
-                      onClick={() => {
-                        setSelectedInstructor(instructor);
-                        setShowCourseModal(true);
-                      }}
-                      className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
-                      title="إضافة دورة"
-                    >
-                      <FaPlus />
-                    </button>
+                    
                     <button
                       onClick={() => handleDelete(instructor._id)}
                       className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
@@ -404,30 +357,7 @@ const InstructorDashboard = () => {
                   </div>
                 </div>
 
-                {/* Courses List */}
-                {instructor.courses && instructor.courses.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h4 className="text-sm font-semibold text-gray-800 dark:text-white mb-2 text-right">
-                      الدورات:
-                    </h4>
-                    <div className="space-y-2">
-                      {instructor.courses.map((course) => (
-                        <div key={course._id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
-                          <span className="text-sm text-gray-600 dark:text-gray-300 text-right">
-                            {course.title}
-                          </span>
-                          <button
-                            onClick={() => handleRemoveCourse(instructor._id, course._id)}
-                            className="text-red-500 hover:text-red-700 transition-colors"
-                            title="إزالة الدورة"
-                          >
-                            <FaTimes />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                
               </div>
             </div>
           ))}
@@ -683,69 +613,7 @@ const InstructorDashboard = () => {
         </div>
       )}
 
-      {/* Add Course Modal */}
-      {showCourseModal && selectedInstructor && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4" dir="rtl">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                  إضافة دورة إلى {selectedInstructor.name}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowCourseModal(false);
-                    setSelectedInstructor(null);
-                    setSelectedCourse('');
-                  }}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right">
-                  اختر الدورة
-                </label>
-                <select
-                  value={selectedCourse}
-                  onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-right"
-                >
-                  <option value="">اختر دورة...</option>
-                  {courses
-                    .filter(course => !selectedInstructor.courses?.some(c => c._id === course._id))
-                    .map(course => (
-                      <option key={course._id} value={course._id}>
-                        {course.title}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              <div className="flex justify-end gap-4">
-                <button
-                  onClick={() => {
-                    setShowCourseModal(false);
-                    setSelectedInstructor(null);
-                    setSelectedCourse('');
-                  }}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-                >
-                  إلغاء
-                </button>
-                <button
-                  onClick={handleAddCourse}
-                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
-                >
-                  إضافة
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      
       </div>
     </Layout>
   );

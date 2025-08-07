@@ -1,84 +1,6 @@
 import AppError from '../utils/error.utils.js';
 import paymentModel from '../models/payment.model.js';
-import courseModel from '../models/course.model.js';
 import userModel from '../models/user.model.js';
-
-// Record a course purchase
-const recordCoursePurchase = async (req, res, next) => {
-    try {
-        const { courseId, userId, amount, currency = 'EGP' } = req.body;
-
-        if (!courseId || !userId || !amount) {
-            return next(new AppError('Course ID, User ID, and amount are required', 400));
-        }
-
-        // Verify course exists and is paid
-        const course = await courseModel.findById(courseId);
-        if (!course) {
-            return next(new AppError('Course not found', 404));
-        }
-
-        if (!course.isPaid || course.price <= 0) {
-            return next(new AppError('Course is not a paid course', 400));
-        }
-
-        // Verify user exists
-        const user = await userModel.findById(userId);
-        if (!user) {
-            return next(new AppError('User not found', 404));
-        }
-
-        // Check if user already purchased this course
-        const existingPurchase = await paymentModel.findOne({
-            user: userId,
-            course: courseId,
-            status: 'completed'
-        });
-
-        if (existingPurchase) {
-            return next(new AppError('User has already purchased this course', 400));
-        }
-
-        // Create payment record
-        const payment = await paymentModel.create({
-            user: userId,
-            course: courseId,
-            amount: amount,
-            currency: currency,
-            status: 'completed',
-            transactionId: `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            description: `Purchase of ${course.title}`,
-            metadata: {
-                courseTitle: course.title,
-                coursePrice: course.price,
-                userEmail: user.email,
-                userName: user.fullName
-            }
-        });
-
-        // Update course sales statistics
-        course.salesCount = (course.salesCount || 0) + 1;
-        course.totalRevenue = (course.totalRevenue || 0) + amount;
-        await course.save();
-
-        res.status(201).json({
-            success: true,
-            message: 'Course purchase recorded successfully',
-            payment: {
-                id: payment._id,
-                amount: payment.amount,
-                currency: payment.currency,
-                status: payment.status,
-                transactionId: payment.transactionId,
-                courseTitle: course.title,
-                userName: user.fullName
-            }
-        });
-
-    } catch (error) {
-        return next(new AppError(error.message, 500));
-    }
-};
 
 // Get payment statistics
 const getPaymentStats = async (req, res, next) => {
@@ -107,26 +29,26 @@ const getPaymentStats = async (req, res, next) => {
         // Get recent payments
         const recentPayments = await paymentModel.find({ status: 'completed' })
             .populate('user', 'fullName email')
-            .populate('course', 'title price')
             .sort({ createdAt: -1 })
             .limit(10);
 
         res.status(200).json({
             success: true,
             message: 'Payment statistics retrieved successfully',
-            totalRevenue,
-            totalPayments,
-            monthlyRevenue,
-            recentPayments: recentPayments.map(payment => ({
-                id: payment._id,
-                amount: payment.amount,
-                currency: payment.currency,
-                courseTitle: payment.course?.title,
-                userName: payment.user?.fullName,
-                userEmail: payment.user?.email,
-                date: payment.createdAt,
-                transactionId: payment.transactionId
-            }))
+            stats: {
+                totalRevenue,
+                totalPayments,
+                monthlyRevenue,
+                recentPayments: recentPayments.map(payment => ({
+                    id: payment._id,
+                    amount: payment.amount,
+                    currency: payment.currency,
+                    userName: payment.user?.fullName || 'Unknown User',
+                    userEmail: payment.user?.email || 'Unknown Email',
+                    date: payment.createdAt,
+                    transactionId: payment.transactionId
+                }))
+            }
         });
 
     } catch (error) {
@@ -143,7 +65,6 @@ const getUserPurchases = async (req, res, next) => {
             user: userId, 
             status: 'completed' 
         })
-        .populate('course', 'title description thumbnail price')
         .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -153,7 +74,6 @@ const getUserPurchases = async (req, res, next) => {
                 id: purchase._id,
                 amount: purchase.amount,
                 currency: purchase.currency,
-                course: purchase.course,
                 date: purchase.createdAt,
                 transactionId: purchase.transactionId
             }))
@@ -164,62 +84,75 @@ const getUserPurchases = async (req, res, next) => {
     }
 };
 
-// Simulate course purchase (for testing)
-const simulateCoursePurchase = async (req, res, next) => {
+// Record a course purchase
+const recordCoursePurchase = async (req, res, next) => {
     try {
-        const { courseId, userId, amount } = req.body;
+        const { courseId, amount, currency = 'USD', transactionId } = req.body;
+        const userId = req.user.id;
 
-        if (!courseId || !userId || !amount) {
-            return next(new AppError('Course ID, User ID, and amount are required', 400));
+        if (!courseId || !amount) {
+            return next(new AppError('Course ID and amount are required', 400));
         }
 
-        // Verify course exists
-        const course = await courseModel.findById(courseId);
-        if (!course) {
-            return next(new AppError('Course not found', 404));
-        }
-
-        // Verify user exists
-        const user = await userModel.findById(userId);
-        if (!user) {
-            return next(new AppError('User not found', 404));
-        }
-
-        // Record the purchase
+        // Create a new payment record
         const payment = await paymentModel.create({
             user: userId,
             course: courseId,
-            amount: amount,
-            currency: 'EGP',
+            amount,
+            currency,
+            transactionId,
             status: 'completed',
-            transactionId: `TXN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            description: `Simulated purchase of ${course.title}`,
-            metadata: {
-                courseTitle: course.title,
-                coursePrice: course.price,
-                userEmail: user.email,
-                userName: user.fullName
-            }
+            paymentMethod: req.body.paymentMethod || 'unknown'
         });
 
-        // Update course sales statistics
-        course.salesCount = (course.salesCount || 0) + 1;
-        course.totalRevenue = (course.totalRevenue || 0) + amount;
-        await course.save();
-
         res.status(201).json({
-                success: true,
-            message: 'Course purchase simulated successfully',
+            success: true,
+            message: 'Course purchase recorded successfully',
             payment: {
                 id: payment._id,
                 amount: payment.amount,
                 currency: payment.currency,
-                status: payment.status,
                 transactionId: payment.transactionId,
-                courseTitle: course.title,
-                userName: user.fullName
-                }
-            });
+                date: payment.createdAt
+            }
+        });
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
+// Simulate course purchase (for testing)
+const simulateCoursePurchase = async (req, res, next) => {
+    try {
+        const { courseId, amount, currency = 'USD', userId } = req.body;
+
+        if (!courseId || !amount || !userId) {
+            return next(new AppError('Course ID, amount, and user ID are required', 400));
+        }
+
+        // Create a simulated payment record
+        const payment = await paymentModel.create({
+            user: userId,
+            course: courseId,
+            amount,
+            currency,
+            transactionId: `SIM_${Date.now()}`,
+            status: 'completed',
+            paymentMethod: 'simulated'
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Simulated course purchase recorded successfully',
+            payment: {
+                id: payment._id,
+                amount: payment.amount,
+                currency: payment.currency,
+                transactionId: payment.transactionId,
+                date: payment.createdAt
+            }
+        });
 
     } catch (error) {
         return next(new AppError(error.message, 500));
@@ -227,8 +160,8 @@ const simulateCoursePurchase = async (req, res, next) => {
 };
 
 export { 
-    recordCoursePurchase, 
     getPaymentStats, 
-    getUserPurchases, 
-    simulateCoursePurchase 
+    getUserPurchases,
+    recordCoursePurchase,
+    simulateCoursePurchase
 }; 

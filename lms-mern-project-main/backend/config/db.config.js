@@ -4,7 +4,7 @@ mongoose.set('strictQuery', false);
 
 const connectToDb = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI, {
+        const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/lms', {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });

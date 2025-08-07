@@ -133,14 +133,7 @@ export default function Sidebar({ hideBar = false }) {
               </li>
             )}
 
-            {role === "ADMIN" && (
-              <li>
-                <Link to="/course/create" className="flex gap-4 items-center" onClick={closeSidebar}>
-                  <FaPlus size={18} className="text-gray-500 dark:text-slate-100" />
-                  إنشاء دورة جديدة
-                </Link>
-              </li>
-            )}
+
 
             {role === "ADMIN" && (
               <li>
@@ -253,12 +246,7 @@ export default function Sidebar({ hideBar = false }) {
               </li>
             )}
 
-            <li>
-              <Link to="/courses" className="flex gap-4 items-center" onClick={closeSidebar}>
-                <FaList size={18} className="text-gray-500 dark:text-slate-100" />
-                {role === "USER" ? "كورساتي" : "جميع الكورسات"}
-              </Link>
-            </li>
+
 
             <li>
               <Link to="/instructors" className="flex gap-4 items-center" onClick={closeSidebar}>

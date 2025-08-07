@@ -4,7 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import userRoutes from './routes/user.routes.js'; 
-import courseRoutes from './routes/course.routes.js'; 
+import courseRoutes from './routes/course.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import miscellaneousRoutes from './routes/miscellaneous.routes.js';
 import blogRoutes from './routes/blog.routes.js';
@@ -14,10 +14,10 @@ import walletRoutes from './routes/wallet.routes.js';
 import adminRechargeCodeRoutes from './routes/adminRechargeCode.routes.js';
 import adminUserRoutes from './routes/adminUser.routes.js';
 import whatsappServiceRoutes from './routes/whatsappService.routes.js';
-import videoProgressRoutes from './routes/videoProgress.routes.js';
 
 
-import examRoutes from './routes/exam.routes.js';
+
+
 import gradeRoutes from './routes/grade.routes.js';
 import instructorRoutes from './routes/instructor.routes.js';
 import stageRoutes from './routes/stage.routes.js';
@@ -62,7 +62,7 @@ app.get('/test-uploads', (req, res) => {
 });
 
 app.use('/api/v1/user', userRoutes); 
-app.use('/api/v1/courses', courseRoutes); 
+app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/', miscellaneousRoutes);
 app.use('/api/v1/', blogRoutes);
@@ -72,10 +72,10 @@ app.use('/api/v1/wallet', walletRoutes);
 app.use('/api/v1/admin/recharge-codes', adminRechargeCodeRoutes);
 app.use('/api/v1/admin/users', adminUserRoutes);
 app.use('/api/v1/whatsapp-services', whatsappServiceRoutes);
-app.use('/api/v1/video-progress', videoProgressRoutes);
 
 
-app.use('/api/v1/exams', examRoutes);
+
+
 app.use('/api/v1/grades', gradeRoutes);
 app.use('/api/v1/instructors', instructorRoutes);
 app.use('/api/v1/stages', stageRoutes);

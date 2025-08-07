@@ -90,7 +90,7 @@ export default function Navbar() {
   const menuItems = [
     { name: "الرئيسية", path: "/", icon: FaHome },
     { name: "الكورسات", path: "/subjects", icon: FaGraduationCap },
-    { name: role === "USER" ? "كورساتي" : "جميع الكورسات", path: "/courses", icon: FaList },
+    
     { name: "المدونة", path: "/blogs", icon: FaBlog },
     { name: "الأسئلة والأجوبة", path: "/qa", icon: FaQuestionCircle },
     { name: "تاريخ الامتحانات", path: "/exam-history", icon: FaHistory },
@@ -100,7 +100,7 @@ export default function Navbar() {
 
   const adminMenuItems = [
     { name: "لوحة التحكم", path: "/admin", icon: FaUser },
-    { name: "إدارة الكورسات", path: "/admin/courses", icon: FaGraduationCap },
+    
     { name: "إدارة المستخدمين", path: "/admin/users", icon: FaUser },
     { name: "إدارة المدونة", path: "/admin/blogs", icon: FaBlog },
     { name: "إدارة الأسئلة والأجوبة", path: "/admin/qa", icon: FaQuestionCircle },

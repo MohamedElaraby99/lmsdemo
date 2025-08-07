@@ -1,5 +1,5 @@
 import Instructor from '../models/instructor.model.js';
-import Course from '../models/course.model.js';
+
 import AppError from '../utils/error.utils.js';
 import cloudinary from 'cloudinary';
 
@@ -113,7 +113,11 @@ const getAllInstructors = async (req, res, next) => {
     }
 
     const instructors = await Instructor.find(query)
-      .populate('courses', 'title description thumbnail')
+      .populate({
+        path: 'courses',
+        select: 'title description thumbnail',
+        match: { isActive: true }
+      })
       .sort({ featured: -1, rating: -1, createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -151,7 +155,11 @@ const getFeaturedInstructors = async (req, res, next) => {
       featured: true, 
       isActive: true 
     })
-      .populate('courses', 'title description thumbnail')
+      .populate({
+        path: 'courses',
+        select: 'title description thumbnail',
+        match: { isActive: true }
+      })
       .sort({ rating: -1, totalStudents: -1 })
       .limit(parseInt(limit));
 
@@ -175,9 +183,10 @@ const getInstructorById = async (req, res, next) => {
     const { id } = req.params;
 
     const instructor = await Instructor.findById(id)
-      .populate('courses', 'title description thumbnail price')
       .populate({
         path: 'courses',
+        select: 'title description thumbnail price',
+        match: { isActive: true },
         populate: {
           path: 'units',
           select: 'title lessons'
@@ -330,7 +339,11 @@ const updateInstructor = async (req, res, next) => {
       id,
       updateData,
       { new: true, runValidators: true }
-    ).populate('courses', 'title description thumbnail');
+    ).populate({
+      path: 'courses',
+      select: 'title description thumbnail',
+      match: { isActive: true }
+    });
 
     console.log('Update successful:', updatedInstructor.name);
 
@@ -423,124 +436,6 @@ const deleteInstructor = async (req, res, next) => {
   }
 };
 
-// Add course to instructor
-const addCourseToInstructor = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { courseId } = req.body;
-
-    if (!courseId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Course ID is required'
-      });
-    }
-
-    const instructor = await Instructor.findById(id);
-    if (!instructor) {
-      return res.status(404).json({
-        success: false,
-        message: 'Instructor not found'
-      });
-    }
-
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Course not found'
-      });
-    }
-
-    // Check if course is already assigned to this instructor
-    if (instructor.courses.includes(courseId)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Course is already assigned to this instructor'
-      });
-    }
-
-    // Add course to instructor
-    instructor.courses.push(courseId);
-    await instructor.save();
-
-    // Update instructor stats
-    const totalStudents = await Course.aggregate([
-      { $match: { _id: { $in: instructor.courses } } },
-      { $group: { _id: null, total: { $sum: '$enrolledStudents' } } }
-    ]);
-
-    instructor.totalStudents = totalStudents[0]?.total || 0;
-    await instructor.save();
-
-    const updatedInstructor = await Instructor.findById(id)
-      .populate('courses', 'title description thumbnail');
-
-    return res.status(200).json({
-      success: true,
-      message: 'Course added to instructor successfully',
-      data: { instructor: updatedInstructor }
-    });
-  } catch (error) {
-    console.error('Error adding course to instructor:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to add course to instructor'
-    });
-  }
-};
-
-// Remove course from instructor
-const removeCourseFromInstructor = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { courseId } = req.body;
-
-    if (!courseId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Course ID is required'
-      });
-    }
-
-    const instructor = await Instructor.findById(id);
-    if (!instructor) {
-      return res.status(404).json({
-        success: false,
-        message: 'Instructor not found'
-      });
-    }
-
-    // Remove course from instructor
-    instructor.courses = instructor.courses.filter(course => course.toString() !== courseId);
-    await instructor.save();
-
-    // Update instructor stats
-    const totalStudents = await Course.aggregate([
-      { $match: { _id: { $in: instructor.courses } } },
-      { $group: { _id: null, total: { $sum: '$enrolledStudents' } } }
-    ]);
-
-    instructor.totalStudents = totalStudents[0]?.total || 0;
-    await instructor.save();
-
-    const updatedInstructor = await Instructor.findById(id)
-      .populate('courses', 'title description thumbnail');
-
-    return res.status(200).json({
-      success: true,
-      message: 'Course removed from instructor successfully',
-      data: { instructor: updatedInstructor }
-    });
-  } catch (error) {
-    console.error('Error removing course from instructor:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to remove course from instructor'
-    });
-  }
-};
-
 // Get instructor statistics
 const getInstructorStats = async (req, res, next) => {
   try {
@@ -554,26 +449,10 @@ const getInstructorStats = async (req, res, next) => {
       });
     }
 
-    // Get detailed statistics
-    const stats = await Course.aggregate([
-      { $match: { _id: { $in: instructor.courses } } },
-      {
-        $group: {
-          _id: null,
-          totalCourses: { $sum: 1 },
-          totalStudents: { $sum: '$enrolledStudents' },
-          totalRevenue: { $sum: '$price' },
-          avgRating: { $avg: '$rating' }
-        }
-      }
-    ]);
-
     const instructorStats = {
-      totalCourses: instructor.courses.length,
-      totalStudents: instructor.totalStudents,
-      rating: instructor.rating,
-      experience: instructor.experience,
-      ...stats[0]
+      totalStudents: instructor.totalStudents || 0,
+      rating: instructor.rating || 0,
+      experience: instructor.experience || 0
     };
 
     return res.status(200).json({
@@ -597,7 +476,5 @@ export {
   getInstructorById,
   updateInstructor,
   deleteInstructor,
-  addCourseToInstructor,
-  removeCourseFromInstructor,
   getInstructorStats
 }; 

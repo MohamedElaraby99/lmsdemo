@@ -62,7 +62,8 @@ const instructorSchema = new mongoose.Schema({
   },
   courses: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Course'
+    ref: 'Course',
+    default: []
   }],
   rating: {
     type: Number,

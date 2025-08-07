@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FaArrowRight, FaPlay, FaStar, FaUsers, FaGraduationCap, FaAward } from 'react-icons/fa';
 
-const AnimatedHero = ({ onGetStarted, onExploreCourses }) => {
+const AnimatedHero = ({ onGetStarted }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -10,7 +10,7 @@ const AnimatedHero = ({ onGetStarted, onExploreCourses }) => {
 
   const stats = [
     { icon: FaUsers, number: "10K+", label: "Students Enrolled", color: "text-blue-600" },
-    { icon: FaGraduationCap, number: "500+", label: "Courses Available", color: "text-green-600" },
+    { icon: FaGraduationCap, number: "100+", label: "Subjects Available", color: "text-green-600" },
     { icon: FaStar, number: "4.9", label: "Average Rating", color: "text-yellow-600" },
     { icon: FaAward, number: "50+", label: "Expert Instructors", color: "text-purple-600" }
   ];

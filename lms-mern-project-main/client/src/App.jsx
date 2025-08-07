@@ -12,10 +12,10 @@ import Login from "./Pages/Login";
 import ChangePassword from "./Pages/Password/ChangePassword"
 import ForgotPassword from "./Pages/Password/ForgotPassword";
 import ResetPassword from "./Pages/Password/ResetPassword";
-import CourseList from "./Pages/Course/CourseList";
+
 import Contact from "./Pages/Contact";
 import Denied from "./Pages/Denied";
-import CourseDescription from "./Pages/Course/CourseDescription";
+
 import BlogList from "./Pages/Blog/BlogList";
 import BlogDetail from "./Pages/Blog/BlogDetail";
 import BlogDashboard from "./Pages/Dashboard/BlogDashboard";
@@ -38,18 +38,14 @@ import InstructorDashboard from "./Pages/Dashboard/InstructorDashboard";
 import StageDashboard from "./Pages/Dashboard/StageDashboard";
 import Instructors from "./Pages/Instructors";
 import InstructorDetail from "./Pages/InstructorDetail";
+import CourseContentManager from './Pages/Dashboard/CourseContentManager';
 
 import RequireAuth from "./Components/auth/RequireAuth";
-import CreateCourse from "./Pages/Course/CreateCourse";
-import CourseStructure from "./Pages/Course/CourseStructure";
-import EditCourse from "./Pages/Course/EditCourse";
+
 import Profile from "./Pages/User/Profile";
 
-import DisplayLecture from "./Pages/Dashboard/DisplayLecture";
-import AddLecture from "./Pages/Dashboard/AddLecture";
 import AdminDashboard from "./Pages/Dashboard/AdminDashboard";
-import AddPdfToLesson from "./Pages/Dashboard/AddPdfToLesson";
-import AddExamToLesson from "./Pages/Dashboard/AddExamToLesson";
+import CourseDashboard from "./Pages/Dashboard/CourseDashboard";
 import ExamHistory from "./Pages/User/ExamHistory";
 
 function App() {
@@ -79,6 +75,7 @@ function App() {
         <Route path="/whatsapp-services" element={<WhatsAppServices />} />
         <Route path="/instructors" element={<Instructors />} />
         <Route path="/instructors/:id" element={<InstructorDetail />} />
+        <Route path="/admin/course-content" element={<CourseContentManager />} />
 
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
@@ -91,8 +88,7 @@ function App() {
           element={<ResetPassword />}
         />
 
-        <Route path="/courses" element={<CourseList />} />
-        <Route path="/courses/description" element={<CourseDescription />} />
+
         <Route path="/blogs" element={<BlogList />} />
         <Route path="/blog/:id" element={<BlogDetail />} />
         <Route path="/qa" element={<QAList />} />
@@ -102,15 +98,9 @@ function App() {
         <Route path="/subjects" element={<SubjectList />} />
 
                   <Route element={<RequireAuth allowedRoles={["ADMIN"]} />}>
-                    <Route path="/course/create" element={<CreateCourse />} />
-                    <Route path="/course/structure/edit/:id" element={<CourseStructure />} />
-                    <Route path="/course/structure" element={<CourseStructure />} />
-                    <Route path="/course/edit/:id" element={<EditCourse />} />
-                    <Route path="/course/addlecture" element={<AddLecture />} />
-                    <Route path="/course/add-pdf" element={<AddPdfToLesson />} />
-                    <Route path="/course/add-exam" element={<AddExamToLesson />} />
                     <Route path="/exam-history" element={<ExamHistory />} />
                     <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                    <Route path="/admin/course-dashboard" element={<CourseDashboard />} />
                     <Route path="/admin/blog-dashboard" element={<BlogDashboard />} />
                     <Route path="/admin/qa-dashboard" element={<QADashboard />} />
                     <Route path="/admin/qa-pending" element={<QAPendingQuestions />} />
@@ -123,8 +113,6 @@ function App() {
             path="/user/profile/change-password"
             element={<ChangePassword />}
           />
-          
-          <Route path="/course/displaylectures/:id" element={<DisplayLecture />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

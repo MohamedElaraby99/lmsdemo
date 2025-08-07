@@ -1,7 +1,5 @@
 import {configureStore} from "@reduxjs/toolkit"
 import AuthSliceReducer from "./Slices/AuthSlice"
-import CourseSliceReducer from "./Slices/CourseSlice"
-
 import LectureSliceReducer from "./Slices/LectureSlice"
 import StatSliceReducer from "./Slices/StatSlice"
 import BlogSliceReducer from "./Slices/BlogSlice"
@@ -11,7 +9,7 @@ import WalletSliceReducer from "./Slices/WalletSlice"
 import AdminRechargeCodeSliceReducer from "./Slices/AdminRechargeCodeSlice"
 import AdminUserSliceReducer from "./Slices/AdminUserSlice"
 import WhatsAppServiceSliceReducer from "./Slices/WhatsAppServiceSlice"
-import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
+import CourseSliceReducer from "./Slices/CourseSlice"
 import LessonPurchaseSliceReducer from "./Slices/LessonPurchaseSlice"
 import ExamSliceReducer from "./Slices/ExamSlice"
 import GradeSliceReducer from "./Slices/GradeSlice"
@@ -21,7 +19,7 @@ import StageSliceReducer from "./Slices/StageSlice"
  const store = configureStore({
     reducer: {
         auth: AuthSliceReducer,
-        course: CourseSliceReducer,
+
     
         lecture: LectureSliceReducer,
         stat: StatSliceReducer,
@@ -32,7 +30,8 @@ import StageSliceReducer from "./Slices/StageSlice"
         adminRechargeCode: AdminRechargeCodeSliceReducer,
         adminUser: AdminUserSliceReducer,
         whatsappService: WhatsAppServiceSliceReducer,
-        videoProgress: VideoProgressSliceReducer,
+        course: CourseSliceReducer,
+
         lessonPurchase: LessonPurchaseSliceReducer,
           exam: ExamSliceReducer,
   grade: GradeSliceReducer,

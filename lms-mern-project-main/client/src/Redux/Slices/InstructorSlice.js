@@ -122,35 +122,7 @@ export const deleteInstructor = createAsyncThunk(
   }
 );
 
-export const addCourseToInstructor = createAsyncThunk(
-  'instructor/addCourseToInstructor',
-  async ({ instructorId, courseId }, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.post(`/instructors/${instructorId}/courses`, { courseId });
-      toast.success('Course added to instructor successfully');
-      return response.data;
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add course to instructor');
-      return rejectWithValue(error.response?.data);
-    }
-  }
-);
 
-export const removeCourseFromInstructor = createAsyncThunk(
-  'instructor/removeCourseFromInstructor',
-  async ({ instructorId, courseId }, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.delete(`/instructors/${instructorId}/courses`, { 
-        data: { courseId } 
-      });
-      toast.success('Course removed from instructor successfully');
-      return response.data;
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to remove course from instructor');
-      return rejectWithValue(error.response?.data);
-    }
-  }
-);
 
 export const getInstructorStats = createAsyncThunk(
   'instructor/getInstructorStats',
@@ -294,45 +266,7 @@ const instructorSlice = createSlice({
         state.error = action.payload;
       })
       
-      // Add course to instructor
-      .addCase(addCourseToInstructor.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(addCourseToInstructor.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedInstructor = action.payload.data.instructor;
-        state.instructors = state.instructors.map(instructor => 
-          instructor._id === updatedInstructor._id ? updatedInstructor : instructor
-        );
-        if (state.currentInstructor && state.currentInstructor._id === updatedInstructor._id) {
-          state.currentInstructor = updatedInstructor;
-        }
-      })
-      .addCase(addCourseToInstructor.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      
-      // Remove course from instructor
-      .addCase(removeCourseFromInstructor.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(removeCourseFromInstructor.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedInstructor = action.payload.data.instructor;
-        state.instructors = state.instructors.map(instructor => 
-          instructor._id === updatedInstructor._id ? updatedInstructor : instructor
-        );
-        if (state.currentInstructor && state.currentInstructor._id === updatedInstructor._id) {
-          state.currentInstructor = updatedInstructor;
-        }
-      })
-      .addCase(removeCourseFromInstructor.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+
       
       // Get instructor stats
       .addCase(getInstructorStats.pending, (state) => {

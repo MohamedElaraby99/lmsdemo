@@ -75,10 +75,10 @@ function NotFound() {
                   <span className="text-sm">
                     جرب البحث عما تبحث عنه، أو استكشف{" "}
                     <button 
-                      onClick={() => navigate("/courses")}
+                      onClick={() => navigate("/subjects")}
                       className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
                     >
-                      {role === "USER" ? "كورساتي" : "الدورات"}
+                      المواد الدراسية
                     </button>{" "}
                     و{" "}
                     <button 
@@ -165,7 +165,7 @@ function NotFound() {
                   <FaGraduationCap className="w-6 h-6 text-white" />
                 </div>
                 <h4 className="font-semibold text-gray-800 dark:text-white mb-2">
-                  {role === "USER" ? "كورساتي" : "تصفح الدورات"}
+                  تصفح المواد الدراسية
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                   {role === "USER" 
