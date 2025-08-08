@@ -312,7 +312,7 @@ const changePassword = async (req, res, next) => {
             return next(new AppError("User does not exist", 400));
         }
 
-        if (!(bcrypt.compareSync(oldPassword, user.password))) {
+        if (!(await bcrypt.compare(oldPassword, user.password))) {
             return next(new AppError("Invalid Old Password", 400));
         }
 

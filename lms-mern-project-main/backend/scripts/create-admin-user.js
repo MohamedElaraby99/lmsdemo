@@ -22,26 +22,36 @@ const createAdminUser = async () => {
     await connectToDb();
     
     // Check if admin already exists
-    const existingAdmin = await User.findOne({ role: 'ADMIN' });
-    if (existingAdmin) {
-      console.log('Admin user already exists:', existingAdmin.email);
-      process.exit(0);
-    }
+    // const existingAdmin = await User.findOne({ role: 'ADMIN' });
+    // if (existingAdmin) {
+    //   console.log('Admin user already exists:', existingAdmin.email);
+    //   process.exit(0);
+    // }
     
     // Create admin user - don't hash password manually, let the model handle it
-    const adminUser = new User({
-      username: 'admin',
+    const adminUser1 = {
+      username: 'adminn34',
       fullName: 'System Administrator',
-      email: 'admin@lms.com',
+      email: 'admi74346@lms.com',
       password: 'Admin123!', // Will be hashed by the pre-save middleware
       role: 'ADMIN',
       isActive: true
-    });
+    };
+
+    const adminUser = new User(adminUser1);
+
+    const existingAdmin = await User.findOne({ username: adminUser1.username }).exec();
+    
+    if (existingAdmin) {
+      console.log('Admin user already exists:', existingAdmin.email , existingAdmin.username);
+      return;
+    }
     
     await adminUser.save();
+
     
     console.log('✅ Admin user created successfully!');
-    console.log('📧 Email: admin@lms.com');
+    console.log('📧 Email: adminnn@lms.com');
     console.log('👤 Username: admin');
     console.log('🔐 Password: Admin123!');
     console.log('👑 Role: ADMIN');
