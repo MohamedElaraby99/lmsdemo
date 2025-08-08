@@ -18,7 +18,7 @@ const cookieOptions = {
 // Register  
 const register = async (req, res, next) => {
     try {
-        const { fullName, username, email, password, phoneNumber, fatherPhoneNumber, governorate, grade, stage, age, adminCode } = req.body;
+        const { fullName, username, email, password, phoneNumber, fatherPhoneNumber, governorate, stage, age, adminCode } = req.body;
 
         // Determine user role based on admin code
         let userRole = 'USER';
@@ -150,7 +150,7 @@ const login = async (req, res, next) => {
 
         const user = await userModel.findOne({ email }).select('+password');
 
-        if (!user || !(bcrypt.compareSync(password, user.password))) {
+        if (!user || !(await bcrypt.compare(password, user.password))) {
             return next(new AppError('Email or Password does not match', 400))
         }
 
