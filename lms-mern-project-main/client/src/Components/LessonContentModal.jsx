@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { FaTimes, FaFilePdf, FaVideo, FaClipboardList, FaDumbbell, FaChevronLeft, FaChevronRight, FaPlay, FaEye, FaDownload } from 'react-icons/fa';
 import CustomVideoPlayer from './CustomVideoPlayer';
 import ExamModal from './Exam/ExamModal';
 
 const LessonContentModal = ({ isOpen, onClose, lesson }) => {
+  const { data: userData } = useSelector((state) => state.auth);
   const [currentContentIndex, setCurrentContentIndex] = useState(0);
   const [allContent, setAllContent] = useState([]);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -578,7 +580,9 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
       </div>
 
       {/* Custom Video Player */}
-      {videoPlayerOpen && currentVideo && (
+      {videoPlayerOpen && currentVideo && (() => {
+        const userName = userData?.name || userData?.username || "User";
+        return (
         <CustomVideoPlayer
           video={currentVideo}
           isOpen={videoPlayerOpen}
@@ -603,12 +607,13 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
           hasNext={videos.findIndex(v => v.data._id === currentVideo._id) < videos.length - 1}
           hasPrevious={videos.findIndex(v => v.data._id === currentVideo._id) > 0}
           courseTitle={lesson?.title || "Course Video"}
-          userName="User"
+          userName={userName}
           courseId={lesson?.courseId}
           showProgress={true}
           savedProgress={null}
         />
-      )}
+        );
+      })()}
 
       {/* Exam Modal */}
       {examModalOpen && selectedExam && (

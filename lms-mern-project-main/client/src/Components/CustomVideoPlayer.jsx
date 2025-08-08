@@ -345,6 +345,7 @@ const CustomVideoPlayer = ({
     console.log('Initializing video with object:', video);
     setIsLoading(true);
     setCurrentTime(0);
+    setDuration(0);
     setIsPlaying(false);
     setShowControls(true);
     setVideoState({ ready: false, canPlay: false, seeking: false, error: null });
@@ -1145,12 +1146,12 @@ const CustomVideoPlayer = ({
                     {/* Played progress */}
                     <div 
                       className="bg-blue-500 h-1 rounded-full transition-all duration-200 relative z-10"
-                      style={{ width: `${(currentTime / duration) * 100}%` }}
+                      style={{ width: `${duration > 0 ? Math.max(0, Math.min(100, (currentTime / duration) * 100)) : 0}%` }}
                     ></div>
                     {/* Progress indicator */}
                     <div 
                       className="absolute top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full shadow-lg z-20"
-                      style={{ left: `${(currentTime / duration) * 100}%`, marginLeft: '-6px' }}
+                      style={{ left: `${duration > 0 ? Math.max(0, Math.min(100, (currentTime / duration) * 100)) : 0}%`, marginLeft: '-6px' }}
                     ></div>
                   </div>
                 </div>
