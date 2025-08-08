@@ -66,6 +66,8 @@ const CustomVideoPlayer = ({
   const [playerReady, setPlayerReady] = useState(false);
   const [showDurationModal, setShowDurationModal] = useState(false);
   const [manualDurationInput, setManualDurationInput] = useState('');
+  const [showThumbnail, setShowThumbnail] = useState(true);
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
 
   const iframeRef = useRef(null);
   const progressBarRef = useRef(null);
@@ -223,6 +225,7 @@ const CustomVideoPlayer = ({
     console.log('YouTube player ready');
     setPlayerReady(true);
     setIsLoading(false);
+    setShowThumbnail(false);
     
     // Get the real duration with retry mechanism
     const getDurationWithRetry = () => {
@@ -346,6 +349,7 @@ const CustomVideoPlayer = ({
     setShowControls(true);
     setVideoState({ ready: false, canPlay: false, seeking: false, error: null });
     setPlayerReady(false);
+    setShowThumbnail(true);
     
     // Extract YouTube video ID
     const videoUrl = getVideoUrl(video);
@@ -357,12 +361,18 @@ const CustomVideoPlayer = ({
       console.log('YouTube video detected with ID:', videoId);
       setYoutubeVideoId(videoId);
       
+      // Set thumbnail URL
+      const thumbnail = getYouTubeThumbnail(videoId);
+      setThumbnailUrl(thumbnail);
+      console.log('Thumbnail URL set:', thumbnail);
+      
       // The YouTube IFrame API will handle player creation and duration fetching
       console.log('Video ID detected, YouTube IFrame API will handle duration');
     } else {
       console.log('No YouTube video found');
       console.log('Video object structure:', JSON.stringify(video, null, 2));
       setYoutubeVideoId(null);
+      setThumbnailUrl('');
       setIsLoading(false);
       setVideoState(prev => ({ ...prev, error: 'No valid YouTube URL found' }));
     }
@@ -473,6 +483,11 @@ const CustomVideoPlayer = ({
     }
     
     return null;
+  };
+
+  const getYouTubeThumbnail = (videoId) => {
+    if (!videoId) return '';
+    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   };
 
   // Manual function to request duration (can be called if duration is still 0)
@@ -848,6 +863,14 @@ const CustomVideoPlayer = ({
     }
   };
 
+  const handleStartVideo = () => {
+    if (player && playerReady) {
+      setShowThumbnail(false);
+      player.playVideo();
+      setIsPlaying(true);
+    }
+  };
+
 
   if (!isOpen || !video) return null;
 
@@ -861,8 +884,8 @@ const CustomVideoPlayer = ({
       <div className="absolute inset-0 bg-black bg-opacity-90" onClick={handleClose}></div>
       
       {/* Video Container */}
-      <div className={`relative w-full h-full flex items-center justify-center p-4 ${isFullscreen ? 'p-0' : ''}`}>
-        <div className={`relative bg-black rounded-lg overflow-hidden ${isFullscreen ? 'w-full h-full' : 'max-w-6xl w-full max-h-[80vh]'}`}>
+      <div className="relative w-full h-full flex items-center justify-center p-4">
+        <div className="relative bg-black rounded-lg overflow-hidden w-full h-[85vh]">
           
           {/* Loading Spinner */}
           {isLoading && (
@@ -896,15 +919,62 @@ const CustomVideoPlayer = ({
           )}
 
           {/* Video Player */}
-          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+          <div className="relative w-full h-full">
             {youtubeVideoId ? (
               <div className="absolute inset-0">
+                {/* YouTube Player */}
                 <div id="youtube-player" className="w-full h-full"></div>
                 
-
+                {/* Thumbnail Overlay */}
+                {showThumbnail && thumbnailUrl && (
+                  <div className="absolute inset-0 z-30">
+                    <div className="relative w-full h-full">
+                      {/* Thumbnail Image */}
+                      <img 
+                        src={thumbnailUrl} 
+                        alt={getVideoTitle(video)}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.log('Thumbnail failed to load, using fallback');
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                      
+                      {/* Thumbnail Overlay */}
+                      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                        <div className="text-center">
+                          {/* Play Button */}
+                          <button
+                            onClick={handleStartVideo}
+                            className="bg-white/20 backdrop-blur-sm rounded-full p-8 mb-6 hover:bg-white/30 transition-all duration-200 transform hover:scale-110"
+                          >
+                            <FaPlay className="text-white text-6xl ml-3" />
+                          </button>
+                          
+                          {/* Video Title */}
+                          <h3 className="text-white text-2xl font-bold mb-2">
+                            {getVideoTitle(video)}
+                          </h3>
+                          
+                          {/* Video Description */}
+                          {getVideoDescription(video) && (
+                            <p className="text-white/80 text-lg max-w-2xl mx-auto">
+                              {getVideoDescription(video)}
+                            </p>
+                          )}
+                          
+                          {/* Click to Play Text */}
+                          <p className="text-white/60 text-sm mt-4">
+                            انقر للبدء في مشاهدة الفيديو
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Dynamic Watermark */}
-                {playerReady && (
+                {playerReady && !showThumbnail && (
                   <div 
                     className="absolute pointer-events-none z-25 select-none"
                     style={{
@@ -1241,82 +1311,80 @@ const CustomVideoPlayer = ({
           )}
         </div>
         
-                  {/* Video Progress Component (Hidden for Users - Background Tracking Only) */}
-          {showProgress && courseId && getCleanVideoId(video) && role === 'USER' && (
-            <div className="hidden">
-              <VideoProgress
-                videoId={getCleanVideoId(video)}
-                courseId={courseId}
-                currentTime={currentTime}
-                duration={duration}
-                isPlaying={isPlaying}
-                onSeek={(time) => {
-                  if (player && playerReady) {
-                    player.seekTo(time, true);
+        {/* Video Progress Component (Hidden for Users - Background Tracking Only) */}
+        {showProgress && courseId && getCleanVideoId(video) && role === 'USER' && (
+          <div className="hidden">
+            <VideoProgress
+              videoId={getCleanVideoId(video)}
+              courseId={courseId}
+              currentTime={currentTime}
+              duration={duration}
+              isPlaying={isPlaying}
+              onSeek={(time) => {
+                if (player && playerReady) {
+                  player.seekTo(time, true);
+                }
+              }}
+              savedProgress={savedProgress}
+            />
+          </div>
+        )}
+
+        {/* All Users Progress Component (Admin Only) */}
+        {showProgress && courseId && getCleanVideoId(video) && role === 'ADMIN' && (
+          <div className="mt-4 max-w-6xl w-full">
+            <VideoUserProgress
+              videoId={getCleanVideoId(video)}
+              courseId={courseId}
+            />
+          </div>
+        )}
+
+        {/* Duration Modal */}
+        {showDurationModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999]">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                Set Video Duration
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                Enter the video duration in one of these formats:
+                <br />• MM:SS (e.g., 3:45)
+                <br />• HH:MM:SS (e.g., 1:23:45)
+                <br />• Seconds (e.g., 225)
+              </p>
+              <input
+                type="text"
+                value={manualDurationInput}
+                onChange={(e) => setManualDurationInput(e.target.value)}
+                placeholder="e.g., 3:45"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleManualDurationSubmit();
                   }
                 }}
-                savedProgress={savedProgress}
               />
-            </div>
-          )}
-
-          {/* All Users Progress Component (Admin Only) */}
-          {showProgress && courseId && getCleanVideoId(video) && role === 'ADMIN' && (
-            <div className="mt-4 max-w-6xl w-full">
-              <VideoUserProgress
-                videoId={getCleanVideoId(video)}
-                courseId={courseId}
-              />
-            </div>
-          )}
-
-          {/* Duration Modal */}
-          {showDurationModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999]">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
-                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-                  Set Video Duration
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  Enter the video duration in one of these formats:
-                  <br />• MM:SS (e.g., 3:45)
-                  <br />• HH:MM:SS (e.g., 1:23:45)
-                  <br />• Seconds (e.g., 225)
-                </p>
-                <input
-                  type="text"
-                  value={manualDurationInput}
-                  onChange={(e) => setManualDurationInput(e.target.value)}
-                  placeholder="e.g., 3:45"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleManualDurationSubmit();
-                    }
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={handleManualDurationSubmit}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Set Duration
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDurationModal(false);
+                    setManualDurationInput('');
                   }}
-                />
-                <div className="flex gap-2 mt-4">
-                  <button
-                    onClick={handleManualDurationSubmit}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    Set Duration
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowDurationModal(false);
-                      setManualDurationInput('');
-                    }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
-          )}
-
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
