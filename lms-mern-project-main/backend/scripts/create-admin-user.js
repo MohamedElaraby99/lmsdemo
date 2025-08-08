@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import User from '../models/user.model.js';
 import dotenv from 'dotenv';
-import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
@@ -29,27 +28,29 @@ const createAdminUser = async () => {
       process.exit(0);
     }
     
-    // Create admin user
-    const hashedPassword = await bcrypt.hash('admin123', 12);
-    
+    // Create admin user - don't hash password manually, let the model handle it
     const adminUser = new User({
-      name: 'Admin User',
-      email: 'admin@example.com',
-      password: hashedPassword,
+      username: 'admin',
+      fullName: 'System Administrator',
+      email: 'admin@lms.com',
+      password: 'Admin123!', // Will be hashed by the pre-save middleware
       role: 'ADMIN',
       isActive: true
     });
     
     await adminUser.save();
     
-    console.log('Admin user created successfully!');
-    console.log('Email: admin@example.com');
-    console.log('Password: admin123');
-    console.log('Role: ADMIN');
+    console.log('✅ Admin user created successfully!');
+    console.log('📧 Email: admin@lms.com');
+    console.log('👤 Username: admin');
+    console.log('🔐 Password: Admin123!');
+    console.log('👑 Role: ADMIN');
+    console.log('\n💡 You can now login with these credentials');
+    console.log('🌐 Go to: http://localhost:5173/login');
     
     process.exit(0);
   } catch (error) {
-    console.error('Error creating admin user:', error);
+    console.error('❌ Error creating admin user:', error);
     process.exit(1);
   }
 };
