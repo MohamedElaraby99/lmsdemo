@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { FaTimes, FaFilePdf, FaVideo, FaClipboardList, FaDumbbell, FaChevronLeft, FaChevronRight, FaPlay, FaEye, FaDownload } from 'react-icons/fa';
 import CustomVideoPlayer from './CustomVideoPlayer';
+import PDFViewer from './PDFViewer';
 import ExamModal from './Exam/ExamModal';
 
 const LessonContentModal = ({ isOpen, onClose, lesson }) => {
@@ -16,6 +17,10 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
   // CustomVideoPlayer state
   const [videoPlayerOpen, setVideoPlayerOpen] = useState(false);
   const [currentVideo, setCurrentVideo] = useState(null);
+  
+  // PDFViewer state
+  const [pdfViewerOpen, setPdfViewerOpen] = useState(false);
+  const [currentPdf, setCurrentPdf] = useState(null);
   
   // Separate content arrays for each type
   const [videos, setVideos] = useState([]);
@@ -228,6 +233,52 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   };
 
+  // Convert PDF URL to backend URL
+  const getPdfUrl = (url) => {
+    if (!url) return '';
+    
+    console.log('Original PDF URL:', url);
+    
+    // If it's already a full URL, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      console.log('Full URL detected, returning as is:', url);
+      return url;
+    }
+    
+    // If it's a relative path, convert to backend URL
+    if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+      const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+      const backendUrl = `http://localhost:5000/${cleanPath}`;
+      console.log('Converted to backend URL:', backendUrl);
+      return backendUrl;
+    }
+    
+    // If it's just a filename, assume it's in uploads/pdfs/
+    const backendUrl = `http://localhost:5000/uploads/pdfs/${url}`;
+    console.log('Assumed PDF path, converted to:', backendUrl);
+    return backendUrl;
+  };
+
+  // Test PDF URL function
+  const testPdfUrl = (url) => {
+    const testUrl = getPdfUrl(url);
+    console.log('Testing PDF URL:', testUrl);
+    
+    // Create a test iframe to check if the URL works
+    const testIframe = document.createElement('iframe');
+    testIframe.style.display = 'none';
+    testIframe.src = testUrl;
+    testIframe.onload = () => {
+      console.log('✅ PDF URL is working!');
+      document.body.removeChild(testIframe);
+    };
+    testIframe.onerror = () => {
+      console.log('❌ PDF URL failed to load');
+      document.body.removeChild(testIframe);
+    };
+    document.body.appendChild(testIframe);
+  };
+
   const getCurrentContent = () => {
     switch (selectedTab) {
       case 'video':
@@ -355,40 +406,46 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
           </div>
         );
         
-      case 'pdf':
-        return (
-          <div className="bg-gradient-to-br from-red-50 to-pink-100 dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl border border-red-200 dark:border-gray-700">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
-                <FaFilePdf className="text-red-600 dark:text-red-400 text-xl" />
-              </div>
-              <div>
-                <div className="font-semibold text-xl text-gray-800 dark:text-gray-200">{data.title || data.fileName}</div>
-                <div className="text-sm text-red-600 dark:text-red-400 font-medium">ملف PDF</div>
-              </div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <FaFilePdf className="text-red-500 text-2xl" />
-                  <div>
-                    <div className="font-medium">{data.title || data.fileName}</div>
-                    <div className="text-sm text-gray-500">ملف PDF قابل للتحميل</div>
-                  </div>
-                </div>
-                <a
-                  href={data.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-lg"
-                >
-                  <FaEye />
-                  عرض
-                </a>
-              </div>
-            </div>
-          </div>
-        );
+             case 'pdf':
+         return (
+           <div className="bg-gradient-to-br from-red-50 to-pink-100 dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl border border-red-200 dark:border-gray-700">
+             <div className="flex items-center gap-3 mb-4">
+               <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
+                 <FaFilePdf className="text-red-600 dark:text-red-400 text-xl" />
+               </div>
+               <div>
+                 <div className="font-semibold text-xl text-gray-800 dark:text-gray-200">{data.title || data.fileName}</div>
+                 <div className="text-sm text-red-600 dark:text-red-400 font-medium">ملف PDF</div>
+               </div>
+             </div>
+             
+             <div className="mb-4 text-gray-600 dark:text-gray-300 leading-relaxed">
+               {data.description || "مستند PDF قابل للعرض والتحميل"}
+             </div>
+             
+             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-600">
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                   <FaFilePdf className="text-red-500 text-2xl" />
+                   <div>
+                     <div className="font-medium">{data.title || data.fileName}</div>
+                     <div className="text-sm text-gray-500">مستند PDF قابل للعرض</div>
+                   </div>
+                 </div>
+                 <button
+                   onClick={() => {
+                     setCurrentPdf(data);
+                     setPdfViewerOpen(true);
+                   }}
+                   className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-lg"
+                 >
+                   <FaEye />
+                   عرض المستند
+                 </button>
+               </div>
+             </div>
+           </div>
+         );
         
       case 'exam':
         return (
@@ -614,6 +671,19 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
         />
         );
       })()}
+
+      {/* PDF Viewer */}
+      {pdfViewerOpen && currentPdf && (
+        <PDFViewer
+          pdfUrl={getPdfUrl(currentPdf.url)}
+          title={currentPdf.title || currentPdf.fileName || "PDF Document"}
+          isOpen={pdfViewerOpen}
+          onClose={() => {
+            setPdfViewerOpen(false);
+            setCurrentPdf(null);
+          }}
+        />
+      )}
 
       {/* Exam Modal */}
       {examModalOpen && selectedExam && (

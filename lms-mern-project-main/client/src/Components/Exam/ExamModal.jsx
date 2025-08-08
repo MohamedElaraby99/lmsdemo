@@ -367,11 +367,6 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
                     <span className="text-gray-700 dark:text-gray-300">الوقت المحدد</span>
                     <span className="font-semibold">{exam.timeLimit} دقيقة</span>
                   </div>
-                  
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <span className="text-gray-700 dark:text-gray-300">درجة النجاح</span>
-                    <span className="font-semibold">{exam.passingScore}%</span>
-                  </div>
                 </div>
 
                 <button
