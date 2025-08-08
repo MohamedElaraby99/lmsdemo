@@ -296,30 +296,6 @@ export default function Signup() {
                 </div>
               </div>
 
-              {/* Admin Code Field (Optional) */}
-              <div>
-                <label htmlFor="adminCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  رمز المدير (اختياري)
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaUserPlus className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="adminCode"
-                    name="adminCode"
-                    type="text"
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                    placeholder="أدخل رمز المدير لإنشاء حساب مدير"
-                    value={signupData.adminCode}
-                    onChange={handleUserInput}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  اتركه فارغاً لحساب المستخدم العادي
-                </p>
-              </div>
-
               {/* Phone Number Field - Only for regular users */}
               {!signupData.adminCode && (
                 <div>
@@ -414,46 +390,6 @@ export default function Signup() {
                       <option value="Qena">Qena</option>
                       <option value="North Sinai">North Sinai</option>
                       <option value="Sohag">Sohag</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {/* Grade Field - Only for regular users */}
-              {!signupData.adminCode && (
-                <div>
-                  <label htmlFor="grade" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    الصف الدراسي
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaGraduationCap className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <select
-                      id="grade"
-                      name="grade"
-                      required={!signupData.adminCode}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                      value={signupData.grade}
-                      onChange={handleUserInput}
-                    >
-                      <option value="">اختر الصف الدراسي</option>
-                      <option value="1 ابتدائي">1 ابتدائي</option>
-                      <option value="2 ابتدائي">2 ابتدائي</option>
-                      <option value="3 ابتدائي">3 ابتدائي</option>
-                      <option value="4 ابتدائي">4 ابتدائي</option>
-                      <option value="5 ابتدائي">5 ابتدائي</option>
-                      <option value="6 ابتدائي">6 ابتدائي</option>
-                      <option value="1 إعدادي">1 إعدادي</option>
-                      <option value="2 إعدادي">2 إعدادي</option>
-                      <option value="3 إعدادي">3 إعدادي</option>
-                      <option value="1 ثانوي">1 ثانوي</option>
-                      <option value="2 ثانوي">2 ثانوي</option>
-                      <option value="3 ثانوي">3 ثانوي</option>
-                      <option value="1 جامعة">1 جامعة</option>
-                      <option value="2 جامعة">2 جامعة</option>
-                      <option value="3 جامعة">3 جامعة</option>
-                      <option value="4 جامعة">4 جامعة</option>
                     </select>
                   </div>
                 </div>

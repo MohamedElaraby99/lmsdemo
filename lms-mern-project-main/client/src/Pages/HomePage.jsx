@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Layout from "../Layout/Layout";
@@ -6,6 +6,12 @@ import heroPng from "../assets/images/hero.png";
 import { getAllBlogs } from "../Redux/Slices/BlogSlice";
 import { getFeaturedSubjects } from "../Redux/Slices/SubjectSlice";
 import { getFeaturedCourses } from "../Redux/Slices/CourseSlice";
+
+// Lazy load components
+const FAQAccordion = lazy(() => import("../Components/FAQAccordion"));
+const SubjectCard = lazy(() => import("../Components/SubjectCard"));
+const InstructorSection = lazy(() => import("../Components/InstructorSection"));
+const NewsletterSection = lazy(() => import("../Components/NewsletterSection"));
 
 import { 
   FaEye, 
@@ -32,13 +38,8 @@ import {
   FaArrowUp
 } from "react-icons/fa";
 import { placeholderImages } from "../utils/placeholderImages";
-import FAQAccordion from "../Components/FAQAccordion";
-import SubjectCard from "../Components/SubjectCard";
-import InstructorSection from "../Components/InstructorSection";
 // Using a public URL for now - replace with your actual image URL
 const fikraCharacter = "/fikra_character-removebg-preview.png";
-
-import NewsletterSection from "../Components/NewsletterSection";
 
 export default function HomePage() {
   const dispatch = useDispatch();
@@ -51,13 +52,21 @@ export default function HomePage() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
-    // Fetch latest blogs for homepage
-    dispatch(getAllBlogs({ page: 1, limit: 3 }));
-    // Fetch featured subjects for homepage
-    dispatch(getFeaturedSubjects());
-    // Fetch featured courses for homepage
-    dispatch(getFeaturedCourses());
+    // Progressive loading - fetch data in sequence for better performance
+    const loadData = async () => {
+      // First, fetch essential data (subjects and courses)
+      await Promise.all([
+        dispatch(getFeaturedSubjects()),
+        dispatch(getFeaturedCourses())
+      ]);
+      
+      // Then fetch blogs after a short delay for better perceived performance
+      setTimeout(() => {
+        dispatch(getAllBlogs({ page: 1, limit: 3 }));
+      }, 500);
+    };
 
+    loadData();
     
     // Trigger animations
     setIsVisible(true);
@@ -167,7 +176,7 @@ export default function HomePage() {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-end">
-                <Link to="/subjects">
+                <Link to="/signup">
                   <button className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden">
                     <span className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                     <span className="relative flex items-center gap-3">
@@ -176,8 +185,6 @@ export default function HomePage() {
                     </span>
                   </button>
                 </Link>
-                
-                
               </div>
 
               {/* Quick Stats */}
@@ -250,7 +257,14 @@ export default function HomePage() {
                   className="transform hover:scale-105 transition-all duration-300"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <SubjectCard subject={subject} />
+                  <Suspense fallback={
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse">
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                    </div>
+                  }>
+                    <SubjectCard subject={subject} />
+                  </Suspense>
                 </div>
               ))}
             </div>
@@ -382,7 +396,27 @@ export default function HomePage() {
       </section>
       
       {/* Instructor Section */}
-      <InstructorSection />
+      <Suspense fallback={
+        <div className="py-20 bg-white dark:bg-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mx-auto mb-4 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mx-auto animate-pulse"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse">
+                  <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-full w-32 mx-auto mb-4"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mx-auto mb-2"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mx-auto"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      }>
+        <InstructorSection />
+      </Suspense>
       {/* Latest Blogs Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-900" dir="rtl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -566,7 +600,21 @@ export default function HomePage() {
       </section>
 
       {/* Newsletter Section */}
-      <NewsletterSection />
+      <Suspense fallback={
+        <div className="py-20 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mx-auto mb-4 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mx-auto mb-8 animate-pulse"></div>
+              <div className="max-w-md mx-auto">
+                <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }>
+        <NewsletterSection />
+      </Suspense>
 
       {/* Static FAQ Section */}
       <section className="py-16 px-4 lg:px-20 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -579,7 +627,18 @@ export default function HomePage() {
               كل ما تحتاج معرفته عن منصتنا
             </p>
           </div>
-          <FAQAccordion />
+          <Suspense fallback={
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-6 animate-pulse">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          }>
+            <FAQAccordion />
+          </Suspense>
         </div>
       </section>
 

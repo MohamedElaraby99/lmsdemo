@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom";
 import useScrollToTop from "./Helpers/useScrollToTop";
 import { initializeDeviceProtection } from "./utils/deviceDetection";
 import DeviceProtection from "./Components/DeviceProtection";
-import BackendTest from "./Components/BackendTest";
 import "./utils/deviceProtection.css";
 import HomePage from "./Pages/HomePage";
 import AboutUs from "./Pages/About";
@@ -62,7 +61,6 @@ function App() {
 
   return (
     <DeviceProtection>
-      <BackendTest />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutUs />} />

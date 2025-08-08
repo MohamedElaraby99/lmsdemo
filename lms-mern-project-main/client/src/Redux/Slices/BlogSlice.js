@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import toast from 'react-hot-toast';
 import { axiosInstance } from '../../Helpers/axiosInstance';
 
 const initialState = {
@@ -14,13 +13,10 @@ const initialState = {
 // Get all blogs (public)
 export const getAllBlogs = createAsyncThunk("/blogs/get", async (params = {}) => {
     const { page = 1, limit = 10, category = '', search = '' } = params;
-    const loadingMessage = toast.loading("Fetching blogs...");
     try {
         const res = await axiosInstance.get(`/blogs?page=${page}&limit=${limit}&category=${category}&search=${search}`);
-        toast.success(res?.data?.message, { id: loadingMessage });
         return res?.data;
     } catch (error) {
-        toast.error(error?.response?.data?.message, { id: loadingMessage });
         throw error;
     }
 });
@@ -28,65 +24,50 @@ export const getAllBlogs = createAsyncThunk("/blogs/get", async (params = {}) =>
 // Get all blogs for admin (including drafts)
 export const getAllBlogsForAdmin = createAsyncThunk("/blogs/getForAdmin", async (params = {}) => {
     const { page = 1, limit = 10, category = '', search = '', status = '' } = params;
-    const loadingMessage = toast.loading("Fetching blogs...");
     try {
         const res = await axiosInstance.get(`/admin/blogs?page=${page}&limit=${limit}&category=${category}&search=${search}&status=${status}`);
-        toast.success(res?.data?.message, { id: loadingMessage });
         return res?.data;
     } catch (error) {
-        toast.error(error?.response?.data?.message, { id: loadingMessage });
         throw error;
     }
 });
 
 // Get blog by ID
 export const getBlogById = createAsyncThunk("/blogs/getById", async (id) => {
-    const loadingMessage = toast.loading("Fetching blog...");
     try {
         const res = await axiosInstance.get(`/blogs/${id}`);
-        toast.success(res?.data?.message, { id: loadingMessage });
         return res?.data;
     } catch (error) {
-        toast.error(error?.response?.data?.message, { id: loadingMessage });
         throw error;
     }
 });
 
 // Create blog
 export const createBlog = createAsyncThunk("/blogs/create", async (data) => {
-    const loadingMessage = toast.loading("Creating blog...");
     try {
         const res = await axiosInstance.post("/blogs", data);
-        toast.success(res?.data?.message, { id: loadingMessage });
         return res?.data;
     } catch (error) {
-        toast.error(error?.response?.data?.message, { id: loadingMessage });
         throw error;
     }
 });
 
 // Update blog
 export const updateBlog = createAsyncThunk("/blogs/update", async ({ id, data }) => {
-    const loadingMessage = toast.loading("Updating blog...");
     try {
         const res = await axiosInstance.put(`/blogs/${id}`, data);
-        toast.success(res?.data?.message, { id: loadingMessage });
         return res?.data;
     } catch (error) {
-        toast.error(error?.response?.data?.message, { id: loadingMessage });
         throw error;
     }
 });
 
 // Delete blog
 export const deleteBlog = createAsyncThunk("/blogs/delete", async (id) => {
-    const loadingMessage = toast.loading("Deleting blog...");
     try {
         const res = await axiosInstance.delete(`/blogs/${id}`);
-        toast.success(res?.data?.message, { id: loadingMessage });
         return res?.data;
     } catch (error) {
-        toast.error(error?.response?.data?.message, { id: loadingMessage });
         throw error;
     }
 });
@@ -97,7 +78,6 @@ export const likeBlog = createAsyncThunk("/blogs/like", async (id) => {
         const res = await axiosInstance.post(`/blogs/${id}/like`);
         return res?.data;
     } catch (error) {
-        toast.error(error?.response?.data?.message);
         throw error;
     }
 });

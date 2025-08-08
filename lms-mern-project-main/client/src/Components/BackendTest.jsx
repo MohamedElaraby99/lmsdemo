@@ -1,44 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const BackendTest = () => {
-  const [backendStatus, setBackendStatus] = useState('Checking...');
-  const [pdfStatus, setPdfStatus] = useState('Checking...');
+  const [testResult, setTestResult] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // Test backend connection
-    fetch('http://localhost:4000/api/test')
-      .then(response => {
-        if (response.ok) {
-          setBackendStatus('✅ Backend is running');
-        } else {
-          setBackendStatus('❌ Backend responded with error');
-        }
-      })
-      .catch(error => {
-        setBackendStatus('❌ Backend is not running');
-        console.error('Backend test failed:', error);
+  const testPdfConverter = async () => {
+    setLoading(true);
+    setTestResult('Testing...');
+    
+    try {
+      // Test if the PDF file exists
+      const testResponse = await fetch('http://localhost:4000/api/v1/pdf-converter/test/ex_level_1%20(1).pdf', {
+        credentials: 'include'
       });
-
-    // Test PDF file access
-    fetch('http://localhost:4000/uploads/pdfs/ex_level_1%20(1).pdf')
-      .then(response => {
-        if (response.ok) {
-          setPdfStatus('✅ PDF file is accessible');
+      
+      const testData = await testResponse.json();
+      console.log('Test response:', testData);
+      
+      if (testData.success) {
+        setTestResult('✅ PDF file found! Path: ' + testData.path);
+        
+        // Now test the conversion API
+        const convertResponse = await fetch('http://localhost:4000/api/v1/pdf-converter/convert', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            pdfUrl: 'http://localhost:4000/uploads/pdfs/ex_level_1%20(1).pdf'
+          })
+        });
+        
+        const convertData = await convertResponse.json();
+        console.log('Convert response:', convertData);
+        
+        if (convertData.success) {
+          setTestResult(prev => prev + '\n✅ Conversion successful! Pages: ' + convertData.data.length);
         } else {
-          setPdfStatus(`❌ PDF file error: ${response.status}`);
+          setTestResult(prev => prev + '\n❌ Conversion failed: ' + convertData.message);
         }
-      })
-      .catch(error => {
-        setPdfStatus('❌ PDF file not accessible');
-        console.error('PDF test failed:', error);
-      });
-  }, []);
+      } else {
+        setTestResult('❌ PDF file not found: ' + testData.message);
+      }
+    } catch (error) {
+      console.error('Test error:', error);
+      setTestResult('❌ Test failed: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="fixed top-4 right-4 bg-white p-4 rounded-lg shadow-lg border z-50">
-      <h3 className="font-bold mb-2">Backend Status</h3>
-      <p className="text-sm mb-1">{backendStatus}</p>
-      <p className="text-sm">{pdfStatus}</p>
+    <div >
+    
     </div>
   );
 };

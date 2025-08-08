@@ -10,7 +10,7 @@ const CourseDetailsModal = ({ course, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">تفاصيل الدورة</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">تفاصيل الدرس</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl">×</button>
         </div>
         <div className="space-y-2">
@@ -32,7 +32,7 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role }) => {
   const [detailsModalCourse, setDetailsModalCourse] = useState(null);
 
   const handleDeleteCourse = async (courseId) => {
-    if (window.confirm('هل أنت متأكد من حذف هذه الدورة؟')) {
+    if (window.confirm('هل أنت متأكد من حذف هذه الدرس؟')) {
       try {
         await dispatch(deleteCourse(courseId)).unwrap();
       } catch (error) {

@@ -1,69 +1,53 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../Helpers/axiosInstance";
-import toast from "react-hot-toast";
 
 // Get all subjects
 export const getAllSubjects = createAsyncThunk("/subjects/get", async (params = {}) => {
   const { page = 1, limit = 12, category = '', search = '', status = '', featured = '' } = params;
-  const loadingMessage = toast.loading("Fetching subjects...");
   try {
     const res = await axiosInstance.get(`/subjects?page=${page}&limit=${limit}&category=${category}&search=${search}&status=${status}&featured=${featured}`);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
 
 // Get single subject
 export const getSubjectById = createAsyncThunk("/subjects/getById", async (id) => {
-  const loadingMessage = toast.loading("Fetching subject...");
   try {
     const res = await axiosInstance.get(`/subjects/${id}`);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
 
 // Create subject
 export const createSubject = createAsyncThunk("/subjects/create", async (subjectData) => {
-  const loadingMessage = toast.loading("Creating subject...");
   try {
     const res = await axiosInstance.post("/subjects", subjectData);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
 
 // Update subject
 export const updateSubject = createAsyncThunk("/subjects/update", async ({ id, subjectData }) => {
-  const loadingMessage = toast.loading("Updating subject...");
   try {
     const res = await axiosInstance.put(`/subjects/${id}`, subjectData);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
 
 // Delete subject
 export const deleteSubject = createAsyncThunk("/subjects/delete", async (id) => {
-  const loadingMessage = toast.loading("Deleting subject...");
   try {
     const res = await axiosInstance.delete(`/subjects/${id}`);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
@@ -83,23 +67,18 @@ export const getFeaturedSubjects = createAsyncThunk("/subjects/featured", async 
 export const toggleFeatured = createAsyncThunk("/subjects/toggleFeatured", async (id) => {
   try {
     const res = await axiosInstance.post(`/subjects/${id}/toggle-featured`);
-    toast.success(res?.data?.message);
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message);
     throw error;
   }
 });
 
 // Update subject status
 export const updateSubjectStatus = createAsyncThunk("/subjects/updateStatus", async ({ id, status }) => {
-  const loadingMessage = toast.loading("Updating status...");
   try {
     const res = await axiosInstance.put(`/subjects/${id}/status`, { status });
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });

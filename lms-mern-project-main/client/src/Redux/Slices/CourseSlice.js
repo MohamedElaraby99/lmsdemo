@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { axiosInstance } from '../../Helpers/axiosInstance';
-import { toast } from 'react-hot-toast';
 
 const initialState = {
   courses: [],
@@ -25,7 +24,6 @@ export const getAllCourses = createAsyncThunk(
       const response = await axiosInstance.get('/courses');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to get courses');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -39,7 +37,6 @@ export const getFeaturedCourses = createAsyncThunk(
       const response = await axiosInstance.get('/courses/featured');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to get featured courses');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -53,7 +50,6 @@ export const getCourseById = createAsyncThunk(
       const response = await axiosInstance.get(`/courses/${courseId}`);
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to get course');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -81,10 +77,8 @@ export const createCourse = createAsyncThunk(
         }
       });
       
-      toast.success('Course created successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to create course');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -112,10 +106,8 @@ export const updateCourse = createAsyncThunk(
         }
       });
       
-      toast.success('Course updated successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update course');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -127,10 +119,8 @@ export const deleteCourse = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.delete(`/courses/${id}`);
-      toast.success('Course deleted successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to delete course');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -144,7 +134,6 @@ export const getCourseStats = createAsyncThunk(
       const response = await axiosInstance.get('/courses/stats');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to get course statistics');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -156,10 +145,8 @@ export const addUnitToCourse = createAsyncThunk(
   async ({ courseId, unitData }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(`/courses/${courseId}/units`, { unitData });
-      toast.success('Unit added successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add unit');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -171,10 +158,8 @@ export const addLessonToUnit = createAsyncThunk(
   async ({ courseId, unitId, lessonData }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(`/courses/${courseId}/units/${unitId}/lessons`, { lessonData });
-      toast.success('Lesson added successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add lesson');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -186,10 +171,8 @@ export const addDirectLessonToCourse = createAsyncThunk(
   async ({ courseId, lessonData }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(`/courses/${courseId}/direct-lessons`, { lessonData });
-      toast.success('Direct lesson added successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add direct lesson');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -204,10 +187,8 @@ export const updateLesson = createAsyncThunk(
         unitId,
         lessonData
       });
-      toast.success('Lesson updated successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update lesson');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -221,10 +202,8 @@ export const deleteLesson = createAsyncThunk(
       const response = await axiosInstance.delete(`/courses/${courseId}/lessons/${lessonId}`, {
         data: { unitId }
       });
-      toast.success('Lesson deleted successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to delete lesson');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -236,10 +215,8 @@ export const deleteUnit = createAsyncThunk(
   async ({ courseId, unitId }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.delete(`/courses/${courseId}/units/${unitId}`);
-      toast.success('Unit deleted successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to delete unit');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -251,10 +228,8 @@ export const updateUnit = createAsyncThunk(
   async ({ courseId, unitId, unitData }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.put(`/courses/${courseId}/units/${unitId}`, { unitData });
-      toast.success('Unit updated successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update unit');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -270,10 +245,8 @@ export const reorderLessons = createAsyncThunk(
         lessonId,
         newIndex
       });
-      toast.success('Lessons reordered successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to reorder lessons');
       return rejectWithValue(error.response?.data);
     }
   }
@@ -288,10 +261,8 @@ export const updateLessonContent = createAsyncThunk(
         unitId,
         ...contentData
       });
-      toast.success('Lesson content updated successfully');
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update lesson content');
       return rejectWithValue(error.response?.data);
     }
   }

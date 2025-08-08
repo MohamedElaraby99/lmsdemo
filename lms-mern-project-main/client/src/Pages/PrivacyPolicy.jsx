@@ -141,7 +141,7 @@ export default function PrivacyPolicy() {
                       <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                         <li className="flex items-start">
                           <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />
-                          <span>بيانات تقدم الدورة وإكمالها</span>
+                          <span>بيانات تقدم الدرس وإكمالها</span>
                         </li>
                         <li className="flex items-start">
                           <FaCheckCircle className="text-green-500 mt-1 ml-3 flex-shrink-0" />

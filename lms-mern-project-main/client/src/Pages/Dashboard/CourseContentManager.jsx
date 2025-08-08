@@ -1085,7 +1085,7 @@ const CourseContentManager = () => {
           ) : (
             <div className="space-y-4 md:space-y-6">
               {selectedCourse.units?.length === 0 && selectedCourse.directLessons?.length === 0 && (
-                <div className="text-center text-gray-400 py-10 text-sm md:text-base">لا توجد وحدات أو دروس مباشرة في هذه الدورة</div>
+                <div className="text-center text-gray-400 py-10 text-sm md:text-base">لا توجد وحدات أو دروس مباشرة في هذه الدرس</div>
               )}
               {/* Units Accordion */}
               {selectedCourse.units?.map(unit => (

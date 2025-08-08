@@ -14,6 +14,7 @@ import walletRoutes from './routes/wallet.routes.js';
 import adminRechargeCodeRoutes from './routes/adminRechargeCode.routes.js';
 import adminUserRoutes from './routes/adminUser.routes.js';
 import whatsappServiceRoutes from './routes/whatsappService.routes.js';
+import pdfConverterRoutes from './routes/pdfConverter.routes.js';
 
 
 
@@ -33,7 +34,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan('dev'));
 app.use(cors({
-    origin: [process.env.CLIENT_URL, 'http://localhost:5173', 'http://localhost:4000'],
+    origin: [
+        process.env.CLIENT_URL, 
+        'http://localhost:5173', 
+        'http://localhost:4000',
+        'https://lms.fikra.solutions',
+        'https://www.lms.fikra.solutions'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
@@ -79,6 +86,7 @@ app.use('/api/v1/wallet', walletRoutes);
 app.use('/api/v1/admin/recharge-codes', adminRechargeCodeRoutes);
 app.use('/api/v1/admin/users', adminUserRoutes);
 app.use('/api/v1/whatsapp-services', whatsappServiceRoutes);
+app.use('/api/v1/pdf-converter', pdfConverterRoutes);
 
 
 

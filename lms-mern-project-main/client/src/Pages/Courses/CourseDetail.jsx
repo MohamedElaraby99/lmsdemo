@@ -283,7 +283,7 @@ export default function CourseDetail() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">جاري تحميل تفاصيل الدورة...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">جاري تحميل تفاصيل الدرس...</p>
           </div>
         </div>
       </Layout>
@@ -297,10 +297,10 @@ export default function CourseDetail() {
           <div className="text-center">
             <div className="text-6xl mb-4">❌</div>
             <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-              الدورة غير موجودة
+              الدرس غير موجودة
             </h3>
             <p className="text-gray-600 dark:text-gray-300 mb-4">
-              عذراً، الدورة التي تبحث عنها غير موجودة
+              عذراً، الدرس التي تبحث عنها غير موجودة
             </p>
             <Link
               to="/courses"
@@ -395,7 +395,7 @@ export default function CourseDetail() {
                       <h3 className="font-semibold text-gray-900 dark:text-white">
                         {currentCourse.instructor?.name || 'غير محدد'}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400">مدرس الدورة</p>
+                      <p className="text-gray-600 dark:text-gray-400">مدرس الدرس</p>
                     </div>
                   </div>
                 </div>
@@ -426,17 +426,6 @@ export default function CourseDetail() {
                         <span>المرحلة: {currentCourse.stage?.name || 'غير محدد'}</span>
                       </div>
                     </div>
-
-                    <div className="space-y-3">
-                      <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
-                        <FaEye />
-                        <span>استعراض الدروس</span>
-                      </button>
-                      <button className="w-full border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
-                        <FaBookOpen />
-                        <span>عرض التفاصيل</span>
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -450,7 +439,7 @@ export default function CourseDetail() {
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <FaList />
-                <span>هيكل الدورة</span>
+                <span>هيكل الدرس</span>
               </h2>
             </div>
 

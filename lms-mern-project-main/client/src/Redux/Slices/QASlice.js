@@ -1,69 +1,53 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../Helpers/axiosInstance";
-import toast from "react-hot-toast";
 
 // Get all Q&As
 export const getAllQAs = createAsyncThunk("/qas/get", async (params = {}) => {
   const { page = 1, limit = 10, category = '', search = '', status = '' } = params;
-  const loadingMessage = toast.loading("Fetching Q&As...");
   try {
     const res = await axiosInstance.get(`/qas?page=${page}&limit=${limit}&category=${category}&search=${search}&status=${status}`);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
 
 // Get single Q&A
 export const getQAById = createAsyncThunk("/qas/getById", async (id) => {
-  const loadingMessage = toast.loading("Fetching Q&A...");
   try {
     const res = await axiosInstance.get(`/qas/${id}`);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
 
 // Create Q&A
 export const createQA = createAsyncThunk("/qas/create", async (qaData) => {
-  const loadingMessage = toast.loading("Creating Q&A...");
   try {
     const res = await axiosInstance.post("/qas", qaData);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
 
 // Update Q&A
 export const updateQA = createAsyncThunk("/qas/update", async ({ id, qaData }) => {
-  const loadingMessage = toast.loading("Updating Q&A...");
   try {
     const res = await axiosInstance.put(`/qas/${id}`, qaData);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
 
 // Delete Q&A
 export const deleteQA = createAsyncThunk("/qas/delete", async (id) => {
-  const loadingMessage = toast.loading("Deleting Q&A...");
   try {
     const res = await axiosInstance.delete(`/qas/${id}`);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
@@ -74,7 +58,6 @@ export const upvoteQA = createAsyncThunk("/qas/upvote", async (id) => {
     const res = await axiosInstance.post(`/qas/${id}/upvote`);
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message);
     throw error;
   }
 });
@@ -85,7 +68,6 @@ export const downvoteQA = createAsyncThunk("/qas/downvote", async (id) => {
     const res = await axiosInstance.post(`/qas/${id}/downvote`);
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message);
     throw error;
   }
 });
@@ -103,13 +85,10 @@ export const getFeaturedQAs = createAsyncThunk("/qas/featured", async () => {
 
 // Answer a question (Admin only)
 export const answerQuestion = createAsyncThunk("/qas/answer", async ({ id, answer }) => {
-  const loadingMessage = toast.loading("Answering question...");
   try {
     const res = await axiosInstance.post(`/qas/${id}/answer`, { answer });
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
@@ -117,13 +96,10 @@ export const answerQuestion = createAsyncThunk("/qas/answer", async ({ id, answe
 // Get pending questions (Admin only)
 export const getPendingQuestions = createAsyncThunk("/qas/pending", async (params = {}) => {
   const { page = 1, limit = 10 } = params;
-  const loadingMessage = toast.loading("Fetching pending questions...");
   try {
     const res = await axiosInstance.get(`/qas/pending?page=${page}&limit=${limit}`);
-    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.message, { id: loadingMessage });
     throw error;
   }
 });
