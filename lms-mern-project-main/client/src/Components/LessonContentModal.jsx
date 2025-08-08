@@ -239,22 +239,29 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
     
     console.log('Original PDF URL:', url);
     
-    // If it's already a full URL, return as is
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      console.log('Full URL detected, returning as is:', url);
+    // If it's already a full URL pointing to frontend, convert it to backend
+    if (url.includes('localhost:5173')) {
+      const frontendUrl = url.replace('http://localhost:5173', 'http://localhost:4000');
+      console.log('Frontend URL detected, converting to backend:', frontendUrl);
+      return frontendUrl;
+    }
+    
+    // If it's already a full URL pointing to backend, return as is
+    if (url.startsWith('http://localhost:4000') || url.startsWith('https://')) {
+      console.log('Backend URL detected, returning as is:', url);
       return url;
     }
     
     // If it's a relative path, convert to backend URL
     if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
       const cleanPath = url.startsWith('/') ? url.substring(1) : url;
-      const backendUrl = `http://localhost:5000/${cleanPath}`;
+      const backendUrl = `http://localhost:4000/${cleanPath}`;
       console.log('Converted to backend URL:', backendUrl);
       return backendUrl;
     }
     
     // If it's just a filename, assume it's in uploads/pdfs/
-    const backendUrl = `http://localhost:5000/uploads/pdfs/${url}`;
+    const backendUrl = `http://localhost:4000/uploads/pdfs/${url}`;
     console.log('Assumed PDF path, converted to:', backendUrl);
     return backendUrl;
   };
@@ -672,18 +679,25 @@ const LessonContentModal = ({ isOpen, onClose, lesson }) => {
         );
       })()}
 
-      {/* PDF Viewer */}
-      {pdfViewerOpen && currentPdf && (
-        <PDFViewer
-          pdfUrl={getPdfUrl(currentPdf.url)}
-          title={currentPdf.title || currentPdf.fileName || "PDF Document"}
-          isOpen={pdfViewerOpen}
-          onClose={() => {
-            setPdfViewerOpen(false);
-            setCurrentPdf(null);
-          }}
-        />
-      )}
+             {/* PDF Viewer */}
+       {pdfViewerOpen && currentPdf && (() => {
+         const pdfUrl = getPdfUrl(currentPdf.url);
+         console.log('🔍 PDF Debug Info:');
+         console.log('Current PDF data:', currentPdf);
+         console.log('Original URL:', currentPdf.url);
+         console.log('Processed URL:', pdfUrl);
+         return (
+           <PDFViewer
+             pdfUrl={pdfUrl}
+             title={currentPdf.title || currentPdf.fileName || "PDF Document"}
+             isOpen={pdfViewerOpen}
+             onClose={() => {
+               setPdfViewerOpen(false);
+               setCurrentPdf(null);
+             }}
+           />
+         );
+       })()}
 
       {/* Exam Modal */}
       {examModalOpen && selectedExam && (

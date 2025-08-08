@@ -6,7 +6,7 @@ const BackendTest = () => {
 
   useEffect(() => {
     // Test backend connection
-    fetch('http://localhost:5000/api/test')
+    fetch('http://localhost:4000/api/test')
       .then(response => {
         if (response.ok) {
           setBackendStatus('✅ Backend is running');
@@ -20,7 +20,7 @@ const BackendTest = () => {
       });
 
     // Test PDF file access
-    fetch('http://localhost:5000/uploads/pdfs/ex_level_1%20(1).pdf')
+    fetch('http://localhost:4000/uploads/pdfs/ex_level_1%20(1).pdf')
       .then(response => {
         if (response.ok) {
           setPdfStatus('✅ PDF file is accessible');

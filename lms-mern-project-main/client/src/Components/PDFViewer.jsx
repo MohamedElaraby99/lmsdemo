@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaTimes, FaDownload, FaExpand, FaCompress, FaZoomIn, FaZoomOut, FaUndo, FaPrint } from 'react-icons/fa';
+import { FaTimes, FaDownload, FaExpand, FaCompress, FaSearchPlus, FaSearchMinus, FaUndo, FaPrint } from 'react-icons/fa';
 
 const PDFViewer = ({ 
   pdfUrl, 
@@ -7,6 +7,7 @@ const PDFViewer = ({
   isOpen, 
   onClose 
 }) => {
+  console.log('PDFViewer rendered with icons:', { FaSearchPlus, FaSearchMinus, FaUndo });
   const [zoom, setZoom] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -149,7 +150,7 @@ const PDFViewer = ({
                 className="p-1 hover:bg-gray-100 rounded transition-colors"
                 title="Zoom Out"
               >
-                <FaZoomOut className="w-4 h-4 text-gray-600" />
+                <FaSearchMinus className="w-4 h-4 text-gray-600" />
               </button>
               <span className="text-sm font-medium text-gray-700 min-w-[3rem] text-center">
                 {zoom}%
@@ -159,7 +160,7 @@ const PDFViewer = ({
                 className="p-1 hover:bg-gray-100 rounded transition-colors"
                 title="Zoom In"
               >
-                <FaZoomIn className="w-4 h-4 text-gray-600" />
+                <FaSearchPlus className="w-4 h-4 text-gray-600" />
               </button>
               <button
                 onClick={handleResetZoom}
@@ -230,7 +231,8 @@ const PDFViewer = ({
                     <p className="font-medium">Debug Info:</p>
                     <p>URL: {pdfUrl}</p>
                     <p>Encoded URL: {getCleanPdfUrl(pdfUrl)}</p>
-                    <p>Backend Status: {pdfUrl.includes('localhost:5000') ? '✅ Backend URL' : '❌ Not backend URL'}</p>
+                    <p>Backend Status: {pdfUrl.includes('localhost:4000') ? '✅ Backend URL' : '❌ Not backend URL'}</p>
+                    <p>Expected Backend URL: http://localhost:4000/uploads/pdfs/ex_level_1%20(1).pdf</p>
                   </div>
                  <div className="flex gap-2 justify-center">
                    <button
@@ -245,12 +247,18 @@ const PDFViewer = ({
                    >
                      Download Instead
                    </button>
-                   <button
-                     onClick={() => window.open(getCleanPdfUrl(pdfUrl), '_blank')}
-                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                   >
-                     Open in New Tab
-                   </button>
+                                       <button
+                      onClick={() => window.open(getCleanPdfUrl(pdfUrl), '_blank')}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Open in New Tab
+                    </button>
+                    <button
+                      onClick={() => window.open('http://localhost:4000/uploads/pdfs/ex_level_1%20(1).pdf', '_blank')}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Test Backend URL
+                    </button>
                  </div>
                </div>
              </div>
