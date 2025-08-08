@@ -62,27 +62,48 @@ const createAdminAccount = async () => {
     console.log("=============================\n");
     
     try {
-        // Get database type and connection string
+        // Get database connection string with fallbacks
+        let uri = process.env.MONGO_URI_ATLAS || 
+                  process.env.MONGO_URI_COMPASS || 
+                  process.env.MONGO_URI_COMMUNITY || 
+                  process.env.MONGO_URI || 
+                  process.env.MONGODB_URI;
+        
         const dbType = process.env.DB_TYPE || 'atlas';
         console.log(`📊 Database Type: ${dbType.toUpperCase()}`);
         
-        let uri;
-        switch (dbType) {
-            case 'atlas':
-                uri = process.env.MONGO_URI_ATLAS;
-                break;
-            case 'compass':
-                uri = process.env.MONGO_URI_COMPASS;
-                break;
-            case 'community':
-                uri = process.env.MONGO_URI_COMMUNITY;
-                break;
-            default:
-                throw new Error(`Unknown database type: ${dbType}`);
+        // If no URI found, try to construct from individual variables
+        if (!uri) {
+            switch (dbType) {
+                case 'atlas':
+                    uri = process.env.MONGO_URI_ATLAS;
+                    break;
+                case 'compass':
+                    uri = process.env.MONGO_URI_COMPASS;
+                    break;
+                case 'community':
+                    uri = process.env.MONGO_URI_COMMUNITY;
+                    break;
+                default:
+                    // Try common environment variable names
+                    uri = process.env.MONGO_URI || process.env.MONGODB_URI;
+            }
         }
         
         if (!uri) {
-            throw new Error(`No connection string found for ${dbType}`);
+            console.error("❌ No database connection string found!");
+            console.log("\n💡 Please set one of these environment variables:");
+            console.log("   - MONGO_URI_ATLAS");
+            console.log("   - MONGO_URI_COMPASS");
+            console.log("   - MONGO_URI_COMMUNITY");
+            console.log("   - MONGO_URI");
+            console.log("   - MONGODB_URI");
+            console.log("\n📝 Example .env file:");
+            console.log("   MONGO_URI_ATLAS=mongodb+srv://username:password@cluster.mongodb.net/lms");
+            console.log("   DB_TYPE=atlas");
+            console.log("\n🔧 Or run with environment variable:");
+            console.log("   MONGO_URI_ATLAS=your_connection_string node scripts/create-admin-account.js");
+            process.exit(1);
         }
         
         console.log(`🔗 Connecting to database...`);
@@ -125,6 +146,7 @@ const createAdminAccount = async () => {
         console.log("2. Verify your .env file settings");
         console.log("3. Ensure database server is running");
         console.log("4. Check if the User model is properly defined");
+        console.log("5. Verify your MongoDB connection string");
         process.exit(1);
     } finally {
         await mongoose.connection.close();
