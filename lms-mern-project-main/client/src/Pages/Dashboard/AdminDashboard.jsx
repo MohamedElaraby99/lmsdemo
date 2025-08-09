@@ -75,22 +75,44 @@ export default function AdminDashboard() {
     monthlySalesData 
   } = useSelector((state) => state.stat);
 
+  // Add state for stages data
+  const [stages, setStages] = useState([]);
+  const [stagesLoading, setStagesLoading] = useState(true);
 
+  // Function to fetch stages data
+  const fetchStagesData = async () => {
+    try {
+      setStagesLoading(true);
+      const response = await axiosInstance.get('/stages/stats');
+      if (response.data.success) {
+        setStages(response.data.data.stages);
+      }
+    } catch (error) {
+      console.error('Error fetching stages data:', error);
+      toast.error('فشل في تحميل بيانات المراحل');
+    } finally {
+      setStagesLoading(false);
+    }
+  };
 
-  // Enhanced chart data for stages
-  const stagesData = {
-    labels: ["المرحلة الأولى", "المرحلة الثانية", "المرحلة الثالثة", "المرحلة الرابعة", "المرحلة الخامسة", "المرحلة السادسة"],
+  // Enhanced chart data for stages - now using real data
+  const stagesChartData = {
+    labels: stages.length > 0 ? stages.map(stage => stage.name) : ["لا توجد مراحل"],
     datasets: [
       {
-        label: "الدورات حسب المرحلة",
-        data: [totalLectures, allUsersCount, subscribedCount, totalPayments, totalRevenue, totalLectures],
+        label: "الطلاب حسب المرحلة",
+        data: stages.length > 0 ? stages.map(stage => stage.studentsCount || 0) : [0],
         backgroundColor: [
           "rgba(59, 130, 246, 0.8)",
           "rgba(16, 185, 129, 0.8)",
           "rgba(245, 158, 11, 0.8)",
           "rgba(239, 68, 68, 0.8)",
           "rgba(139, 92, 246, 0.8)",
-          "rgba(236, 72, 153, 0.8)"
+          "rgba(236, 72, 153, 0.8)",
+          "rgba(99, 102, 241, 0.8)",
+          "rgba(236, 72, 153, 0.8)",
+          "rgba(245, 101, 101, 0.8)",
+          "rgba(52, 211, 153, 0.8)"
         ],
         borderColor: [
           "rgba(59, 130, 246, 1)",
@@ -98,7 +120,11 @@ export default function AdminDashboard() {
           "rgba(245, 158, 11, 1)",
           "rgba(239, 68, 68, 1)",
           "rgba(139, 92, 246, 1)",
-          "rgba(236, 72, 153, 1)"
+          "rgba(236, 72, 153, 1)",
+          "rgba(99, 102, 241, 1)",
+          "rgba(236, 72, 153, 1)",
+          "rgba(245, 101, 101, 1)",
+          "rgba(52, 211, 153, 1)"
         ],
         borderWidth: 2,
       },
@@ -140,6 +166,7 @@ export default function AdminDashboard() {
 
     (async () => {
       await dispatch(getStatsData());
+      await fetchStagesData(); // Fetch stages data
     })();
 
     // Cleanup
@@ -180,16 +207,7 @@ export default function AdminDashboard() {
       change: "+15%",
       changeType: "increase"
     },
-    {
-      title: "إجمالي الدروس",
-      value: totalLectures,
-      icon: FaPlay,
-      color: "from-orange-500 to-orange-600",
-      bgColor: "bg-orange-50 dark:bg-orange-900/20",
-      textColor: "text-orange-600 dark:text-orange-400",
-      change: "+5%",
-      changeType: "increase"
-    }
+   
   ];
 
   // Add state for content access management
@@ -291,27 +309,45 @@ export default function AdminDashboard() {
                   </h3>
                 </div>
                 <div className="h-48 sm:h-56 lg:h-64 w-full">
-                  <Pie
-                    data={stagesData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: {
-                          position: 'bottom',
-                          labels: {
-                            color: document.documentElement.classList.contains('dark') ? 'white' : 'black',
-                            font: { 
-                              size: window.innerWidth < 768 ? 10 : 12 
-                            },
-                            padding: window.innerWidth < 768 ? 10 : 20,
-                            boxWidth: window.innerWidth < 768 ? 12 : 16,
-                            boxHeight: window.innerWidth < 768 ? 8 : 12
+                  {stagesLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                      <span className="mr-2 text-gray-600 dark:text-gray-300">جاري تحميل بيانات المراحل...</span>
+                    </div>
+                  ) : (
+                    <Pie
+                      data={stagesChartData}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                          legend: {
+                            position: 'bottom',
+                            labels: {
+                              color: document.documentElement.classList.contains('dark') ? 'white' : 'black',
+                              font: { 
+                                size: window.innerWidth < 768 ? 10 : 12 
+                              },
+                              padding: window.innerWidth < 768 ? 10 : 20,
+                              boxWidth: window.innerWidth < 768 ? 12 : 16,
+                              boxHeight: window.innerWidth < 768 ? 8 : 12
+                            }
+                          },
+                          tooltip: {
+                            callbacks: {
+                              label: function(context) {
+                                const stage = stages[context.dataIndex];
+                                return [
+                                  `${context.label}: ${context.parsed} طالب`,
+                                  `المواد: ${stage?.subjectsCount || 0}`
+                                ];
+                              }
+                            }
                           }
                         }
-                      }
-                    }}
-                  />
+                      }}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -422,6 +458,13 @@ export default function AdminDashboard() {
                 >
                   <FaClipboardCheck className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
                   <span className="text-xs lg:text-sm font-medium">إدارة محتوى الدورات</span>
+                </button>
+                <button
+                  onClick={() => navigate("/admin/user-progress")}
+                  className="group p-3 lg:p-4 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg lg:rounded-xl text-white hover:from-teal-600 hover:to-teal-700 transition-all duration-200 transform hover:scale-105"
+                >
+                  <FaChartLine className="text-lg lg:text-2xl mx-auto mb-1 lg:mb-2 group-hover:scale-110 transition-transform duration-200" />
+                  <span className="text-xs lg:text-sm font-medium">تقدم الطلاب</span>
                 </button>
 
               </div>

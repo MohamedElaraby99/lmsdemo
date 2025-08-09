@@ -43,11 +43,13 @@ import CoursesPage from './Pages/Courses/CoursesPage';
 import CourseDetail from './Pages/Courses/CourseDetail';
 
 import RequireAuth from "./Components/auth/RequireAuth";
+import RedirectIfAuthenticated from "./Components/auth/RedirectIfAuthenticated";
 
 import Profile from "./Pages/User/Profile";
 
 import AdminDashboard from "./Pages/Dashboard/AdminDashboard";
 import CourseDashboard from "./Pages/Dashboard/CourseDashboard";
+import UserProgressDashboard from "./Pages/Dashboard/UserProgressDashboard";
 import ExamHistory from "./Pages/User/ExamHistory";
 
 function App() {
@@ -79,15 +81,15 @@ function App() {
         <Route path="/instructors/:id" element={<InstructorDetail />} />
         <Route path="/admin/course-content" element={<CourseContentManager />} />
 
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<RedirectIfAuthenticated><Signup /></RedirectIfAuthenticated>} />
+        <Route path="/login" element={<RedirectIfAuthenticated><Login /></RedirectIfAuthenticated>} />
         <Route
           path="/user/profile/reset-password"
-          element={<ForgotPassword />}
+          element={<RedirectIfAuthenticated><ForgotPassword /></RedirectIfAuthenticated>}
         />
         <Route
           path="/user/profile/reset-password/:resetToken"
-          element={<ResetPassword />}
+          element={<RedirectIfAuthenticated><ResetPassword /></RedirectIfAuthenticated>}
         />
 
 
@@ -109,6 +111,7 @@ function App() {
                     <Route path="/admin/qa-dashboard" element={<QADashboard />} />
                     <Route path="/admin/qa-pending" element={<QAPendingQuestions />} />
                     <Route path="/admin/subject-dashboard" element={<SubjectDashboard />} />
+                    <Route path="/admin/user-progress" element={<UserProgressDashboard />} />
                   </Route>
 
         <Route element={<RequireAuth allowedRoles={["USER", "ADMIN"]} />}>

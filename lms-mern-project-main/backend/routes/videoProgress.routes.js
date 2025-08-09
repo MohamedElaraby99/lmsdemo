@@ -7,7 +7,8 @@ import {
   getVideoProgressForAllUsers,
   resetVideoProgress,
   getUserVideoTracking,
-  getUserTrackingStats
+  getUserTrackingStats,
+  getAllUsersProgressSummary
 } from "../controllers/videoProgress.controller.js";
 
 const router = express.Router();
@@ -17,6 +18,9 @@ router.get("/course/:courseId", isLoggedIn, getCourseProgress);
 
 // Get all users' progress for a specific video (admin only)
 router.get("/admin/video/:videoId", isLoggedIn, getVideoProgressForAllUsers);
+
+// Get all users' progress summary for admin dashboard
+router.get("/admin/all-users", isLoggedIn, getAllUsersProgressSummary);
 
 // Get or create video progress for a user
 router.get("/:courseId/:videoId", isLoggedIn, getVideoProgress);

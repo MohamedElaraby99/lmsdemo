@@ -482,6 +482,224 @@ const getUserTrackingStats = async (req, res, next) => {
   }
 };
 
+// 📊 NEW: Get all users' progress summary for admin dashboard
+const getAllUsersProgressSummary = async (req, res, next) => {
+  try {
+    const { role } = req.user;
+    const { page = 1, limit = 20, courseId, stageId, search, sortBy = 'lastWatched', sortOrder = 'desc' } = req.query;
+
+    // Only admins can access this data
+    if (role !== 'ADMIN') {
+      return next(new AppError("Unauthorized access", 403));
+    }
+
+    const skip = (page - 1) * limit;
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Build match filter
+    let matchFilter = {};
+    if (courseId) {
+      matchFilter.courseId = new mongoose.Types.ObjectId(courseId);
+    }
+
+    // Get aggregated user progress data
+    const pipeline = [
+      { $match: matchFilter },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      {
+        $lookup: {
+          from: 'courses',
+          localField: 'courseId',
+          foreignField: '_id',
+          as: 'course'
+        }
+      },
+      { $unwind: '$user' },
+      { $unwind: { path: '$course', preserveNullAndEmptyArrays: true } },
+      {
+        $group: {
+          _id: '$userId',
+          user: { $first: '$user' },
+          totalVideosWatched: { $sum: 1 },
+          completedVideos: { $sum: { $cond: ['$isCompleted', 1, 0] } },
+          totalWatchTime: { $sum: '$totalWatchTime' },
+          averageProgress: { $avg: '$progress' },
+          lastWatched: { $max: '$lastWatched' },
+          courses: {
+            $addToSet: {
+              courseId: '$courseId',
+              courseName: '$course.title',
+              videosInCourse: 1,
+              completedInCourse: { $cond: ['$isCompleted', 1, 0] }
+            }
+          },
+          recentVideos: {
+            $push: {
+              videoId: '$videoId',
+              progress: '$progress',
+              isCompleted: '$isCompleted',
+              lastWatched: '$lastWatched',
+              courseName: '$course.title'
+            }
+          }
+        }
+      }
+    ];
+
+    // Filter out admin users - only show regular users
+    pipeline.splice(3, 0, {
+      $match: {
+        'user.role': { $ne: 'ADMIN' }
+      }
+    });
+
+    // Add search filter if provided
+    if (search) {
+      pipeline.splice(4, 0, {
+        $match: {
+          $or: [
+            { 'user.fullName': { $regex: search, $options: 'i' } },
+            { 'user.username': { $regex: search, $options: 'i' } },
+            { 'user.email': { $regex: search, $options: 'i' } }
+          ]
+        }
+      });
+    }
+
+    // Add stage filter if provided
+    if (stageId) {
+      pipeline.splice(search ? 5 : 4, 0, {
+        $match: {
+          'user.stage': new mongoose.Types.ObjectId(stageId)
+        }
+      });
+    }
+
+    // Add sorting and pagination
+    pipeline.push(
+      { $sort: sort },
+      { $skip: skip },
+      { $limit: parseInt(limit) }
+    );
+
+    const usersProgress = await videoProgressModel.aggregate(pipeline);
+
+    // Get total count for pagination
+    const totalPipeline = [...pipeline.slice(0, -2)]; // Remove skip and limit
+    totalPipeline.push({ $count: 'total' });
+    const totalResult = await videoProgressModel.aggregate(totalPipeline);
+    const total = totalResult[0]?.total || 0;
+
+    // Format the data
+    const formattedData = usersProgress.map(item => ({
+      userId: item._id,
+      user: {
+        _id: item.user._id,
+        fullName: item.user.fullName,
+        username: item.user.username,
+        email: item.user.email,
+        phoneNumber: item.user.phoneNumber,
+        stage: item.user.stage,
+        governorate: item.user.governorate
+      },
+      stats: {
+        totalVideosWatched: item.totalVideosWatched,
+        completedVideos: item.completedVideos,
+        completionRate: item.totalVideosWatched > 0 ? 
+          Math.round((item.completedVideos / item.totalVideosWatched) * 100) : 0,
+        totalWatchTime: item.totalWatchTime,
+        totalWatchTimeHours: Math.round((item.totalWatchTime / 3600) * 100) / 100,
+        averageProgress: Math.round(item.averageProgress || 0),
+        lastWatched: item.lastWatched,
+        activeCourses: item.courses.length
+      },
+      recentActivity: item.recentVideos
+        .sort((a, b) => new Date(b.lastWatched) - new Date(a.lastWatched))
+        .slice(0, 5)
+    }));
+
+    // Calculate summary statistics
+    const summaryStats = await videoProgressModel.aggregate([
+      { $match: matchFilter },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      { $match: { 'user.role': { $ne: 'ADMIN' } } },
+      {
+        $group: {
+          _id: null,
+          totalUniqueUsers: { $addToSet: '$userId' },
+          totalVideosWatched: { $sum: 1 },
+          totalCompletedVideos: { $sum: { $cond: ['$isCompleted', 1, 0] } },
+          totalWatchTime: { $sum: '$totalWatchTime' },
+          averageProgress: { $avg: '$progress' }
+        }
+      },
+      {
+        $project: {
+          totalUniqueUsers: { $size: '$totalUniqueUsers' },
+          totalVideosWatched: 1,
+          totalCompletedVideos: 1,
+          totalWatchTime: 1,
+          averageProgress: 1,
+          overallCompletionRate: {
+            $cond: [
+              { $gt: ['$totalVideosWatched', 0] },
+              { $multiply: [{ $divide: ['$totalCompletedVideos', '$totalVideosWatched'] }, 100] },
+              0
+            ]
+          }
+        }
+      }
+    ]);
+
+    const stats = summaryStats[0] || {
+      totalUniqueUsers: 0,
+      totalVideosWatched: 0,
+      totalCompletedVideos: 0,
+      totalWatchTime: 0,
+      averageProgress: 0,
+      overallCompletionRate: 0
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "All users progress summary retrieved successfully",
+      data: formattedData,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalResults: total,
+        resultsPerPage: parseInt(limit)
+      },
+      summary: {
+        totalUniqueUsers: stats.totalUniqueUsers,
+        totalVideosWatched: stats.totalVideosWatched,
+        totalCompletedVideos: stats.totalCompletedVideos,
+        totalWatchTimeHours: Math.round((stats.totalWatchTime / 3600) * 100) / 100,
+        averageProgress: Math.round(stats.averageProgress || 0),
+        overallCompletionRate: Math.round(stats.overallCompletionRate || 0)
+      }
+    });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
+};
+
 export {
   getVideoProgress,
   updateVideoProgress,
@@ -489,5 +707,6 @@ export {
   getVideoProgressForAllUsers,
   resetVideoProgress,
   getUserVideoTracking,
-  getUserTrackingStats
+  getUserTrackingStats,
+  getAllUsersProgressSummary
 }; 

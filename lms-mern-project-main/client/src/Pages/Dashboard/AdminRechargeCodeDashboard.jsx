@@ -193,7 +193,7 @@ export default function AdminRechargeCodeDashboard() {
 
     return (
         <Layout>
-            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8">
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8" dir="rtl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="text-center mb-8">
@@ -215,7 +215,7 @@ export default function AdminRechargeCodeDashboard() {
                                 <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/20">
                                     <FaCreditCard className="h-6 w-6 text-blue-600" />
                                 </div>
-                                <div className="ml-4">
+                                <div className="mr-4">
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">إجمالي الرموز</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalCodes}</p>
                                 </div>
@@ -227,7 +227,7 @@ export default function AdminRechargeCodeDashboard() {
                                 <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/20">
                                     <FaMoneyBillWave className="h-6 w-6 text-green-600" />
                                 </div>
-                                <div className="ml-4">
+                                <div className="mr-4">
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">القيمة الإجمالية</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalAmount.toFixed(2)} EGP</p>
                                 </div>
@@ -239,7 +239,7 @@ export default function AdminRechargeCodeDashboard() {
                                 <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900/20">
                                     <FaCheckCircle className="h-6 w-6 text-yellow-600" />
                                 </div>
-                                <div className="ml-4">
+                                <div className="mr-4">
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الرموز المستخدمة</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.usedCodes}</p>
                                 </div>
@@ -251,7 +251,7 @@ export default function AdminRechargeCodeDashboard() {
                                 <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/20">
                                     <FaExclamationTriangle className="h-6 w-6 text-purple-600" />
                                 </div>
-                                <div className="ml-4">
+                                <div className="mr-4">
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الرموز غير المستخدمة</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.unusedCodes}</p>
                                 </div>
@@ -260,7 +260,7 @@ export default function AdminRechargeCodeDashboard() {
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex space-x-4 mb-6">
+                    <div className="flex space-x-reverse space-x-4 mb-6">
                         <button
                             onClick={() => setActiveTab("generate")}
                             className={`px-6 py-3 rounded-lg font-medium transition-colors ${
@@ -269,7 +269,7 @@ export default function AdminRechargeCodeDashboard() {
                                     : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                             }`}
                         >
-                            <FaPlus className="inline mr-2" />
+                            <FaPlus className="inline ml-2" />
                             إنشاء الرموز
                         </button>
                         <button
@@ -280,7 +280,7 @@ export default function AdminRechargeCodeDashboard() {
                                     : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                             }`}
                         >
-                            <FaCreditCard className="inline mr-2" />
+                            <FaCreditCard className="inline ml-2" />
                             إدارة الرموز
                         </button>
                     </div>

@@ -591,30 +591,6 @@ export default function HomePage() {
                 احصل على مساعدة من مجتمعنا من الخبراء والمتعلمين
               </p>
             </div>
-
-            <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaUsers className="text-3xl text-green-600 dark:text-green-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                دعم المجتمع
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                تواصل مع آلاف المتعلمين حول العالم
-              </p>
-            </div>
-
-            <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
-              <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaStar className="text-3xl text-purple-600 dark:text-purple-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                إجابات الخبراء
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                احصل على إجابات من محترفي الصناعة والمدرسين
-              </p>
-            </div>
           </div>
 
           <div className="text-center">

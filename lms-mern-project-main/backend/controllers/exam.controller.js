@@ -371,6 +371,74 @@ const getExamStatistics = asyncHandler(async (req, res) => {
     });
 });
 
+// Get all exam results for admin dashboard
+const getAllExamResults = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 20, courseId, examType, passed, sortBy = 'completedAt', sortOrder = 'desc' } = req.query;
+    
+    const skip = (page - 1) * limit;
+    
+    // Build filter object
+    const filter = {};
+    if (courseId) filter.course = courseId;
+    if (examType) filter.examType = examType;
+    if (passed !== undefined) filter.passed = passed === 'true';
+    
+    // Build sort object
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    
+    const results = await ExamResult.find(filter)
+        .populate('user', 'fullName username email phoneNumber')
+        .populate('course', 'title instructor stage subject')
+        .sort(sort)
+        .skip(skip)
+        .limit(parseInt(limit));
+    
+    const total = await ExamResult.countDocuments(filter);
+    
+    // Get summary statistics
+    const summaryStats = await ExamResult.aggregate([
+        { $match: filter },
+        {
+            $group: {
+                _id: null,
+                totalAttempts: { $sum: 1 },
+                averageScore: { $avg: "$score" },
+                passedCount: { $sum: { $cond: ["$passed", 1, 0] } },
+                failedCount: { $sum: { $cond: ["$passed", 0, 1] } },
+                averageTimeTaken: { $avg: "$timeTaken" }
+            }
+        }
+    ]);
+    
+    const stats = summaryStats[0] || {
+        totalAttempts: 0,
+        averageScore: 0,
+        passedCount: 0,
+        failedCount: 0,
+        averageTimeTaken: 0
+    };
+    
+    res.status(200).json({
+        success: true,
+        data: results,
+        pagination: {
+            currentPage: parseInt(page),
+            totalPages: Math.ceil(total / limit),
+            totalResults: total,
+            resultsPerPage: parseInt(limit)
+        },
+        statistics: {
+            totalAttempts: stats.totalAttempts,
+            averageScore: Math.round(stats.averageScore * 100) / 100,
+            passedCount: stats.passedCount,
+            failedCount: stats.failedCount,
+            passRate: stats.totalAttempts > 0 ? Math.round((stats.passedCount / stats.totalAttempts) * 100) : 0,
+            averageTimeTaken: Math.round(stats.averageTimeTaken * 100) / 100
+        }
+    });
+});
+
 export {
     takeTrainingExam,
     takeFinalExam,

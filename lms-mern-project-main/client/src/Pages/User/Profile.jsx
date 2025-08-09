@@ -80,10 +80,15 @@ export default function Profile() {
     formData.append("fullName", userInput.name);
     formData.append("username", userInput.username);
     formData.append("phoneNumber", userInput.phoneNumber);
-    formData.append("fatherPhoneNumber", userInput.fatherPhoneNumber);
-    formData.append("governorate", userInput.governorate);
-    formData.append("stage", userInput.stage);
-    formData.append("age", userInput.age);
+    
+    // Only append user-specific fields for regular users
+    if (userData?.role !== 'ADMIN') {
+      formData.append("fatherPhoneNumber", userInput.fatherPhoneNumber);
+      formData.append("governorate", userInput.governorate);
+      formData.append("stage", userInput.stage);
+      formData.append("age", userInput.age);
+    }
+    
     if (userInput.avatar) {
       formData.append("avatar", userInput.avatar);
     }
@@ -151,27 +156,31 @@ export default function Profile() {
 
   useEffect(() => {
     if (isEditing) {
-      const hasChanges = 
+      let hasChanges = 
         userInput.name !== userData?.fullName || 
         userInput.username !== userData?.username ||
         userInput.phoneNumber !== userData?.phoneNumber ||
-        userInput.fatherPhoneNumber !== userData?.fatherPhoneNumber ||
-        userInput.governorate !== userData?.governorate ||
-        userInput.stage !== (userData?.stage?._id || userData?.stage) ||
-        userInput.age !== userData?.age ||
         userInput.avatar;
+      
+      // Only check user-specific fields for regular users
+      if (userData?.role !== 'ADMIN') {
+        hasChanges = hasChanges ||
+          userInput.fatherPhoneNumber !== userData?.fatherPhoneNumber ||
+          userInput.governorate !== userData?.governorate ||
+          userInput.stage !== (userData?.stage?._id || userData?.stage) ||
+          userInput.age !== userData?.age;
+      }
       
       console.log('Change detection:', {
         nameChanged: userInput.name !== userData?.fullName,
         usernameChanged: userInput.username !== userData?.username,
         phoneChanged: userInput.phoneNumber !== userData?.phoneNumber,
-        fatherPhoneChanged: userInput.fatherPhoneNumber !== userData?.fatherPhoneNumber,
-        governorateChanged: userInput.governorate !== userData?.governorate,
-        stageChanged: userInput.stage !== (userData?.stage?._id || userData?.stage),
-        ageChanged: userInput.age !== userData?.age,
+        fatherPhoneChanged: userData?.role !== 'ADMIN' ? userInput.fatherPhoneNumber !== userData?.fatherPhoneNumber : false,
+        governorateChanged: userData?.role !== 'ADMIN' ? userInput.governorate !== userData?.governorate : false,
+        stageChanged: userData?.role !== 'ADMIN' ? userInput.stage !== (userData?.stage?._id || userData?.stage) : false,
+        ageChanged: userData?.role !== 'ADMIN' ? userInput.age !== userData?.age : false,
         avatarChanged: !!userInput.avatar,
-        userInputStage: userInput.stage,
-        userDataStage: userData?.stage?._id || userData?.stage,
+        userRole: userData?.role,
         hasChanges
       });
       
@@ -389,147 +398,150 @@ export default function Profile() {
                 />
               </div>
 
-              {/* Father's Phone Number */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <FaPhone className="text-purple-500" />
-                  رقم هاتف الأب
-                </label>
-                <input
-                  type="tel"
-                  value={isEditing ? userInput.fatherPhoneNumber : (userData?.fatherPhoneNumber || "")}
-                  onChange={(e) => setUserInput({ ...userInput, fatherPhoneNumber: e.target.value })}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    !isEditing 
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
-                      : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                  }`}
-                  placeholder="أدخل رقم هاتف الأب"
-                />
-              </div>
+              {/* User-specific fields - only show for regular users */}
+              {userData?.role !== 'ADMIN' && (
+                <>
+                  {/* Father's Phone Number */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <FaPhone className="text-purple-500" />
+                      رقم هاتف الأب
+                    </label>
+                    <input
+                      type="tel"
+                      value={isEditing ? userInput.fatherPhoneNumber : (userData?.fatherPhoneNumber || "")}
+                      onChange={(e) => setUserInput({ ...userInput, fatherPhoneNumber: e.target.value })}
+                      disabled={!isEditing}
+                      className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        !isEditing 
+                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
+                          : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                      }`}
+                      placeholder="أدخل رقم هاتف الأب"
+                    />
+                  </div>
 
-              {/* Age */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <FaCalendarAlt className="text-orange-500" />
-                  العمر
-                </label>
-                <input
-                  type="number"
-                  value={isEditing ? userInput.age : (userData?.age || "")}
-                  onChange={(e) => setUserInput({ ...userInput, age: e.target.value })}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    !isEditing 
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
-                      : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                  }`}
-                  placeholder="أدخل عمرك"
-                  min="5"
-                  max="100"
-                />
-              </div>
+                  {/* Age */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <FaCalendarAlt className="text-orange-500" />
+                      العمر
+                    </label>
+                    <input
+                      type="number"
+                      value={isEditing ? userInput.age : (userData?.age || "")}
+                      onChange={(e) => setUserInput({ ...userInput, age: e.target.value })}
+                      disabled={!isEditing}
+                      className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        !isEditing 
+                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
+                          : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                      }`}
+                      placeholder="أدخل عمرك"
+                      min="5"
+                      max="100"
+                    />
+                  </div>
 
-
-
-              {/* Stage */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <FaBook className="text-blue-500" />
-                  المرحلة الدراسية
-                </label>
-                
-                <select
-                  value={isEditing ? userInput.stage : (userData?.stage?._id || userData?.stage || "")}
-                  onChange={(e) => {
-                    console.log('Stage selected:', e.target.value);
-                    setUserInput({ ...userInput, stage: e.target.value });
-                  }}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    !isEditing 
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
-                      : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                  }`}
-                  onFocus={() => {
-                    console.log('Stage select focused. Current value:', isEditing ? userInput.stage : (userData?.stage?._id || userData?.stage || ""));
-                    console.log('Available stages:', stages);
-                    console.log('UserData stage:', userData?.stage);
-                  }}
-                >
-                  <option value="">اختر المرحلة الدراسية</option>
-                  {stages.length > 0 ? (
-                    stages.map((stage) => {
-                      console.log('Rendering stage:', stage);
-                      return (
-                        <option key={stage._id} value={stage._id}>
-                          {stage.name}
-                        </option>
-                      );
-                    })
-                  ) : (
-                    <option value="" disabled>جاري تحميل المراحل...</option>
-                  )}
-                </select>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {stages.length > 0 ? `${stages.length} مرحلة متاحة` : 'لا توجد مراحل متاحة'}
-                  {!userData?.stage && stages.length > 0 && (
-                    <div className="text-blue-600 dark:text-blue-400 mt-1">
-                      ⚠️ لم يتم تحديد مرحلة دراسية بعد. يرجى اختيار مرحلة.
+                  {/* Stage */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <FaBook className="text-blue-500" />
+                      المرحلة الدراسية
+                    </label>
+                    
+                    <select
+                      value={isEditing ? userInput.stage : (userData?.stage?._id || userData?.stage || "")}
+                      onChange={(e) => {
+                        console.log('Stage selected:', e.target.value);
+                        setUserInput({ ...userInput, stage: e.target.value });
+                      }}
+                      disabled={!isEditing}
+                      className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        !isEditing 
+                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
+                          : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                      }`}
+                      onFocus={() => {
+                        console.log('Stage select focused. Current value:', isEditing ? userInput.stage : (userData?.stage?._id || userData?.stage || ""));
+                        console.log('Available stages:', stages);
+                        console.log('UserData stage:', userData?.stage);
+                      }}
+                    >
+                      <option value="">اختر المرحلة الدراسية</option>
+                      {stages.length > 0 ? (
+                        stages.map((stage) => {
+                          console.log('Rendering stage:', stage);
+                          return (
+                            <option key={stage._id} value={stage._id}>
+                              {stage.name}
+                            </option>
+                          );
+                        })
+                      ) : (
+                        <option value="" disabled>جاري تحميل المراحل...</option>
+                      )}
+                    </select>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {stages.length > 0 ? `${stages.length} مرحلة متاحة` : 'لا توجد مراحل متاحة'}
+                      {!userData?.stage && stages.length > 0 && (
+                        <div className="text-blue-600 dark:text-blue-400 mt-1">
+                          ⚠️ لم يتم تحديد مرحلة دراسية بعد. يرجى اختيار مرحلة.
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
+                  </div>
 
-              {/* Governorate */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <FaMapMarkerAlt className="text-red-500" />
-                  المحافظة
-                </label>
-                <select
-                  value={isEditing ? userInput.governorate : (userData?.governorate || "")}
-                  onChange={(e) => setUserInput({ ...userInput, governorate: e.target.value })}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    !isEditing 
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
-                      : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-                  }`}
-                >
-                  <option value="">اختر المحافظة</option>
-                  <option value="Cairo">Cairo</option>
-                  <option value="Alexandria">Alexandria</option>
-                  <option value="Giza">Giza</option>
-                  <option value="Qalyubia">Qalyubia</option>
-                  <option value="Port Said">Port Said</option>
-                  <option value="Suez">Suez</option>
-                  <option value="Gharbia">Gharbia</option>
-                  <option value="Monufia">Monufia</option>
-                  <option value="Beheira">Beheira</option>
-                  <option value="Ismailia">Ismailia</option>
-                  <option value="Kafr El Sheikh">Kafr El Sheikh</option>
-                  <option value="Dakahlia">Dakahlia</option>
-                  <option value="Sharqia">Sharqia</option>
-                  <option value="Damietta">Damietta</option>
-                  <option value="Assiut">Assiut</option>
-                  <option value="Sohag">Sohag</option>
-                  <option value="Qena">Qena</option>
-                  <option value="Aswan">Aswan</option>
-                  <option value="Luxor">Luxor</option>
-                  <option value="Red Sea">Red Sea</option>
-                  <option value="New Valley">New Valley</option>
-                  <option value="Matruh">Matruh</option>
-                  <option value="North Sinai">North Sinai</option>
-                  <option value="South Sinai">South Sinai</option>
-                  <option value="Beni Suef">Beni Suef</option>
-                  <option value="Faiyum">Faiyum</option>
-                  <option value="Minya">Minya</option>
-                  <option value="Asyut">Asyut</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
+                  {/* Governorate */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <FaMapMarkerAlt className="text-red-500" />
+                      المحافظة
+                    </label>
+                    <select
+                      value={isEditing ? userInput.governorate : (userData?.governorate || "")}
+                      onChange={(e) => setUserInput({ ...userInput, governorate: e.target.value })}
+                      disabled={!isEditing}
+                      className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        !isEditing 
+                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed' 
+                          : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                      }`}
+                    >
+                      <option value="">اختر المحافظة</option>
+                      <option value="Cairo">Cairo</option>
+                      <option value="Alexandria">Alexandria</option>
+                      <option value="Giza">Giza</option>
+                      <option value="Qalyubia">Qalyubia</option>
+                      <option value="Port Said">Port Said</option>
+                      <option value="Suez">Suez</option>
+                      <option value="Gharbia">Gharbia</option>
+                      <option value="Monufia">Monufia</option>
+                      <option value="Beheira">Beheira</option>
+                      <option value="Ismailia">Ismailia</option>
+                      <option value="Kafr El Sheikh">Kafr El Sheikh</option>
+                      <option value="Dakahlia">Dakahlia</option>
+                      <option value="Sharqia">Sharqia</option>
+                      <option value="Damietta">Damietta</option>
+                      <option value="Assiut">Assiut</option>
+                      <option value="Sohag">Sohag</option>
+                      <option value="Qena">Qena</option>
+                      <option value="Aswan">Aswan</option>
+                      <option value="Luxor">Luxor</option>
+                      <option value="Red Sea">Red Sea</option>
+                      <option value="New Valley">New Valley</option>
+                      <option value="Matruh">Matruh</option>
+                      <option value="North Sinai">North Sinai</option>
+                      <option value="South Sinai">South Sinai</option>
+                      <option value="Beni Suef">Beni Suef</option>
+                      <option value="Faiyum">Faiyum</option>
+                      <option value="Minya">Minya</option>
+                      <option value="Asyut">Asyut</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

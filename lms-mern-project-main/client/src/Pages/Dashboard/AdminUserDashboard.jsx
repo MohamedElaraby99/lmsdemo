@@ -345,7 +345,7 @@ export default function AdminUserDashboard() {
                                     <FaUser className="h-6 w-6 text-indigo-600" />
                                 </div>
                                 <div className="ml-4">
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون العاديون</p>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الطلاب</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.regularUsers}</p>
                                 </div>
                             </div>
@@ -363,7 +363,7 @@ export default function AdminUserDashboard() {
                             }`}
                         >
                             <FaUsers className="inline mr-2" />
-                            المستخدمون العاديون
+                            الطلاب
                         </button>
                         <button
                             onClick={() => setActiveTab("admins")}
