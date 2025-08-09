@@ -302,11 +302,40 @@ export default function HomePage() {
                   className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-200 dark:border-gray-700"
                 >
                   {/* Course Image */}
-                  <div className="h-48 bg-gradient-to-br from-blue-500 to-purple-600 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <FaBookOpen className="text-6xl text-white opacity-80" />
+                  <div className="h-48 relative overflow-hidden">
+                    {course.image?.secure_url ? (
+                      <>
+                        <img
+                          src={course.image.secure_url.startsWith('/uploads/') 
+                            ? `http://localhost:4000${course.image.secure_url}` 
+                            : course.image.secure_url}
+                          alt={course.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'block';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                        <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <FaBookOpen className="text-6xl text-white opacity-80" />
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Fallback gradient for broken images */}
+                    <div className="hidden w-full h-full bg-gradient-to-br from-blue-500 to-purple-600">
+                      <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <FaBookOpen className="text-6xl text-white opacity-80" />
+                      </div>
                     </div>
+                    
                     <div className="absolute top-4 right-4">
                       <span className="px-2 py-1 bg-white bg-opacity-90 text-gray-800 text-xs font-medium rounded-full">
                         {course.stage?.name || 'غير محدد'}

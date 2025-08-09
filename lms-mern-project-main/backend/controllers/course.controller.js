@@ -1,5 +1,7 @@
 import Course from '../models/course.model.js';
 import AppError from '../utils/error.utils.js';
+import cloudinary from 'cloudinary';
+import fs from 'fs';
 
 // Create a new course
 export const createCourse = async (req, res, next) => {
@@ -8,7 +10,9 @@ export const createCourse = async (req, res, next) => {
     if (!title || !instructor || !stage || !subject) {
       return res.status(400).json({ success: false, message: 'Title, instructor, stage, and subject are required' });
     }
-    const course = await Course.create({
+
+    // Prepare course data
+    const courseData = {
             title,
             description,
       instructor,
@@ -16,27 +20,127 @@ export const createCourse = async (req, res, next) => {
       subject,
       units: [],
       directLessons: []
-    });
+    };
+
+    // Handle image upload if provided
+    if (req.file) {
+      try {
+        // Check if Cloudinary is properly configured
+        if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
+            process.env.CLOUDINARY_API_KEY === 'placeholder' || 
+            process.env.CLOUDINARY_API_SECRET === 'placeholder') {
+          // Skip Cloudinary upload if using placeholder credentials
+          console.log('Cloudinary not configured, using placeholder course image');
+          courseData.image = {
+            public_id: 'placeholder',
+            secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBJbWFnZQogIDwvdGV4dD4KPC9zdmc+Cg=='
+          };
+        } else {
+          const result = await cloudinary.v2.uploader.upload(req.file.path, {
+            folder: 'lms-courses',
+            width: 800,
+            height: 600,
+            crop: 'fill'
+          });
+          
+          courseData.image = {
+            public_id: result.public_id,
+            secure_url: result.secure_url
+          };
+        }
+
+        // Remove the file from the server
+        if (fs.existsSync(`uploads/${req.file.filename}`)) {
+          fs.rmSync(`uploads/${req.file.filename}`);
+        }
+      } catch (uploadError) {
+        console.error('Image upload error:', uploadError);
+        // Continue without image if upload fails
+        
+        // Clean up file even if upload fails
+        if (req.file && fs.existsSync(`uploads/${req.file.filename}`)) {
+          fs.rmSync(`uploads/${req.file.filename}`);
+        }
+      }
+    }
+
+    const course = await Course.create(courseData);
     return res.status(201).json({ success: true, message: 'Course created', data: { course } });
             } catch (error) {
     return next(new AppError(error.message, 500));
   }
 };
 
-// Get all courses
-export const getAllCourses = async (req, res, next) => {
+// Get all courses for admin (full data with content)
+export const getAdminCourses = async (req, res, next) => {
   try {
     const courses = await Course.find()
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'name');
+
     return res.status(200).json({ success: true, data: { courses } });
   } catch (error) {
     return next(new AppError(error.message, 500));
   }
 };
 
-// Get featured courses
+// Get all courses (secure version for public listing)
+export const getAllCourses = async (req, res, next) => {
+  try {
+    const courses = await Course.find()
+      .populate('instructor', 'name')
+      .populate('stage', 'name')
+      .populate('subject', 'name')
+      .select('-units.lessons.exams.questions.correctAnswer -units.lessons.trainings.questions.correctAnswer -directLessons.exams.questions.correctAnswer -directLessons.trainings.questions.correctAnswer -units.lessons.exams.userAttempts -units.lessons.trainings.userAttempts -directLessons.exams.userAttempts -directLessons.trainings.userAttempts');
+
+    // Further filter sensitive data from nested structures
+    const secureCourses = courses.map(course => {
+      const courseObj = course.toObject();
+      
+      // Clean up units and lessons
+      if (courseObj.units) {
+        courseObj.units = courseObj.units.map(unit => ({
+          ...unit,
+          lessons: unit.lessons?.map(lesson => ({
+            _id: lesson._id,
+            title: lesson.title,
+            description: lesson.description,
+            price: lesson.price,
+            videosCount: lesson.videos?.length || 0,
+            pdfsCount: lesson.pdfs?.length || 0,
+            examsCount: lesson.exams?.length || 0,
+            trainingsCount: lesson.trainings?.length || 0
+            // Exclude actual content for security
+          })) || []
+        }));
+      }
+      
+      // Clean up direct lessons
+      if (courseObj.directLessons) {
+        courseObj.directLessons = courseObj.directLessons.map(lesson => ({
+          _id: lesson._id,
+          title: lesson.title,
+          description: lesson.description,
+          price: lesson.price,
+          videosCount: lesson.videos?.length || 0,
+          pdfsCount: lesson.pdfs?.length || 0,
+          examsCount: lesson.exams?.length || 0,
+          trainingsCount: lesson.trainings?.length || 0
+          // Exclude actual content for security
+        }));
+      }
+      
+      return courseObj;
+    });
+
+    return res.status(200).json({ success: true, data: { courses: secureCourses } });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
+};
+
+// Get featured courses (secure version)
 export const getFeaturedCourses = async (req, res, next) => {
   try {
     const courses = await Course.find()
@@ -44,13 +148,51 @@ export const getFeaturedCourses = async (req, res, next) => {
       .populate('stage', 'name')
       .populate('subject', 'name')
       .limit(6);
-    return res.status(200).json({ success: true, data: { courses } });
+
+    // Create secure versions without sensitive data
+    const secureCourses = courses.map(course => {
+      const courseObj = course.toObject();
+      
+      // Remove sensitive lesson content
+      if (courseObj.units) {
+        courseObj.units = courseObj.units.map(unit => ({
+          ...unit,
+          lessons: unit.lessons?.map(lesson => ({
+            _id: lesson._id,
+            title: lesson.title,
+            description: lesson.description,
+            price: lesson.price,
+            videosCount: lesson.videos?.length || 0,
+            pdfsCount: lesson.pdfs?.length || 0,
+            examsCount: lesson.exams?.length || 0,
+            trainingsCount: lesson.trainings?.length || 0
+          })) || []
+        }));
+      }
+      
+      if (courseObj.directLessons) {
+        courseObj.directLessons = courseObj.directLessons.map(lesson => ({
+          _id: lesson._id,
+          title: lesson.title,
+          description: lesson.description,
+          price: lesson.price,
+          videosCount: lesson.videos?.length || 0,
+          pdfsCount: lesson.pdfs?.length || 0,
+          examsCount: lesson.exams?.length || 0,
+          trainingsCount: lesson.trainings?.length || 0
+        }));
+      }
+      
+      return courseObj;
+    });
+
+    return res.status(200).json({ success: true, data: { courses: secureCourses } });
   } catch (error) {
     return next(new AppError(error.message, 500));
   }
 };
 
-// Get course by ID
+// Get course by ID (secure version for public viewing)
 export const getCourseById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -58,10 +200,175 @@ export const getCourseById = async (req, res, next) => {
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'title');
+        
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    // Create secure version of course without sensitive data
+    const courseObj = course.toObject();
+    
+    // Clean up units and lessons
+    if (courseObj.units) {
+      courseObj.units = courseObj.units.map(unit => ({
+        ...unit,
+        lessons: unit.lessons?.map(lesson => ({
+          _id: lesson._id,
+          title: lesson.title,
+          description: lesson.description,
+          price: lesson.price,
+          content: lesson.content,
+          videosCount: lesson.videos?.length || 0,
+          pdfsCount: lesson.pdfs?.length || 0,
+          examsCount: lesson.exams?.length || 0,
+          trainingsCount: lesson.trainings?.length || 0
+          // Exclude actual videos, pdfs, exams, trainings for security
+        })) || []
+      }));
+    }
+    
+    // Clean up direct lessons
+    if (courseObj.directLessons) {
+      courseObj.directLessons = courseObj.directLessons.map(lesson => ({
+        _id: lesson._id,
+        title: lesson.title,
+        description: lesson.description,
+        price: lesson.price,
+        content: lesson.content,
+        videosCount: lesson.videos?.length || 0,
+        pdfsCount: lesson.pdfs?.length || 0,
+        examsCount: lesson.exams?.length || 0,
+        trainingsCount: lesson.trainings?.length || 0
+        // Exclude actual videos, pdfs, exams, trainings for security
+      }));
+    }
+
+    return res.status(200).json({ success: true, data: { course: courseObj } });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
+};
+
+// Get optimized lesson data with processed exam results
+export const getLessonById = async (req, res, next) => {
+  try {
+    const { courseId, lessonId } = req.params;
+    const { unitId } = req.query;
+    const userId = req.user?._id || req.user?.id;
+
+    const course = await Course.findById(courseId).select('title instructor stage subject units directLessons');
         if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
-    return res.status(200).json({ success: true, data: { course } });
+
+    let lesson;
+    if (unitId) {
+      const unit = course.units.id(unitId);
+      if (!unit) return res.status(404).json({ success: false, message: 'Unit not found' });
+      lesson = unit.lessons.id(lessonId);
+    } else {
+      lesson = course.directLessons.id(lessonId);
+    }
+
+    if (!lesson) {
+      return res.status(404).json({ success: false, message: 'Lesson not found' });
+    }
+
+    // Process exam data with user results
+    const processedExams = lesson.exams.map((exam, examIndex) => {
+      const userAttempt = userId ? exam.userAttempts.find(attempt => 
+        attempt.userId.toString() === userId.toString()
+      ) : null;
+
+      return {
+        _id: exam._id,
+        title: exam.title,
+        description: exam.description,
+        timeLimit: exam.timeLimit,
+        openDate: exam.openDate,
+        closeDate: exam.closeDate,
+        questionsCount: exam.questions.length,
+        questions: exam.questions.map(q => ({
+          _id: q._id,
+          question: q.question,
+          options: q.options,
+          image: q.image
+          // Note: correctAnswer is intentionally excluded for security
+        })),
+        userResult: userAttempt ? {
+          score: userAttempt.score,
+          totalQuestions: userAttempt.totalQuestions,
+          percentage: Math.round((userAttempt.score / userAttempt.totalQuestions) * 100),
+          takenAt: userAttempt.takenAt,
+          hasTaken: true
+        } : { hasTaken: false }
+      };
+    });
+
+    // Process training data with user results
+    const processedTrainings = lesson.trainings.map((training, trainingIndex) => {
+      const userAttempts = userId ? training.userAttempts.filter(attempt => 
+        attempt.userId.toString() === userId.toString()
+      ) : [];
+
+      return {
+        _id: training._id,
+        title: training.title,
+        description: training.description,
+        timeLimit: training.timeLimit,
+        openDate: training.openDate,
+        questionsCount: training.questions.length,
+        questions: training.questions.map(q => ({
+          _id: q._id,
+          question: q.question,
+          options: q.options,
+          image: q.image
+          // Note: correctAnswer is intentionally excluded for security
+        })),
+        userResults: userAttempts.map(attempt => ({
+          score: attempt.score,
+          totalQuestions: attempt.totalQuestions,
+          percentage: Math.round((attempt.score / attempt.totalQuestions) * 100),
+          takenAt: attempt.takenAt
+        })),
+        attemptCount: userAttempts.length,
+        canRetake: true // Training can always be retaken
+      };
+    });
+
+    // Optimized lesson response with only necessary data
+    const optimizedLesson = {
+      _id: lesson._id,
+      title: lesson.title,
+      description: lesson.description,
+      price: lesson.price,
+      content: lesson.content,
+      videos: lesson.videos.map(video => ({
+        _id: video._id,
+        url: video.url,
+        title: video.title,
+        description: video.description
+      })),
+      pdfs: lesson.pdfs.map(pdf => ({
+        _id: pdf._id,
+        url: pdf.url,
+        title: pdf.title,
+        fileName: pdf.fileName
+      })),
+      exams: processedExams,
+      trainings: processedTrainings
+    };
+
+    return res.status(200).json({ 
+      success: true, 
+      data: { 
+        lesson: optimizedLesson,
+        courseInfo: {
+          _id: course._id,
+          title: course.title
+        }
+      } 
+    });
   } catch (error) {
     return next(new AppError(error.message, 500));
   }
@@ -72,20 +379,92 @@ export const updateCourse = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { title, description, instructor, stage, subject } = req.body;
+
+    console.log('🔄 Updating course:', { id, title, description, instructor, stage, subject });
+    console.log('📁 File uploaded:', req.file ? 'Yes' : 'No');
+
+    // Find the existing course
+    const existingCourse = await Course.findById(id);
+    if (!existingCourse) {
+      return res.status(404).json({ success: false, message: 'Course not found' });
+    }
+
+    // Prepare update data
+    const updateData = { title, description, instructor, stage, subject };
+
+    // Handle image upload if provided
+    if (req.file) {
+      try {
+        // Check if Cloudinary is properly configured
+        if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
+            process.env.CLOUDINARY_API_KEY === 'placeholder' || 
+            process.env.CLOUDINARY_API_SECRET === 'placeholder') {
+          // Skip Cloudinary upload if using placeholder credentials
+          console.log('Cloudinary not configured, using placeholder course image');
+          updateData.image = {
+            public_id: 'placeholder',
+            secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBJbWFnZQogIDwvdGV4dD4KPC9zdmc+Cg=='
+          };
+        } else {
+          // Delete old image if exists and it's not a placeholder
+          if (existingCourse.image?.public_id && existingCourse.image.public_id !== 'placeholder') {
+            await cloudinary.v2.uploader.destroy(existingCourse.image.public_id);
+          }
+
+          // Upload new image
+          const result = await cloudinary.v2.uploader.upload(req.file.path, {
+            folder: 'lms-courses',
+            width: 800,
+            height: 600,
+            crop: 'fill'
+          });
+          
+          updateData.image = {
+            public_id: result.public_id,
+            secure_url: result.secure_url
+          };
+        }
+
+        // Remove the file from the server
+        if (fs.existsSync(`uploads/${req.file.filename}`)) {
+          fs.rmSync(`uploads/${req.file.filename}`);
+        }
+
+        console.log('📸 Image processed successfully');
+      } catch (uploadError) {
+        console.error('❌ Image upload error:', uploadError);
+        
+        // Clean up file even if upload fails
+        if (req.file && fs.existsSync(`uploads/${req.file.filename}`)) {
+          fs.rmSync(`uploads/${req.file.filename}`);
+        }
+        
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Failed to upload image' 
+        });
+      }
+    }
+
+    // Update course with only basic info (NOT the full content)
     const course = await Course.findByIdAndUpdate(
       id,
-      { title, description, instructor, stage, subject },
+      updateData,
       { new: true }
     )
       .populate('instructor', 'name')
       .populate('stage', 'name')
-      .populate('subject', 'name');
+      .populate('subject', 'name')
+      .select('title description instructor stage subject image createdAt updatedAt'); // Only select basic fields
     
-        if (!course) {
-      return res.status(404).json({ success: false, message: 'Course not found' });
-    }
-    return res.status(200).json({ success: true, message: 'Course updated', data: { course } });
+    console.log('✅ Course updated successfully');
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Course updated', 
+      data: { course } 
+    });
   } catch (error) {
+    console.error('❌ Update course error:', error);
     return next(new AppError(error.message, 500));
   }
 };

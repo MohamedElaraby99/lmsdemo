@@ -73,7 +73,20 @@ const VideoProgress = ({
     if (!duration || duration <= 0) return { progress: 0, watchTime: 0 };
 
     // Calculate progress percentage
-    const progress = Math.round((currentTime / duration) * 100);
+    let progress = Math.round((currentTime / duration) * 100);
+    
+    // Prevent progress from going backwards (use stored progress as minimum)
+    const storedProgress = currentVideoProgress?.progress || 0;
+    if (progress < storedProgress && currentTime > 0) {
+      console.log(`Progress protection: preventing regression from ${storedProgress}% to ${progress}%. Using stored progress.`);
+      progress = storedProgress;
+    }
+    
+    // Additional validation: if currentTime is 0 but we have stored progress, don't regress
+    if (currentTime === 0 && storedProgress > 0) {
+      console.log(`Progress protection: currentTime is 0 but stored progress is ${storedProgress}%. Maintaining stored progress.`);
+      progress = storedProgress;
+    }
     
     // Calculate watch time (only count when actually playing)
     let watchTime = 0;
@@ -223,7 +236,10 @@ const VideoProgress = ({
           const watchTimeIncreased = watchTime > 0;
           const estimatedTimeIncreased = estimatedWatchTime > totalWatchTime;
           
-          const shouldUpdate = progressChanged || checkpointReached || watchTimeIncreased || estimatedTimeIncreased;
+          // Additional safety: prevent sending regressive progress updates
+          const isProgressRegressive = progress < currentBackendProgress;
+          
+          const shouldUpdate = (progressChanged || checkpointReached || watchTimeIncreased || estimatedTimeIncreased) && !isProgressRegressive;
           
           if (shouldUpdate) {
             console.log('Updating backend progress:', {
@@ -244,6 +260,13 @@ const VideoProgress = ({
                 reachedPercentage: newReachedPercentage
               }
             }));
+          } else if (isProgressRegressive) {
+            console.log('Skipping regressive progress update:', {
+              currentBackendProgress: `${currentBackendProgress}%`,
+              calculatedProgress: `${progress}%`,
+              currentTime,
+              reason: 'Progress would go backwards'
+            });
           }
         }
       }, 1000);
@@ -345,7 +368,7 @@ const VideoProgress = ({
           </span>
         </div>
         
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" dir="ltr">
           <div 
             className="bg-blue-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${currentVideoProgress?.progress || 0}%` }}
@@ -473,7 +496,7 @@ const VideoProgress = ({
           <CheckpointDetails 
             checkpoints={currentCheckpoints}
             currentTime={currentTime}
-            reachedCheckpoints={reachedCheckpoints}
+            reachedCheckpoints={currentVideoProgress?.reachedPercentages || []}
           />
         </div>
       )}

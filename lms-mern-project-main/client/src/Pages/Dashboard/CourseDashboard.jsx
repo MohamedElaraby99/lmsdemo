@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllCourses, getCourseStats } from '../../Redux/Slices/CourseSlice';
+import { getAllCourses, getAdminCourses, getCourseStats } from '../../Redux/Slices/CourseSlice';
 import Layout from '../../Layout/Layout';
 import CourseStats from '../../Components/Course/CourseStats';
 import CourseFilters from '../../Components/Course/CourseFilters';
@@ -28,9 +28,9 @@ export default function CourseDashboard() {
   });
 
   useEffect(() => {
-    dispatch(getAllCourses({ page: 1, limit: 50, ...filters }));
+    dispatch(getAdminCourses());
     dispatch(getCourseStats());
-  }, [dispatch, filters]);
+  }, [dispatch]);
 
   const handleCreateCourse = () => {
     setSelectedCourse(null);
@@ -49,8 +49,8 @@ export default function CourseDashboard() {
 
   const handleFilterChange = (newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-    // Manually dispatch with new filters to avoid infinite loop
-    dispatch(getAllCourses({ page: 1, limit: 50, ...newFilters }));
+    // Admin dashboard uses full course data without filters for now
+    dispatch(getAdminCourses());
   };
 
   return (

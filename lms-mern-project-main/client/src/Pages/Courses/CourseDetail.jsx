@@ -10,7 +10,7 @@ import {
 } from '../../Redux/Slices/PaymentSlice';
 import { PaymentSuccessAlert, PaymentErrorAlert } from '../../Components/ModernAlert';
 import WatchButton from '../../Components/WatchButton';
-import LessonContentModal from '../../Components/LessonContentModal';
+import OptimizedLessonContentModal from '../../Components/OptimizedLessonContentModal';
 import { 
   FaBookOpen, 
   FaUser, 
@@ -154,6 +154,8 @@ export default function CourseDetail() {
     return getTotalLessons(course) * 45; // Assuming 45 minutes per lesson
   };
 
+
+
   const isItemPurchased = (purchaseType, itemId) => {
     // Admin users have access to all content
     if (user?.role === 'ADMIN') {
@@ -216,20 +218,29 @@ export default function CourseDetail() {
     }
   };
 
-  const handleWatchClick = (item, purchaseType) => {
-    setSelectedLesson(item);
+  const handleWatchClick = (item, purchaseType, unitId = null) => {
+    // Store lesson info including unit context for the optimized modal
+    const lessonInfo = {
+      lessonId: item._id,
+      courseId: currentCourse._id,
+      unitId: unitId, // Will be null for direct lessons
+      title: item.title
+    };
+    setSelectedLesson(lessonInfo);
     setShowLessonModal(true);
   };
 
-  const renderPurchaseButton = (item, purchaseType) => {
+  const renderPurchaseButton = (item, purchaseType, showButton = true, unitId = null) => {
+    
     // Admin users have access to all content
     if (user?.role === 'ADMIN') {
       return (
         <WatchButton
           item={item}
           purchaseType={purchaseType}
-          onWatch={handleWatchClick}
+          onWatch={(item, purchaseType) => handleWatchClick(item, purchaseType, unitId)}
           variant="primary"
+          showButton={showButton}
         />
       );
     }
@@ -239,8 +250,9 @@ export default function CourseDetail() {
         <WatchButton
           item={item}
           purchaseType={purchaseType}
-          onWatch={handleWatchClick}
+          onWatch={(item, purchaseType) => handleWatchClick(item, purchaseType, unitId)}
           variant="primary"
+          showButton={showButton}
         />
       );
     }
@@ -250,10 +262,16 @@ export default function CourseDetail() {
         <WatchButton
           item={item}
           purchaseType={purchaseType}
-          onWatch={handleWatchClick}
+          onWatch={(item, purchaseType) => handleWatchClick(item, purchaseType, unitId)}
           variant="primary"
+          showButton={showButton}
         />
       );
+    }
+
+    // Don't show purchase buttons if showButton is false
+    if (!showButton) {
+      return null;
     }
 
     return (
@@ -333,11 +351,40 @@ export default function CourseDetail() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
             {/* Course Hero Section */}
-            <div className="relative h-64 bg-gradient-to-br from-blue-500 to-purple-600">
-              <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <FaBookOpen className="text-8xl text-white opacity-80" />
+            <div className="relative h-64 overflow-hidden">
+              {currentCourse.image?.secure_url ? (
+                <>
+                  <img
+                    src={currentCourse.image.secure_url.startsWith('/uploads/') 
+                      ? `http://localhost:4000${currentCourse.image.secure_url}` 
+                      : currentCourse.image.secure_url}
+                    alt={currentCourse.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+                </>
+              ) : (
+                <>
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                  <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <FaBookOpen className="text-8xl text-white opacity-80" />
+                  </div>
+                </>
+              )}
+              
+              {/* Fallback gradient for broken images */}
+              <div className="hidden w-full h-full bg-gradient-to-br from-blue-500 to-purple-600">
+                <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <FaBookOpen className="text-8xl text-white opacity-80" />
+                </div>
               </div>
+              
               <div className="absolute top-6 right-6">
                 <span className="px-3 py-1 bg-white bg-opacity-90 text-gray-800 text-sm font-medium rounded-full">
                   {currentCourse.stage?.name || 'غير محدد'}
@@ -367,12 +414,6 @@ export default function CourseDetail() {
                       <div className="text-sm text-gray-600 dark:text-gray-400">درس</div>
                     </div>
                     <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600 mb-1">
-                        {getTotalDuration(currentCourse)}
-                      </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">دقيقة</div>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                       <div className="text-2xl font-bold text-purple-600 mb-1">
                         {currentCourse.units?.length || 0}
                       </div>
@@ -382,7 +423,7 @@ export default function CourseDetail() {
                       <div className="text-2xl font-bold text-yellow-600 mb-1">
                         {currentCourse.directLessons?.length || 0}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">درس تمهيدي</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">مقدمة</div>
                     </div>
                   </div>
 
@@ -448,7 +489,7 @@ export default function CourseDetail() {
               {currentCourse.directLessons && currentCourse.directLessons.length > 0 && (
                 <div className="mb-8">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                    الدروس التمهيدية
+                    المقدمة
                   </h3>
                   <div className="space-y-3">
                     {currentCourse.directLessons.map((lesson, index) => (
@@ -518,8 +559,7 @@ export default function CourseDetail() {
                               <span className="text-sm font-medium text-green-600">
                                 {unit.price} جنيه
                               </span>
-                            )}
-                            {renderPurchaseButton(unit, 'unit')}
+                                                        )}
                             {expandedUnits.has(unit._id || unitIndex) ? (
                               <FaChevronUp className="text-gray-400" />
                             ) : (
@@ -556,7 +596,7 @@ export default function CourseDetail() {
                                         {lesson.price} جنيه
                                       </span>
                                     )}
-                                    {renderPurchaseButton(lesson, 'lesson')}
+                                    {renderPurchaseButton(lesson, 'lesson', true, unit._id)}
                                   </div>
                                 </div>
                               ))}
@@ -823,11 +863,19 @@ export default function CourseDetail() {
          )}
 
          {/* Lesson Content Modal */}
-         <LessonContentModal
-           isOpen={showLessonModal}
-           onClose={() => setShowLessonModal(false)}
-           lesson={selectedLesson}
-         />
+         {selectedLesson && (
+           <OptimizedLessonContentModal
+             isOpen={showLessonModal}
+             onClose={() => {
+               setShowLessonModal(false);
+               setSelectedLesson(null);
+             }}
+             courseId={selectedLesson.courseId}
+             lessonId={selectedLesson.lessonId}
+             unitId={selectedLesson.unitId}
+             lessonTitle={selectedLesson.title}
+           />
+         )}
 
          {/* Modern Alerts */}
          <PaymentSuccessAlert

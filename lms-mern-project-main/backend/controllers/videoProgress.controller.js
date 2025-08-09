@@ -2,12 +2,20 @@ import videoProgressModel from "../models/videoProgress.model.js";
 import courseModel from "../models/course.model.js";
 import userModel from "../models/user.model.js";
 import AppError from "../utils/error.utils.js";
+import mongoose from "mongoose";
 
 // Get or create video progress for a user
 const getVideoProgress = async (req, res, next) => {
   try {
     const { videoId, courseId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id || req.user.id;
+    
+    console.log('📖 Get Video Progress Request:', {
+      userId,
+      videoId,
+      courseId,
+      userRole: req.user.role
+    });
 
     // Validate course exists and user has access
     const course = await courseModel.findById(courseId);
@@ -40,69 +48,130 @@ const getVideoProgress = async (req, res, next) => {
   }
 };
 
-// Update video progress with smart tracking
+// Update video progress with smart tracking and forward-only logic
 const updateVideoProgress = async (req, res, next) => {
   try {
     const { videoId, courseId } = req.params;
     const { currentTime, duration, progress, watchTime, reachedPercentage } = req.body;
-    const userId = req.user.id;
+    const userId = req.user._id || req.user.id;
+    
+    // 🔒 SECURITY: Only track progress for users with USER role
+    if (req.user.role !== 'USER') {
+      return res.status(200).json({
+        success: true,
+        message: "Progress tracking disabled for non-user roles",
+        data: null
+      });
+    }
+    
+    console.log('📊 Video Progress Update Request:', {
+      userId,
+      videoId,
+      courseId,
+      userRole: req.user.role,
+      currentTime,
+      duration,
+      progress: `${progress}%`,
+      watchTime,
+      reachedPercentage
+    });
 
     // Find existing progress
     let progressRecord = await videoProgressModel.findOne({ userId, videoId });
     
     if (!progressRecord) {
-      // Create new progress
+      // Create new progress record
       progressRecord = await videoProgressModel.create({
         userId,
         videoId,
         courseId,
-        currentTime: currentTime || 0,
+        currentTime: Math.max(currentTime || 0, 0),
         duration: duration || 0,
-        progress: progress || 0,
-        totalWatchTime: 0
+        progress: Math.max(progress || 0, 0),
+        totalWatchTime: Math.max(watchTime || 0, 0),
+        reachedPercentages: []
+      });
+      
+      console.log('✅ Created new progress record:', {
+        userId,
+        videoId,
+        initialProgress: `${progressRecord.progress}%`,
+        initialWatchTime: progressRecord.totalWatchTime
+      });
+    } else {
+      console.log('📈 Existing progress found:', {
+        currentProgress: `${progressRecord.progress}%`,
+        currentWatchTime: progressRecord.totalWatchTime,
+        newProgress: `${progress}%`,
+        newWatchTime: watchTime
+      });
+      
+      // 🚀 FORWARD-ONLY LOGIC: Progress can only move forward
+      const newProgress = Math.max(progress || 0, progressRecord.progress || 0);
+      const newCurrentTime = Math.max(currentTime || 0, progressRecord.currentTime || 0);
+      const newTotalWatchTime = Math.max((progressRecord.totalWatchTime || 0) + (watchTime || 0), progressRecord.totalWatchTime || 0);
+      
+      // Log any protection that was applied
+      if (newProgress > (progress || 0)) {
+        console.log('🛡️ Progress Protection: Prevented regression from', `${progressRecord.progress}%`, 'to', `${progress}%`);
+      }
+      
+      if (newCurrentTime > (currentTime || 0)) {
+        console.log('🛡️ Time Protection: Prevented currentTime regression from', progressRecord.currentTime, 'to', currentTime);
+      }
+      
+      // Update with forward-only values
+      progressRecord.currentTime = newCurrentTime;
+      progressRecord.progress = newProgress;
+      progressRecord.totalWatchTime = newTotalWatchTime;
+      
+      console.log('📊 Applied Updates:', {
+        progress: `${progressRecord.progress}% (was ${progress}%)`,
+        currentTime: `${progressRecord.currentTime}s (was ${currentTime}s)`,
+        totalWatchTime: `${progressRecord.totalWatchTime}s (added ${watchTime}s)`
       });
     }
 
-    // Update basic progress data
-    if (currentTime !== undefined) progressRecord.currentTime = currentTime;
-    if (duration !== undefined) progressRecord.duration = duration;
-    if (progress !== undefined) progressRecord.progress = progress;
+    // Update duration if provided and valid
+    if (duration !== undefined && duration > 0) {
+      progressRecord.duration = Math.max(duration, progressRecord.duration || 0);
+    }
     
     // Update last watched timestamp
     progressRecord.lastWatched = new Date();
     
-    // Check if video is completed (watched 90% or more AND has significant watch time)
-    if (progress >= 90 && progressRecord.totalWatchTime >= 60) { // At least 1 minute watched
+    // ✅ COMPLETION LOGIC: Mark as completed if progress >= 90% AND has meaningful watch time
+    const hasSignificantWatchTime = progressRecord.totalWatchTime >= Math.min(30, (progressRecord.duration || 0) * 0.5); // At least 30 seconds OR 50% of video duration
+    if (progressRecord.progress >= 90 && hasSignificantWatchTime) {
       progressRecord.isCompleted = true;
-    } else if (progress < 90) {
-      // If progress drops below 90%, mark as not completed
-      progressRecord.isCompleted = false;
+      console.log('🎉 Video marked as completed:', {
+        progress: `${progressRecord.progress}%`,
+        watchTime: `${progressRecord.totalWatchTime}s`
+      });
     }
     
-    // Add reached percentage if provided (smart checkpoint)
+    // 🎯 CHECKPOINT LOGIC: Add reached percentage if valid
     if (reachedPercentage && typeof reachedPercentage === 'number') {
-      // Validate that the reached percentage makes sense with current progress
-      const currentProgressPercent = Math.round((currentTime / duration) * 100);
+      const currentProgressPercent = progressRecord.progress;
       
-      // Only allow checkpoint if current progress is close to or exceeds the checkpoint percentage
-      if (currentProgressPercent >= reachedPercentage - 5) { // Allow 5% tolerance
+      // Only allow checkpoint if current progress supports it
+      if (currentProgressPercent >= reachedPercentage - 2) { // Allow 2% tolerance
         const percentageExists = progressRecord.reachedPercentages.some(rp => rp.percentage === reachedPercentage);
         if (!percentageExists) {
           progressRecord.reachedPercentages.push({
             percentage: reachedPercentage,
-            time: currentTime,
+            time: progressRecord.currentTime,
             reachedAt: new Date()
           });
+          console.log('🎯 Checkpoint reached:', `${reachedPercentage}%`);
         }
       } else {
-        console.log(`Invalid checkpoint: ${reachedPercentage}% reached but current progress is only ${currentProgressPercent}%`);
+        console.log('⚠️ Invalid checkpoint:', {
+          requestedCheckpoint: `${reachedPercentage}%`,
+          currentProgress: `${currentProgressPercent}%`,
+          reason: 'Checkpoint exceeds current progress'
+        });
       }
-    }
-    
-    // Add accurate watch time if provided
-    if (watchTime && watchTime > 0) {
-      // Always increment, never decrease
-      progressRecord.totalWatchTime = Math.max((progressRecord.totalWatchTime || 0) + watchTime, progressRecord.totalWatchTime || 0);
     }
     
     await progressRecord.save();
@@ -232,10 +301,193 @@ const resetVideoProgress = async (req, res, next) => {
 
 
 
+// 🎯 NEW: Get comprehensive user video tracking data
+const getUserVideoTracking = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const requestingUserId = req.user._id || req.user.id;
+    const requestingUserRole = req.user.role;
+    
+    // 🔒 SECURITY: Only allow users to see their own data or admins to see any data
+    if (userId !== requestingUserId.toString() && requestingUserRole !== 'ADMIN') {
+      return next(new AppError("Unauthorized access to user tracking data", 403));
+    }
+    
+    console.log('📊 Getting comprehensive tracking for user:', userId);
+    
+    // Get all video progress for this user
+    const allProgress = await videoProgressModel.find({ userId })
+      .populate('courseId', 'title description')
+      .sort({ lastWatched: -1 });
+    
+    // Calculate comprehensive statistics
+    const stats = {
+      totalVideosWatched: allProgress.length,
+      totalWatchTime: allProgress.reduce((sum, p) => sum + (p.totalWatchTime || 0), 0),
+      completedVideos: allProgress.filter(p => p.isCompleted).length,
+      averageProgress: allProgress.length > 0 ? 
+        Math.round(allProgress.reduce((sum, p) => sum + (p.progress || 0), 0) / allProgress.length) : 0,
+      totalCheckpoints: allProgress.reduce((sum, p) => sum + (p.reachedPercentages?.length || 0), 0),
+      lastWatched: allProgress.length > 0 ? allProgress[0].lastWatched : null
+    };
+    
+    // Group by course for better organization
+    const courseGroups = {};
+    allProgress.forEach(progress => {
+      const courseId = progress.courseId?._id || 'unknown';
+      const courseName = progress.courseId?.title || 'Unknown Course';
+      
+      if (!courseGroups[courseId]) {
+        courseGroups[courseId] = {
+          courseId,
+          courseName,
+          videos: [],
+          courseStats: {
+            totalVideos: 0,
+            completedVideos: 0,
+            totalWatchTime: 0,
+            averageProgress: 0
+          }
+        };
+      }
+      
+      courseGroups[courseId].videos.push({
+        videoId: progress.videoId,
+        progress: progress.progress,
+        currentTime: progress.currentTime,
+        duration: progress.duration,
+        totalWatchTime: progress.totalWatchTime,
+        isCompleted: progress.isCompleted,
+        checkpointsReached: progress.reachedPercentages?.length || 0,
+        lastWatched: progress.lastWatched
+      });
+      
+      // Update course stats
+      const courseStats = courseGroups[courseId].courseStats;
+      courseStats.totalVideos++;
+      courseStats.totalWatchTime += progress.totalWatchTime || 0;
+      if (progress.isCompleted) courseStats.completedVideos++;
+    });
+    
+    // Calculate average progress for each course
+    Object.values(courseGroups).forEach(course => {
+      if (course.videos.length > 0) {
+        course.courseStats.averageProgress = Math.round(
+          course.videos.reduce((sum, v) => sum + v.progress, 0) / course.videos.length
+        );
+      }
+    });
+    
+    res.status(200).json({
+      success: true,
+      message: "User video tracking data retrieved successfully",
+      data: {
+        userId,
+        overallStats: stats,
+        courseBreakdown: Object.values(courseGroups),
+        recentActivity: allProgress.slice(0, 10) // Last 10 videos watched
+      }
+    });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
+};
+
+// 📈 NEW: Get advanced tracking statistics for a user
+const getUserTrackingStats = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const requestingUserId = req.user._id || req.user.id;
+    const requestingUserRole = req.user.role;
+    
+    // 🔒 SECURITY: Only allow users to see their own stats or admins to see any stats
+    if (userId !== requestingUserId.toString() && requestingUserRole !== 'ADMIN') {
+      return next(new AppError("Unauthorized access to user statistics", 403));
+    }
+    
+    console.log('📈 Calculating advanced stats for user:', userId);
+    
+    // Get all video progress with additional aggregation
+    const progressData = await videoProgressModel.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: null,
+          totalVideos: { $sum: 1 },
+          completedVideos: { $sum: { $cond: ["$isCompleted", 1, 0] } },
+          totalWatchTime: { $sum: "$totalWatchTime" },
+          averageProgress: { $avg: "$progress" },
+          maxProgress: { $max: "$progress" },
+          totalCheckpoints: { $sum: { $size: { $ifNull: ["$reachedPercentages", []] } } },
+          lastActivity: { $max: "$lastWatched" },
+          firstActivity: { $min: "$createdAt" }
+        }
+      }
+    ]);
+    
+    const stats = progressData[0] || {
+      totalVideos: 0,
+      completedVideos: 0,
+      totalWatchTime: 0,
+      averageProgress: 0,
+      maxProgress: 0,
+      totalCheckpoints: 0,
+      lastActivity: null,
+      firstActivity: null
+    };
+    
+    // Calculate additional metrics
+    const completionRate = stats.totalVideos > 0 ? 
+      Math.round((stats.completedVideos / stats.totalVideos) * 100) : 0;
+    
+    const watchTimeHours = Math.round((stats.totalWatchTime / 3600) * 100) / 100;
+    
+    // Calculate learning streak (days with video activity)
+    const recentProgress = await videoProgressModel.find({ userId })
+      .sort({ lastWatched: -1 })
+      .limit(30)
+      .select('lastWatched');
+    
+    const uniqueDays = new Set(
+      recentProgress.map(p => p.lastWatched.toISOString().split('T')[0])
+    ).size;
+    
+    res.status(200).json({
+      success: true,
+      message: "User tracking statistics calculated successfully",
+      data: {
+        userId,
+        summary: {
+          totalVideosWatched: stats.totalVideos,
+          completedVideos: stats.completedVideos,
+          completionRate: `${completionRate}%`,
+          totalWatchTimeHours: watchTimeHours,
+          averageProgress: Math.round(stats.averageProgress || 0),
+          maxProgress: stats.maxProgress || 0,
+          totalCheckpointsReached: stats.totalCheckpoints,
+          activeDaysLast30: uniqueDays,
+          firstActivity: stats.firstActivity,
+          lastActivity: stats.lastActivity
+        },
+        learningMetrics: {
+          consistency: uniqueDays >= 7 ? 'High' : uniqueDays >= 3 ? 'Medium' : 'Low',
+          engagement: completionRate >= 70 ? 'High' : completionRate >= 40 ? 'Medium' : 'Low',
+          progressQuality: stats.averageProgress >= 75 ? 'Excellent' : 
+                          stats.averageProgress >= 50 ? 'Good' : 'Needs Improvement'
+        }
+      }
+    });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
+};
+
 export {
   getVideoProgress,
   updateVideoProgress,
   getCourseProgress,
   getVideoProgressForAllUsers,
-  resetVideoProgress
+  resetVideoProgress,
+  getUserVideoTracking,
+  getUserTrackingStats
 }; 

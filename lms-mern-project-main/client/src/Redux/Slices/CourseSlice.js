@@ -29,6 +29,19 @@ export const getAllCourses = createAsyncThunk(
   }
 );
 
+// Get all courses for admin (with full content)
+export const getAdminCourses = createAsyncThunk(
+  'course/getAdminCourses',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get('/courses/admin/all');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
 // Get featured courses
 export const getFeaturedCourses = createAsyncThunk(
   'course/getFeaturedCourses',
@@ -312,6 +325,19 @@ const courseSlice = createSlice({
         state.courses = action.payload.data.courses;
       })
       .addCase(getAllCourses.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Get admin courses
+      .addCase(getAdminCourses.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAdminCourses.fulfilled, (state, action) => {
+        state.loading = false;
+        state.courses = action.payload.data.courses;
+      })
+      .addCase(getAdminCourses.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

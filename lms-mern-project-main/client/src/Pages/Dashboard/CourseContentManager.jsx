@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllCourses } from '../../Redux/Slices/CourseSlice';
+import { getAdminCourses } from '../../Redux/Slices/CourseSlice';
 import { getAllStages } from '../../Redux/Slices/StageSlice';
 import { getAllSubjects } from '../../Redux/Slices/SubjectSlice';
 import Layout from '../../Layout/Layout';
@@ -24,16 +24,37 @@ function formatDateTime(dateString) {
 
 const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
   const dispatch = useDispatch();
-  const course = useSelector(state => state.course.currentCourse);
+  const { courses } = useSelector(state => state.course);
+  
+  // Find the course from the admin courses list
+  const course = courses.find(c => c._id === courseId);
   let lesson = null;
+  
+  console.log('=== ADMIN LESSON MODAL DEBUG ===');
+  console.log('Course ID:', courseId);
+  console.log('Unit ID:', unitId);
+  console.log('Lesson ID:', lessonId);
+  console.log('Found course:', course?.title);
+  
   if (course) {
     if (unitId) {
       const unit = course.units.find(u => u._id === unitId);
-      if (unit) lesson = unit.lessons.find(l => l._id === lessonId);
+      console.log('Found unit:', unit?.title);
+      if (unit) {
+        lesson = unit.lessons.find(l => l._id === lessonId);
+        console.log('Found lesson in unit:', lesson?.title);
+      }
     } else {
       lesson = course.directLessons.find(l => l._id === lessonId);
+      console.log('Found direct lesson:', lesson?.title);
     }
   }
+  
+  console.log('Final lesson data:', lesson);
+  console.log('Lesson videos:', lesson?.videos);
+  console.log('Lesson PDFs:', lesson?.pdfs);
+  console.log('Lesson exams:', lesson?.exams);
+  console.log('Lesson trainings:', lesson?.trainings);
   const [tab, setTab] = useState('videos');
   const [videos, setVideos] = useState(lesson?.videos || []);
   const [pdfs, setPdfs] = useState(lesson?.pdfs || []);
@@ -44,6 +65,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
   const [newExam, setNewExam] = useState({
     title: '',
     description: '',
+    timeLimit: 30,
     openDate: '',
     closeDate: '',
     questions: []
@@ -57,6 +79,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
   const [newTraining, setNewTraining] = useState({
     title: '',
     description: '',
+    timeLimit: 30,
     openDate: '',
     questions: []
   });
@@ -238,6 +261,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
     setNewExam({
       title: '',
       description: '',
+      timeLimit: 30,
       openDate: '',
       closeDate: '',
       questions: []
@@ -258,6 +282,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
     setNewTraining({
       title: '',
       description: '',
+      timeLimit: 30,
       openDate: '',
       questions: []
     });
@@ -434,6 +459,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
     setNewExam({
       title: '',
       description: '',
+      timeLimit: 30,
       openDate: '',
       closeDate: '',
       questions: []
@@ -444,6 +470,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
     setNewExam({
       title: '',
       description: '',
+      timeLimit: 30,
       openDate: '',
       closeDate: '',
       questions: []
@@ -462,6 +489,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
     setNewTraining({
       title: '',
       description: '',
+      timeLimit: 30,
       openDate: '',
       questions: []
     });
@@ -471,6 +499,7 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
     setNewTraining({
       title: '',
       description: '',
+      timeLimit: 30,
       openDate: '',
       questions: []
     });
@@ -694,6 +723,10 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input type="text" className="p-2 border rounded" placeholder="عنوان الامتحان *" value={newExam.title} onChange={e => setNewExam(exam => ({ ...exam, title: e.target.value }))} />
                     <input type="text" className="p-2 border rounded" placeholder="وصف الامتحان (اختياري)" value={newExam.description} onChange={e => setNewExam(exam => ({ ...exam, description: e.target.value }))} />
+                    <div className="flex items-center gap-2">
+                      <input type="number" className="p-2 border rounded flex-1" placeholder="المدة بالدقائق" min="1" max="300" value={newExam.timeLimit} onChange={e => setNewExam(exam => ({ ...exam, timeLimit: parseInt(e.target.value) || 30 }))} />
+                      <span className="text-sm text-gray-600">دقيقة</span>
+                    </div>
                     <input type="datetime-local" className="p-2 border rounded" placeholder="تاريخ ووقت الفتح" value={newExam.openDate} onChange={e => setNewExam(exam => ({ ...exam, openDate: e.target.value }))} />
                     <input type="datetime-local" className="p-2 border rounded" placeholder="تاريخ ووقت الإغلاق" value={newExam.closeDate} onChange={e => setNewExam(exam => ({ ...exam, closeDate: e.target.value }))} />
                   </div>
@@ -847,6 +880,10 @@ const LessonContentModal = ({ courseId, unitId, lessonId, onClose }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input type="text" className="p-2 border rounded" placeholder="عنوان التدريب *" value={newTraining.title} onChange={e => setNewTraining(t => ({ ...t, title: e.target.value }))} />
                     <input type="text" className="p-2 border rounded" placeholder="وصف التدريب (اختياري)" value={newTraining.description} onChange={e => setNewTraining(t => ({ ...t, description: e.target.value }))} />
+                    <div className="flex items-center gap-2">
+                      <input type="number" className="p-2 border rounded flex-1" placeholder="المدة بالدقائق" min="1" max="300" value={newTraining.timeLimit} onChange={e => setNewTraining(t => ({ ...t, timeLimit: parseInt(e.target.value) || 30 }))} />
+                      <span className="text-sm text-gray-600">دقيقة</span>
+                    </div>
                     <input type="datetime-local" className="p-2 border rounded" placeholder="تاريخ ووقت الفتح" value={newTraining.openDate} onChange={e => setNewTraining(t => ({ ...t, openDate: e.target.value }))} />
                   </div>
                 </div>
@@ -996,7 +1033,7 @@ const CourseContentManager = () => {
   const [subjectFilter, setSubjectFilter] = useState('');
 
   useEffect(() => {
-    dispatch(getAllCourses());
+    dispatch(getAdminCourses());
     dispatch(getAllStages());
     dispatch(getAllSubjects());
   }, [dispatch]);
@@ -1085,7 +1122,7 @@ const CourseContentManager = () => {
           ) : (
             <div className="space-y-4 md:space-y-6">
               {selectedCourse.units?.length === 0 && selectedCourse.directLessons?.length === 0 && (
-                <div className="text-center text-gray-400 py-10 text-sm md:text-base">لا توجد وحدات أو دروس مباشرة في هذه الدرس</div>
+                <div className="text-center text-gray-400 py-10 text-sm md:text-base">لا توجد وحدات أو مقدمة في هذه الدرس</div>
               )}
               {/* Units Accordion */}
               {selectedCourse.units?.map(unit => (
@@ -1135,7 +1172,7 @@ const CourseContentManager = () => {
                 <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl shadow p-3 md:p-4">
                   <div className="font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-2">
                     <FaBookOpen className="text-purple-500" />
-                    دروس مباشرة
+                    مقدمة
                   </div>
                   {selectedCourse.directLessons.map(lesson => (
                     <div key={lesson._id} className="flex items-center justify-between bg-white dark:bg-gray-600 rounded p-2 mb-2">

@@ -1125,6 +1125,7 @@ const CustomVideoPlayer = ({
                   <div 
                     ref={progressBarRef}
                     className="w-full bg-white/30 rounded-full h-1 cursor-pointer relative"
+                    dir="ltr"
                     onClick={handleProgressClick}
                     onMouseDown={(e) => {
                       setIsDragging(true);

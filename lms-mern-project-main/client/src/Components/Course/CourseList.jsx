@@ -19,7 +19,7 @@ const CourseDetailsModal = ({ course, onClose }) => {
           {course.instructor && <div><span className="font-semibold">المدرس:</span> {course.instructor.name}</div>}
           {course.stage && <div><span className="font-semibold">المرحلة:</span> {course.stage.name}</div>}
           <div><span className="font-semibold">عدد الوحدات:</span> {course.units?.length || 0}</div>
-          <div><span className="font-semibold">دروس مباشرة:</span> {course.directLessons?.length || 0}</div>
+          <div><span className="font-semibold">مقدمة:</span> {course.directLessons?.length || 0}</div>
         </div>
       </div>
     </div>
@@ -80,9 +80,57 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role }) => {
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.map((course) => (
-          <div key={course._id} className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 flex flex-col justify-between">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{course.title}</h3>
+          <div key={course._id} className="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden flex flex-col">
+            {/* Course Image */}
+            <div className="h-48 relative overflow-hidden">
+              {course.image?.secure_url ? (
+                <>
+                  {console.log('🖼️ Course image found:', {
+                    courseTitle: course.title,
+                    imageUrl: course.image.secure_url,
+                    isDataUri: course.image.secure_url.startsWith('data:'),
+                    isUpload: course.image.secure_url.startsWith('/uploads/')
+                  })}
+                  <img
+                    src={course.image.secure_url.startsWith('/uploads/') 
+                      ? `http://localhost:4000${course.image.secure_url}` 
+                      : course.image.secure_url}
+                    alt={course.title}
+                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                    onLoad={(e) => {
+                      console.log('✅ Image loaded successfully:', course.title);
+                    }}
+                    onError={(e) => {
+                      console.log('❌ Image failed to load:', course.title, e);
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                </>
+              ) : (
+                <>
+                  {console.log('📚 No course image, using fallback for:', course.title)}
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                  <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-white text-4xl">📚</div>
+                  </div>
+                </>
+              )}
+              
+              {/* Fallback gradient for broken images */}
+              <div className="hidden w-full h-full bg-gradient-to-br from-blue-500 to-purple-600">
+                <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-white text-4xl">📚</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 flex flex-col justify-between flex-1">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{course.title}</h3>
               
               {/* Instructor Info */}
               {course.instructor && (
@@ -117,9 +165,9 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role }) => {
                   </span>
                 </div>
               )}
-            </div>
+              </div>
             
-            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onEditCourse(course)}
@@ -152,6 +200,7 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role }) => {
               >
                 <FaEye className="text-sm" />
               </button>
+              </div>
             </div>
           </div>
         ))}

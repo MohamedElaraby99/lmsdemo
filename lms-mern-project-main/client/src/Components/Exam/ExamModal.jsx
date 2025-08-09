@@ -22,7 +22,11 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(exam?.timeLimit * 60 || 0); // Convert to seconds
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const limit = exam?.timeLimit;
+    console.log('ExamModal: Setting initial timeLimit from exam data:', limit);
+    return (limit && !isNaN(limit)) ? limit * 60 : 1800; // Default to 30 minutes (1800 seconds)
+  });
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [examStarted, setExamStarted] = useState(false);
   const [examCompleted, setExamCompleted] = useState(false);
@@ -59,7 +63,10 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
   // Reset state when exam changes
   useEffect(() => {
     if (exam && !examStarted) {
-      setTimeLeft(exam.timeLimit * 60);
+      const limit = exam.timeLimit;
+      console.log('ExamModal: Resetting timeLimit from exam data:', limit);
+      const validLimit = (limit && !isNaN(limit)) ? limit * 60 : 1800; // Default to 30 minutes
+      setTimeLeft(validLimit);
       setAnswers({});
       setCurrentQuestionIndex(0);
       setExamCompleted(false);
@@ -78,6 +85,10 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
   }, [lastExamResult]);
 
   const formatTime = (seconds) => {
+    // Ensure seconds is a valid number
+    if (isNaN(seconds) || seconds < 0) {
+      return "00:00";
+    }
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -119,12 +130,24 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
       courseId,
       lessonId,
       unitId,
+      examId: exam._id,
       answers: Object.keys(answers).map(key => ({
         questionIndex: parseInt(key),
         selectedAnswer: answers[key]
       })),
       timeTaken: timeTakenMinutes
     };
+
+    console.log('=== EXAM SUBMISSION DEBUG ===');
+    console.log('Exam Type:', examType);
+    console.log('Exam Object:', exam);
+    console.log('Exam ID:', exam._id);
+    console.log('Course ID:', courseId);
+    console.log('Lesson ID:', lessonId);
+    console.log('Unit ID:', unitId);
+    console.log('Exam Data:', examData);
+    console.log('Total Questions:', totalQuestions);
+    console.log('Answers:', answers);
 
     if (examType === 'training') {
       dispatch(takeTrainingExam(examData));
@@ -239,8 +262,12 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
   const renderResults = () => {
     if (!lastExamResult) return null;
 
-    const { score, totalQuestions, correctAnswers, wrongAnswers, passed } = lastExamResult;
+    const { score, totalQuestions, correctAnswers, wrongAnswers } = lastExamResult;
     const percentage = Math.round((score / totalQuestions) * 100);
+    
+    // Calculate if passed based on percentage (you can adjust the passing threshold)
+    const passingThreshold = 50; // 50% to pass
+    const passed = percentage >= passingThreshold;
 
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
@@ -258,11 +285,23 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
           <h3 className={`text-2xl font-bold mb-2 ${
             passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
           }`}>
-            {passed ? 'مبروك! لقد نجحت في الامتحان' : 'حاول مرة أخرى'}
+            {passed ? 
+              (percentage === 100 ? 'ممتاز! درجة كاملة!' : 
+               percentage >= 90 ? 'مبروك! أداء ممتاز' : 
+               percentage >= 80 ? 'مبروك! أداء جيد جداً' : 
+               percentage >= 70 ? 'مبروك! أداء جيد' : 
+               'مبروك! لقد نجحت في الامتحان') 
+              : 'حاول مرة أخرى'}
           </h3>
           
           <p className="text-gray-600 dark:text-gray-300">
-            {passed ? 'أداء ممتاز! استمر في التعلم' : 'لا تستسلم، راجع المادة وحاول مرة أخرى'}
+            {passed ? 
+              (percentage === 100 ? 'أداء مثالي! تهانينا على الدرجة الكاملة' :
+               percentage >= 90 ? 'أداء ممتاز! استمر في التفوق' :
+               percentage >= 80 ? 'أداء رائع! واصل التقدم' :
+               percentage >= 70 ? 'أداء جيد! يمكنك تحسينه أكثر' :
+               'لقد نجحت! استمر في التعلم') 
+              : 'لا تستسلم، راجع المادة وحاول مرة أخرى'}
           </p>
         </div>
 
@@ -365,7 +404,9 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
                   
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <span className="text-gray-700 dark:text-gray-300">الوقت المحدد</span>
-                    <span className="font-semibold">{exam.timeLimit} دقيقة</span>
+                    <span className="font-semibold">
+                      {exam.timeLimit && !isNaN(exam.timeLimit) ? exam.timeLimit : 30} دقيقة
+                    </span>
                   </div>
                 </div>
 

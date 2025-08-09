@@ -26,7 +26,6 @@ export default function Signup() {
     phoneNumber: "",
     fatherPhoneNumber: "",
     governorate: "",
-    grade: "",
     stage: "",
     age: "",
     avatar: "",
@@ -89,7 +88,7 @@ export default function Signup() {
     
     // For regular users, check all required fields
     if (!isAdminRegistration) {
-      if (!signupData.phoneNumber || !signupData.fatherPhoneNumber || !signupData.governorate || !signupData.grade || !signupData.stage || !signupData.age) {
+      if (!signupData.phoneNumber || !signupData.fatherPhoneNumber || !signupData.governorate || !signupData.stage || !signupData.age) {
         toast.error("يرجى ملء جميع الحقول المطلوبة");
         return;
       }
@@ -146,7 +145,7 @@ export default function Signup() {
       formData.append("phoneNumber", signupData.phoneNumber);
       formData.append("fatherPhoneNumber", signupData.fatherPhoneNumber);
       formData.append("governorate", signupData.governorate);
-      formData.append("grade", signupData.grade);
+      formData.append("stage", signupData.stage);
       formData.append("age", signupData.age);
     }
     
@@ -163,7 +162,7 @@ export default function Signup() {
         phoneNumber: "",
         fatherPhoneNumber: "",
         governorate: "",
-        grade: "",
+        stage: "",
         age: "",
         avatar: "",
         adminCode: "",

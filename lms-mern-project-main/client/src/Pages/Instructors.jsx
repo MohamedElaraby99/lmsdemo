@@ -148,16 +148,13 @@ export default function Instructors() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
                         <div className="flex items-center ml-2">
-                          {renderStars(instructor.rating || 0)}
+                          {renderStars(5)}
                         </div>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          ({instructor.rating || 0})
+                          (5.0)
                         </span>
                       </div>
-                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                        <FaUsers className="ml-1" />
-                        {instructor.totalStudents || 0} طالب
-                      </div>
+                     
                     </div>
 
                     <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3 text-right">
@@ -324,21 +321,13 @@ export default function Instructors() {
                             التقييم
                           </h3>
                           <div className="flex items-center justify-end">
-                            {renderStars(selectedInstructor.rating || 0)}
+                            {renderStars(5)}
                             <span className="mr-2 text-gray-600 dark:text-gray-300">
-                              ({selectedInstructor.rating || 0})
+                              (5.0)
                             </span>
                           </div>
                         </div>
 
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 text-right">
-                            عدد الطلاب
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-300 text-right">
-                            {selectedInstructor.totalStudents || 0} طالب
-                          </p>
-                        </div>
                       </div>
 
                       {/* Social Links */}

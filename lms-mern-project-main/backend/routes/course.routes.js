@@ -4,8 +4,10 @@ import { isLoggedIn, authorisedRoles } from '../middleware/auth.middleware.js';
 import {
   createCourse,
   getAllCourses,
+  getAdminCourses,
   getFeaturedCourses,
   getCourseById,
+  getLessonById,
   updateCourse,
   deleteCourse,
   getCourseStats,
@@ -26,8 +28,14 @@ const router = express.Router();
 // Public routes
 router.get('/', getAllCourses);
 router.get('/featured', getFeaturedCourses);
+
+// Admin routes
+router.get('/admin/all', isLoggedIn, authorisedRoles('ADMIN'), getAdminCourses);
 router.get('/stats', getCourseStats);
 router.get('/:id', getCourseById);
+
+// Get optimized lesson data
+router.get('/:courseId/lessons/:lessonId', isLoggedIn, getLessonById);
 
 // Protected routes
 router.post('/', upload.single('thumbnail'), isLoggedIn, authorisedRoles('ADMIN', 'INSTRUCTOR'), createCourse);

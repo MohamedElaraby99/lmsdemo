@@ -9,15 +9,17 @@ const asyncHandler = (fn) => (req, res, next) => {
 
 // Take training exam
 const takeTrainingExam = asyncHandler(async (req, res) => {
-    const { courseId, lessonId, unitId, answers } = req.body;
+    const { courseId, lessonId, unitId, examId, answers } = req.body;
     
-    console.log('Exam Controller Debug:', {
-        user: req.user,
-        userId: req.user.id,
-        body: req.body
-    });
+    console.log('=== TRAINING EXAM BACKEND DEBUG ===');
+    console.log('Request Body:', req.body);
+    console.log('User:', req.user);
+    console.log('User._id:', req.user._id);
+    console.log('User.id:', req.user.id);
+    console.log('User fields:', Object.keys(req.user || {}));
     
-    const userId = req.user.id;
+    // Try both _id and id fields from the JWT token
+    const userId = req.user._id || req.user.id;
     
     if (!userId) {
         throw new AppError("User ID not found in request", 400);
@@ -34,82 +36,82 @@ const takeTrainingExam = asyncHandler(async (req, res) => {
 
     // Find lesson in units or direct lessons
     if (unitId) {
-        unit = course.units.find(u => u._id.toString() === unitId);
+        unit = course.units.id(unitId);
         if (!unit) {
             throw new AppError("Unit not found", 404);
         }
-        lesson = unit.lessons.find(l => l._id.toString() === lessonId);
+        lesson = unit.lessons.id(lessonId);
     } else {
-        lesson = course.directLessons.find(l => l._id.toString() === lessonId);
+        lesson = course.directLessons.id(lessonId);
     }
 
     if (!lesson) {
         throw new AppError("Lesson not found", 404);
     }
 
-    if (!lesson.trainingExam || lesson.trainingExam.questions.length === 0) {
-        throw new AppError("No training exam available for this lesson", 400);
+    // Find the specific training by ID
+    const training = lesson.trainings.id(examId);
+    if (!training || !training.questions || training.questions.length === 0) {
+        throw new AppError("Training not found or has no questions", 400);
     }
 
     // Calculate results
-    const questions = lesson.trainingExam.questions;
+    const questions = training.questions;
     let correctAnswers = 0;
-    let wrongAnswers = 0;
     const detailedAnswers = [];
 
-    answers.forEach((answer, index) => {
-        const question = questions[index];
+    answers.forEach((answer) => {
+        const question = questions[answer.questionIndex];
+        if (!question) return;
+        
         const isCorrect = answer.selectedAnswer === question.correctAnswer;
         
         if (isCorrect) {
             correctAnswers++;
-        } else {
-            wrongAnswers++;
         }
 
         detailedAnswers.push({
-            questionIndex: index,
+            questionIndex: answer.questionIndex,
             selectedAnswer: answer.selectedAnswer,
-            correctAnswer: question.correctAnswer,
             isCorrect
         });
     });
 
-    const score = Math.round((correctAnswers / questions.length) * 100);
-    const passed = score >= lesson.trainingExam.passingScore;
+    const totalQuestions = questions.length;
+    const score = correctAnswers;
+    const percentage = Math.round((correctAnswers / totalQuestions) * 100);
 
-    // Create exam result
-    const examResult = await ExamResult.create({
-        user: userId,
-        course: courseId,
-        lessonId,
-        lessonTitle: lesson.title,
-        unitId: unitId || null,
-        unitTitle: unit ? unit.title : null,
-        examType: 'training',
+    // Save attempt to training
+    const attempt = {
+        userId,
+        takenAt: new Date(),
         score,
-        totalQuestions: questions.length,
-        correctAnswers,
-        wrongAnswers,
-        timeTaken: req.body.timeTaken || 0,
-        timeLimit: lesson.trainingExam.timeLimit,
-        passingScore: lesson.trainingExam.passingScore,
-        passed,
+        totalQuestions,
         answers: detailedAnswers
-    });
+    };
+
+    training.userAttempts.push(attempt);
+    await course.save();
 
     res.status(201).json({
         success: true,
-        message: "Training exam completed successfully",
+        message: "Training completed successfully",
         data: {
-            examResult,
-            questions: questions.map((q, index) => ({
-                question: q.question,
-                options: q.options,
-                correctAnswer: q.correctAnswer,
-                explanation: q.explanation,
-                userAnswer: answers[index]?.selectedAnswer,
-                isCorrect: answers[index]?.selectedAnswer === q.correctAnswer
+            score,
+            totalQuestions,
+            percentage,
+            correctAnswers,
+            wrongAnswers: totalQuestions - correctAnswers,
+            timeTaken: req.body.timeTaken || 0,
+            answers: detailedAnswers,
+            questionsWithAnswers: questions.map((question, index) => ({
+                question: question.question,
+                options: question.options,
+                correctAnswer: question.correctAnswer,
+                explanation: question.explanation || '',
+                userAnswer: detailedAnswers[index]?.selectedAnswer,
+                isCorrect: detailedAnswers[index]?.isCorrect,
+                questionIndex: index
             }))
         }
     });
@@ -117,108 +119,137 @@ const takeTrainingExam = asyncHandler(async (req, res) => {
 
 // Take final exam
 const takeFinalExam = asyncHandler(async (req, res) => {
-    const { courseId, lessonId, unitId, answers } = req.body;
+    const { courseId, lessonId, unitId, examId, answers } = req.body;
     
-    console.log('Final Exam Controller Debug:', {
-        user: req.user,
-        userId: req.user.id,
-        body: req.body
-    });
+    console.log('=== FINAL EXAM BACKEND DEBUG ===');
+    console.log('Request Body:', req.body);
+    console.log('User:', req.user);
+    console.log('User._id:', req.user._id);
+    console.log('User.id:', req.user.id);
+    console.log('User fields:', Object.keys(req.user || {}));
+    console.log('Course ID:', courseId);
+    console.log('Lesson ID:', lessonId);
+    console.log('Unit ID:', unitId);
+    console.log('Exam ID:', examId);
+    console.log('Answers:', answers);
     
-    const userId = req.user.id;
+    // Try both _id and id fields from the JWT token
+    const userId = req.user._id || req.user.id;
     
     if (!userId) {
         throw new AppError("User ID not found in request", 400);
     }
 
     // Find the course and lesson
+    console.log('Looking for course with ID:', courseId);
     const course = await Course.findById(courseId);
     if (!course) {
+        console.log('Course not found!');
         throw new AppError("Course not found", 404);
     }
+    console.log('Course found:', course.title);
 
     let lesson = null;
     let unit = null;
 
     // Find lesson in units or direct lessons
     if (unitId) {
-        unit = course.units.find(u => u._id.toString() === unitId);
+        console.log('Looking for unit with ID:', unitId);
+        unit = course.units.id(unitId);
         if (!unit) {
+            console.log('Unit not found!');
+            console.log('Available units:', course.units.map(u => ({ id: u._id, title: u.title })));
             throw new AppError("Unit not found", 404);
         }
-        lesson = unit.lessons.find(l => l._id.toString() === lessonId);
+        console.log('Unit found:', unit.title);
+        
+        console.log('Looking for lesson with ID:', lessonId);
+        lesson = unit.lessons.id(lessonId);
     } else {
-        lesson = course.directLessons.find(l => l._id.toString() === lessonId);
+        console.log('Looking for direct lesson with ID:', lessonId);
+        lesson = course.directLessons.id(lessonId);
     }
 
     if (!lesson) {
+        console.log('Lesson not found!');
+        if (unitId && unit) {
+            console.log('Available lessons in unit:', unit.lessons.map(l => ({ id: l._id, title: l.title })));
+        } else {
+            console.log('Available direct lessons:', course.directLessons.map(l => ({ id: l._id, title: l.title })));
+        }
         throw new AppError("Lesson not found", 404);
     }
+    console.log('Lesson found:', lesson.title);
 
-    if (!lesson.finalExam || lesson.finalExam.questions.length === 0) {
-        throw new AppError("No final exam available for this lesson", 400);
+    // Find the specific exam by ID
+    console.log('Looking for exam with ID:', examId);
+    console.log('Available exams:', lesson.exams.map(e => ({ id: e._id, title: e.title })));
+    const exam = lesson.exams.id(examId);
+    if (!exam || !exam.questions || exam.questions.length === 0) {
+        console.log('Exam not found or has no questions!');
+        console.log('Exam found:', !!exam);
+        console.log('Exam questions:', exam?.questions?.length || 0);
+        throw new AppError("Exam not found or has no questions", 400);
+    }
+    console.log('Exam found:', exam.title, 'with', exam.questions.length, 'questions');
+
+    // Check if user has already taken this exam
+    const existingAttempt = exam.userAttempts.find(attempt => 
+        attempt.userId.toString() === userId.toString()
+    );
+    if (existingAttempt) {
+        throw new AppError("You have already taken this exam", 400);
     }
 
     // Calculate results
-    const questions = lesson.finalExam.questions;
+    const questions = exam.questions;
     let correctAnswers = 0;
-    let wrongAnswers = 0;
     const detailedAnswers = [];
 
-    answers.forEach((answer, index) => {
-        const question = questions[index];
+    answers.forEach((answer) => {
+        const question = questions[answer.questionIndex];
+        if (!question) return;
+        
         const isCorrect = answer.selectedAnswer === question.correctAnswer;
         
         if (isCorrect) {
             correctAnswers++;
-        } else {
-            wrongAnswers++;
         }
 
         detailedAnswers.push({
-            questionIndex: index,
+            questionIndex: answer.questionIndex,
             selectedAnswer: answer.selectedAnswer,
-            correctAnswer: question.correctAnswer,
             isCorrect
         });
     });
 
-    const score = Math.round((correctAnswers / questions.length) * 100);
-    const passed = score >= lesson.finalExam.passingScore;
+    const totalQuestions = questions.length;
+    const score = correctAnswers;
+    const percentage = Math.round((correctAnswers / totalQuestions) * 100);
 
-    // Create exam result
-    const examResult = await ExamResult.create({
-        user: userId,
-        course: courseId,
-        lessonId,
-        lessonTitle: lesson.title,
-        unitId: unitId || null,
-        unitTitle: unit ? unit.title : null,
-        examType: 'final',
+    // Save attempt to exam
+    const attempt = {
+        userId,
+        takenAt: new Date(),
         score,
-        totalQuestions: questions.length,
-        correctAnswers,
-        wrongAnswers,
-        timeTaken: req.body.timeTaken || 0,
-        timeLimit: lesson.finalExam.timeLimit,
-        passingScore: lesson.finalExam.passingScore,
-        passed,
+        totalQuestions,
         answers: detailedAnswers
-    });
+    };
+
+    exam.userAttempts.push(attempt);
+    await course.save();
 
     res.status(201).json({
         success: true,
-        message: "Final exam completed successfully",
+        message: "Exam completed successfully",
         data: {
-            examResult,
-            questions: questions.map((q, index) => ({
-                question: q.question,
-                options: q.options,
-                correctAnswer: q.correctAnswer,
-                explanation: q.explanation,
-                userAnswer: answers[index]?.selectedAnswer,
-                isCorrect: answers[index]?.selectedAnswer === q.correctAnswer
-            }))
+            score,
+            totalQuestions,
+            percentage,
+            correctAnswers,
+            wrongAnswers: totalQuestions - correctAnswers,
+            timeTaken: req.body.timeTaken || 0,
+            answers: detailedAnswers
         }
     });
 });
@@ -226,7 +257,7 @@ const takeFinalExam = asyncHandler(async (req, res) => {
 // Get exam results for a lesson
 const getExamResults = asyncHandler(async (req, res) => {
     const { courseId, lessonId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id || req.user.id;
 
     const results = await ExamResult.find({
         user: userId,
@@ -242,7 +273,7 @@ const getExamResults = asyncHandler(async (req, res) => {
 
 // Get user's exam history
 const getUserExamHistory = asyncHandler(async (req, res) => {
-    const userId = req.user.id;
+    const userId = req.user._id || req.user.id;
     const { page = 1, limit = 10 } = req.query;
 
     const skip = (page - 1) * limit;
@@ -270,7 +301,7 @@ const getUserExamHistory = asyncHandler(async (req, res) => {
 // Check if user has taken an exam
 const checkExamTaken = asyncHandler(async (req, res) => {
     const { courseId, lessonId, examType } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id || req.user.id;
     
     if (!userId) {
         throw new AppError("User ID not found in request", 400);

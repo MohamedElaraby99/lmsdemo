@@ -554,19 +554,7 @@ export default function Profile() {
                 />
               </div>
 
-              {/* Subscription Status */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <FaIdCard className="text-green-500" />
-                  حالة الاشتراك
-                </label>
-                <input
-                  type="text"
-                  value={userData?.subscription?.status || "Not Active"}
-                  disabled
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 cursor-not-allowed"
-                />
-              </div>
+
             </div>
           </div>
           {/* submit button */}

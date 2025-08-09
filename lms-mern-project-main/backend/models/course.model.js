@@ -41,6 +41,7 @@ const lessonSchema = new mongoose.Schema({
     {
       title: { type: String, required: true },
       description: { type: String, default: '' },
+      timeLimit: { type: Number, default: 30 }, // Time limit in minutes
       openDate: { type: Date },
       closeDate: { type: Date },
       questions: [
@@ -48,6 +49,7 @@ const lessonSchema = new mongoose.Schema({
           question: { type: String, required: true },
           options: [{ type: String, required: true }],
           correctAnswer: { type: Number, required: true },
+          explanation: { type: String, default: '' },
           image: { type: String, default: '' }
         }
       ],
@@ -72,12 +74,14 @@ const lessonSchema = new mongoose.Schema({
     {
       title: { type: String, default: '' },
       description: { type: String, default: '' },
+      timeLimit: { type: Number, default: 30 }, // Time limit in minutes
       openDate: { type: Date },
       questions: [
         {
           question: { type: String, required: true },
           options: [{ type: String, required: true }],
           correctAnswer: { type: Number, required: true },
+          explanation: { type: String, default: '' },
           image: { type: String, default: '' }
         }
       ],
@@ -151,6 +155,14 @@ const courseSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Subject',
     required: true
+  },
+  image: {
+    public_id: {
+      type: String
+    },
+    secure_url: {
+      type: String
+    }
   },
   units: [unitSchema],
   directLessons: [lessonSchema]

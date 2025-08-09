@@ -16,6 +16,7 @@ import GradeSliceReducer from "./Slices/GradeSlice"
 import InstructorSliceReducer from "./Slices/InstructorSlice"
 import StageSliceReducer from "./Slices/StageSlice"
 import PaymentSliceReducer from "./Slices/PaymentSlice"
+import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
 
  const store = configureStore({
     reducer: {
@@ -38,7 +39,8 @@ import PaymentSliceReducer from "./Slices/PaymentSlice"
   grade: GradeSliceReducer,
   instructor: InstructorSliceReducer,
   stage: StageSliceReducer,
-  payment: PaymentSliceReducer
+  payment: PaymentSliceReducer,
+  videoProgress: VideoProgressSliceReducer
     },
     devTools: true
 })

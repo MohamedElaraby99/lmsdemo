@@ -79,7 +79,7 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
 
         {/* Instructor */}
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 text-right">
-          بواسطة {subject.instructor?.name || 'مدرس غير محدد'}
+          بواسطة {subject.instructor?.name || 'فريق التدريس المتخصص'}
         </p>
 
         {/* Meta Info */}

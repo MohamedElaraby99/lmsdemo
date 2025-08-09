@@ -18,9 +18,21 @@ export const takeFinalExam = createAsyncThunk(
   'exam/takeFinalExam',
   async (examData, { rejectWithValue }) => {
     try {
+      console.log('=== REDUX FINAL EXAM SUBMISSION ===');
+      console.log('Exam Data:', examData);
+      console.log('Posting to:', '/exams/final');
+      
       const response = await axiosInstance.post('/exams/final', examData);
+      
+      console.log('Success Response:', response.data);
       return response.data.data;
     } catch (error) {
+      console.log('=== REDUX FINAL EXAM ERROR ===');
+      console.log('Error:', error);
+      console.log('Error Response:', error.response?.data);
+      console.log('Error Message:', error.response?.data?.message);
+      console.log('Error Status:', error.response?.status);
+      
       return rejectWithValue(error.response?.data?.message || 'Failed to take final exam');
     }
   }

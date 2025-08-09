@@ -7,8 +7,11 @@ const WatchButton = ({
   onWatch, 
   className = "",
   showIcon = true,
-  variant = "primary" // primary, secondary, outline
+  variant = "primary", // primary, secondary, outline
+  showButton = true // New prop to control button visibility
 }) => {
+
+
   const getButtonStyles = () => {
     const baseStyles = "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors";
     
@@ -38,6 +41,11 @@ const WatchButton = ({
   const getText = () => {
     return 'مشاهدة المحتوى';
   };
+
+  // Don't render anything if showButton is false
+  if (!showButton) {
+    return null;
+  }
 
   return (
     <button

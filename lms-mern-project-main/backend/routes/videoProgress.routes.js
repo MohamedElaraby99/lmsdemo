@@ -5,7 +5,9 @@ import {
   updateVideoProgress,
   getCourseProgress,
   getVideoProgressForAllUsers,
-  resetVideoProgress
+  resetVideoProgress,
+  getUserVideoTracking,
+  getUserTrackingStats
 } from "../controllers/videoProgress.controller.js";
 
 const router = express.Router();
@@ -24,5 +26,11 @@ router.put("/:courseId/:videoId", isLoggedIn, updateVideoProgress);
 
 // Reset video progress
 router.delete("/:videoId", isLoggedIn, resetVideoProgress);
+
+// Get comprehensive user tracking data for all videos
+router.get("/user/:userId/tracking", isLoggedIn, getUserVideoTracking);
+
+// Get tracking statistics for a specific user
+router.get("/user/:userId/stats", isLoggedIn, getUserTrackingStats);
 
 export default router; 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaChevronLeft, FaChevronRight, FaEye, FaFilePdf, FaSpinner, FaDownload, FaExternalLinkAlt } from 'react-icons/fa';
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 
 const PDFViewer = ({ 
   pdfUrl, 
@@ -14,6 +15,8 @@ const PDFViewer = ({
      const [pageImages, setPageImages] = useState([]);
    const [conversionProgress, setConversionProgress] = useState(0);
    const [isMobile, setIsMobile] = useState(false);
+   const [useNativePdf, setUseNativePdf] = useState(false);
+   const [nativePdfUrl, setNativePdfUrl] = useState('');
 
      useEffect(() => {
      // Check if device is mobile
@@ -35,16 +38,19 @@ const PDFViewer = ({
        setError(null);
        setCurrentPage(1);
        setConversionProgress(0);
+       setUseNativePdf(false);
+       setNativePdfUrl('');
        convertPdfToImages();
      }
-   }, [isOpen, pdfUrl, isMobile]);
+   }, [isOpen, pdfUrl]);
 
   const convertPdfToImages = async () => {
+    // Get clean URL at the beginning so it's available in catch block
+    const cleanUrl = getCleanPdfUrl(pdfUrl);
+    
     try {
              console.log('Starting PDF processing...');
       setConversionProgress(10);
-      
-      const cleanUrl = getCleanPdfUrl(pdfUrl);
       
       // Simulate conversion progress
       const progressInterval = setInterval(() => {
@@ -74,59 +80,100 @@ const PDFViewer = ({
       setConversionProgress(100);
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`HTTP error! status: ${response.status} - ${errorData.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
       
-             if (data.success && data.data) {
-         // Use the actual converted image URLs
-         const backendUrl = window.location.hostname === 'localhost' ? 'http://localhost:4000' : 'https://lms.fikra.solutions';
-         const convertedImages = data.data.map(page => ({
-           ...page,
-           imageUrl: `${backendUrl}${page.imageUrl}` // Convert to full backend URL
-         }));
-         
-         setPageImages(convertedImages);
-         setTotalPages(convertedImages.length);
-         setIsLoading(false);
-         
-         console.log('PDF conversion completed successfully');
-         console.log('Converted images:', convertedImages);
-       } else {
-         // If conversion fails, use the original PDF URL directly
-         console.log('Processing failed, using original PDF URL as fallback');
-         const fallbackImages = [{
-           pageNumber: 1,
-           imageUrl: cleanUrl,
-           alt: 'PDF Document',
-           width: 800,
-           height: 1000,
-           filename: 'original.pdf'
-         }];
-         
-         setPageImages(fallbackImages);
-         setTotalPages(1);
-         setIsLoading(false);
-       }
+      if (data.success && data.data) {
+        // Filter out failed conversions and use the actual converted image URLs
+        const backendUrl = window.location.hostname === 'localhost' ? 'http://localhost:4000' : 'https://lms.fikra.solutions';
+        const validImages = data.data.filter(page => page.imageUrl !== null);
+        
+        if (validImages.length > 0) {
+          const convertedImages = validImages.map(page => ({
+            ...page,
+            imageUrl: `${backendUrl}${page.imageUrl}` // Convert to full backend URL
+          }));
+          
+          setPageImages(convertedImages);
+          setTotalPages(convertedImages.length);
+          setIsLoading(false);
+           setUseNativePdf(false);
+          
+          console.log('PDF conversion completed successfully');
+          console.log('Converted images:', convertedImages);
+        } else {
+          // Client-side render via pdf.js when server returned empty data
+          console.log('Server conversion empty, rendering with pdf.js');
+          await renderWithPdfJs(cleanUrl);
+        }
+      } else {
+        // If conversion fails, use the original PDF URL directly
+        console.log('Processing failed, rendering with pdf.js fallback');
+        await renderWithPdfJs(cleanUrl);
+      }
          } catch (error) {
        console.error('Error processing PDF:', error);
        
-       // If API call fails, use the original PDF URL as fallback
-       console.log('API call failed, using original PDF URL as fallback');
-       const fallbackImages = [{
-         pageNumber: 1,
-         imageUrl: cleanUrl,
-         alt: 'PDF Document',
-         width: 800,
-         height: 1000,
-         filename: 'original.pdf'
-       }];
+       // Show user-friendly error message
+       console.log('PDF conversion failed:', error.message);
        
-       setPageImages(fallbackImages);
-       setTotalPages(1);
-       setIsLoading(false);
+        // If API call fails, attempt client-side render; if that fails, iframe fallback
+        try {
+          await renderWithPdfJs(cleanUrl);
+        } catch (e) {
+          console.warn('pdf.js fallback failed, using native iframe', e);
+          setUseNativePdf(true);
+          setNativePdfUrl(cleanUrl);
+          setPageImages([]);
+          setTotalPages(1);
+          setIsLoading(false);
+        }
+       
+       // Show a toast or alert to inform the user
+       if (error.message.includes('500')) {
+         console.warn('Server error during PDF conversion. Using fallback mode.');
+       }
      }
+  };
+
+  // Render PDF client-side using pdf.js into images
+  const renderWithPdfJs = async (url) => {
+    try {
+      // Set worker source to the CDN version for compatibility
+      GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+    } catch (e) {
+      // ignore if already set
+    }
+
+    const loadingTask = getDocument({ url });
+    const pdf = await loadingTask.promise;
+    const images = [];
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({ canvasContext: context, viewport }).promise;
+      const dataUrl = canvas.toDataURL('image/png');
+      images.push({
+        pageNumber: pageNum,
+        imageUrl: dataUrl,
+        alt: `Page ${pageNum}`,
+        width: viewport.width,
+        height: viewport.height,
+        filename: `client-rendered-${pageNum}.png`
+      });
+    }
+    setPageImages(images);
+    setTotalPages(images.length);
+    setIsLoading(false);
+    setUseNativePdf(false);
+    console.log('Client-side PDF render complete');
   };
 
   const handlePreviousPage = () => {
@@ -191,9 +238,16 @@ const PDFViewer = ({
               </div>
               <div className="min-w-0 flex-1">
                 <h2 className="text-sm sm:text-xl font-bold truncate">{title}</h2>
-                {totalPages > 1 && (
-                  <p className="text-gray-300 text-xs sm:text-sm">Page {currentPage} of {totalPages}</p>
-                )}
+                <div className="flex items-center gap-2">
+                  {totalPages > 1 && (
+                    <p className="text-gray-300 text-xs sm:text-sm">Page {currentPage} of {totalPages}</p>
+                  )}
+                  {pageImages[0]?.isFallback && (
+                    <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded">
+                      Fallback Mode
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             
@@ -290,34 +344,48 @@ const PDFViewer = ({
             <div className="w-full h-full p-2 sm:p-4">
               <div className="w-full h-full flex items-center justify-center">
                 <div className="relative max-w-full max-h-full">
-                                     {/* Current Page PDF Display */}
-                   <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
-                     {(() => {
-                       console.log('Rendering PDF display. isMobile:', isMobile);
-                       return (
-                         // Both desktop and mobile: Show converted images
-                         <img
-                           key={`pdf-image-${currentPage}-${Date.now()}`}
-                           src={pageImages[currentPage - 1]?.imageUrl}
-                           alt={`Page ${currentPage}`}
-                           className="w-full h-auto max-w-full max-h-[80vh] object-contain"
-                           style={{
-                             minHeight: '400px',
-                             maxWidth: '100vw',
-                             maxHeight: '80vh'
-                           }}
-                           onLoad={() => {
-                             console.log(`Page ${currentPage} image loaded successfully`);
-                           }}
-                           onError={(e) => {
-                             console.error(`Failed to load page ${currentPage} image:`, e);
-                             console.log('Current device type:', isMobile ? 'Mobile' : 'Desktop');
-                             console.log('Image URL being loaded:', pageImages[currentPage - 1]?.imageUrl);
-                           }}
-                         />
-                                              );
-                     })()}
-                   </div>
+                  {/* Current Page PDF Display */}
+                  <div className="bg-white rounded-lg shadow-2xl overflow-hidden">
+                    {(() => {
+                      console.log('Rendering PDF display. isMobile:', isMobile);
+                      if (useNativePdf && nativePdfUrl) {
+                        return (
+                          <iframe
+                            key={`pdf-iframe-${Date.now()}`}
+                            src={nativePdfUrl}
+                            title={title}
+                            className="w-[90vw] max-w-full h-[80vh]"
+                            style={{ border: 'none' }}
+                          />
+                        );
+                      }
+                      return (
+                        <img
+                          key={`pdf-image-${currentPage}-${Date.now()}`}
+                          src={pageImages[currentPage - 1]?.imageUrl}
+                          alt={`Page ${currentPage}`}
+                          className="w-full h-auto max-w-full max-h-[80vh] object-contain"
+                          style={{
+                            minHeight: '400px',
+                            maxWidth: '100vw',
+                            maxHeight: '80vh'
+                          }}
+                          onLoad={() => {
+                            console.log(`Page ${currentPage} image loaded successfully`);
+                          }}
+                          onError={(e) => {
+                            console.error(`Failed to load page ${currentPage} image:`, e);
+                            console.log('Current device type:', isMobile ? 'Mobile' : 'Desktop');
+                            console.log('Image URL being loaded:', pageImages[currentPage - 1]?.imageUrl);
+                            // Switch to native PDF viewer as a fallback
+                            const clean = getCleanPdfUrl(pdfUrl);
+                            setUseNativePdf(true);
+                            setNativePdfUrl(clean);
+                          }}
+                        />
+                      );
+                    })()}
+                  </div>
                   
                   {/* Page Counter */}
                   {totalPages > 1 && (
