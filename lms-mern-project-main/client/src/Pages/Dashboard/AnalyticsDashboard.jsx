@@ -490,7 +490,7 @@ export default function AnalyticsDashboard() {
                                   ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                                   : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                               }`}>
-                                {result.examType === 'training' ? 'تدريب' : 'امتحان نهائي'}
+                                {result.examType === 'training' ? 'تدريب' : 'امتحان '}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">

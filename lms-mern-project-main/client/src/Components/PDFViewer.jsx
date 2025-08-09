@@ -270,8 +270,8 @@ const PDFViewer = ({
                 <FaFilePdf className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-3xl" />
               </div>
               
-                             <h3 className="text-2xl font-bold mb-4">Converting PDF to Images</h3>
-               <p className="text-gray-300 mb-6">Converting document pages to images...</p>
+                             <h3 className="text-2xl font-bold mb-4" dir="rtl">نحن نجهز ملفك</h3>
+               <p className="text-gray-300 mb-6" dir="rtl">يرجى الانتظار، نحن نعد ملفك ...</p>
               
               {/* Progress Bar */}
               <div className="w-full bg-white/20 rounded-full h-3 mb-4">
@@ -282,13 +282,11 @@ const PDFViewer = ({
               </div>
               
               <p className="text-sm text-gray-400">
-                {conversionProgress}% Complete
+                {conversionProgress}% مكتمل
               </p>
               
-                             <div className="mt-6 text-xs text-gray-500">
-                 <p>• Converting PDF pages to images</p>
-                 <p>• Preventing file download</p>
-                 <p>• Optimizing for all devices</p>
+                             <div className="mt-6 text-xs text-gray-500" dir="rtl">
+                
                </div>
             </div>
           </div>

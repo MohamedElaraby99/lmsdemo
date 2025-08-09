@@ -75,10 +75,10 @@ const VideoUserProgress = ({ videoId, courseId }) => {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-4">
-        <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <span className="ml-2 text-gray-600 dark:text-gray-400">Loading user progress...</span>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 sm:p-4 mb-4">
+        <div className="flex items-center justify-center py-4">
+          <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-500"></div>
+          <span className="ml-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">Loading user progress...</span>
         </div>
       </div>
     );
@@ -86,10 +86,10 @@ const VideoUserProgress = ({ videoId, courseId }) => {
 
   if (!allUsersProgress || allUsersProgress.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-4">
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          <FaUsers className="mx-auto text-4xl mb-2" />
-          <p>No users have watched this video yet</p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 sm:p-4 mb-4">
+        <div className="text-center text-gray-500 dark:text-gray-400 py-4">
+          <FaUsers className="mx-auto text-3xl sm:text-4xl mb-2" />
+          <p className="text-sm sm:text-base">No users have watched this video yet</p>
         </div>
       </div>
     );
@@ -98,26 +98,26 @@ const VideoUserProgress = ({ videoId, courseId }) => {
   const sortedUsers = sortUsers(allUsersProgress);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 sm:p-4 mb-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">
-          <FaUsers className="text-blue-500 text-xl" />
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">
+          <FaUsers className="text-blue-500 text-lg sm:text-xl flex-shrink-0" />
+          <div className="min-w-0">
+            <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
               All Users Progress
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
               {sortedUsers.length} user{sortedUsers.length !== 1 ? 's' : ''} watched this video
             </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="px-2 sm:px-3 py-1 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white flex-1 sm:flex-initial min-w-0"
           >
             <option value="watchTime">Sort by Watch Time</option>
             <option value="progress">Sort by Progress</option>
@@ -126,65 +126,68 @@ const VideoUserProgress = ({ videoId, courseId }) => {
           
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors flex-shrink-0"
             title={showDetails ? "Hide Details" : "Show Details"}
           >
-            {showDetails ? <FaEyeSlash /> : <FaEye />}
+            {showDetails ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
           </button>
         </div>
       </div>
 
       {/* Users List */}
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {sortedUsers.map((userProgress, index) => (
           <div key={userProgress._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FaUser className="text-gray-400" />
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                <FaUser className="text-gray-400 text-sm flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">
                     {userProgress.user?.username || userProgress.user?.fullName || 'Unknown User'}
                   </h4>
-                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                     <span className="flex items-center gap-1">
-                      <FaClock />
+                      <FaClock className="text-xs" />
                       {formatTime(userProgress.totalWatchTime || 0)} watched
                     </span>
                     <span className={`font-medium ${getProgressColor(userProgress.progress || 0)}`}>
                       {userProgress.progress || 0}% complete
                     </span>
-                                         {getStatusIcon(userProgress.progress || 0, userProgress.isCompleted, userProgress.totalWatchTime)}
+                    <span className="flex-shrink-0">
+                      {getStatusIcon(userProgress.progress || 0, userProgress.isCompleted, userProgress.totalWatchTime)}
+                    </span>
                   </div>
                 </div>
               </div>
               
-              <div className="text-right text-sm text-gray-500 dark:text-gray-400">
-                <div>Last: {formatDate(userProgress.lastWatched)}</div>
-                                 {userProgress.isCompleted && (userProgress.totalWatchTime || 0) >= 60 && (
-                   <div className="text-green-500 text-xs">Completed</div>
-                 )}
+              <div className="text-left sm:text-right text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
+                <div className="sm:hidden font-medium mb-1">Last Activity:</div>
+                <div>{formatDate(userProgress.lastWatched)}</div>
+                {userProgress.isCompleted && (userProgress.totalWatchTime || 0) >= 60 && (
+                  <div className="text-green-500 text-xs font-medium">Completed</div>
+                )}
               </div>
             </div>
 
             {/* Detailed Information */}
             {showDetails && (
               <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
+                  <div className="flex sm:block justify-between sm:justify-start">
                     <span className="text-gray-500 dark:text-gray-400">Current Time:</span>
                     <div className="font-medium">{formatTime(userProgress.currentTime || 0)}</div>
                   </div>
-                  <div>
+                  <div className="flex sm:block justify-between sm:justify-start">
                     <span className="text-gray-500 dark:text-gray-400">Video Duration:</span>
                     <div className="font-medium">{formatTime(userProgress.duration || 0)}</div>
                   </div>
-                  <div>
+                  <div className="flex sm:block justify-between sm:justify-start">
                     <span className="text-gray-500 dark:text-gray-400">Checkpoints Reached:</span>
                     <div className="font-medium">{userProgress.reachedPercentages?.length || 0}</div>
                   </div>
-                  <div>
+                  <div className="flex sm:block justify-between sm:justify-start">
                     <span className="text-gray-500 dark:text-gray-400">Started:</span>
-                    <div className="font-medium">{formatDate(userProgress.createdAt)}</div>
+                    <div className="font-medium text-xs sm:text-sm">{formatDate(userProgress.createdAt)}</div>
                   </div>
                 </div>
                 
@@ -211,28 +214,28 @@ const VideoUserProgress = ({ videoId, courseId }) => {
 
       {/* Summary Stats */}
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-500">{sortedUsers.length}</div>
-            <div className="text-gray-500 dark:text-gray-400">Total Users</div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
+          <div className="text-center bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+            <div className="text-lg sm:text-2xl font-bold text-blue-500">{sortedUsers.length}</div>
+            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Total Users</div>
           </div>
-                     <div className="text-center">
-             <div className="text-2xl font-bold text-green-500">
-               {sortedUsers.filter(u => u.isCompleted && (u.totalWatchTime || 0) >= 60).length}
-             </div>
-             <div className="text-gray-500 dark:text-gray-400">Completed</div>
-           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-500">
+          <div className="text-center bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+            <div className="text-lg sm:text-2xl font-bold text-green-500">
+              {sortedUsers.filter(u => u.isCompleted && (u.totalWatchTime || 0) >= 60).length}
+            </div>
+            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Completed</div>
+          </div>
+          <div className="text-center bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
+            <div className="text-lg sm:text-2xl font-bold text-yellow-500">
               {Math.round(sortedUsers.reduce((sum, u) => sum + (u.progress || 0), 0) / sortedUsers.length)}%
             </div>
-            <div className="text-gray-500 dark:text-gray-400">Avg Progress</div>
+            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Avg Progress</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-500">
+          <div className="text-center bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
+            <div className="text-lg sm:text-2xl font-bold text-purple-500">
               {formatTime(Math.round(sortedUsers.reduce((sum, u) => sum + (u.totalWatchTime || 0), 0) / sortedUsers.length))}
             </div>
-            <div className="text-gray-500 dark:text-gray-400">Avg Watch Time</div>
+            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Avg Watch Time</div>
           </div>
         </div>
       </div>

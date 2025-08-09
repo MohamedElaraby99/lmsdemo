@@ -97,7 +97,7 @@ export default function LessonCard({
           {hasFinalExam(lesson) && (
             <span className="flex items-center gap-1 text-xs text-orange-600">
               <FaClipboardList />
-              امتحان نهائي
+              امتحان 
             </span>
           )}
         </div>

@@ -885,8 +885,8 @@ const CustomVideoPlayer = ({
       <div className="absolute inset-0 bg-black bg-opacity-90" onClick={handleClose}></div>
       
       {/* Video Container */}
-      <div className="relative w-full h-full flex items-center justify-center p-4">
-        <div className="relative bg-black rounded-lg overflow-hidden w-full h-[85vh]">
+      <div className="relative w-full h-full flex flex-col items-center justify-start p-4 overflow-y-auto">
+        <div className="relative bg-black rounded-lg overflow-hidden w-full h-[85vh] flex-shrink-0">
           
           {/* Loading Spinner */}
           {isLoading && (
@@ -1334,7 +1334,7 @@ const CustomVideoPlayer = ({
 
         {/* All Users Progress Component (Admin Only) */}
         {showProgress && courseId && getCleanVideoId(video) && role === 'ADMIN' && (
-          <div className="mt-4 max-w-6xl w-full">
+          <div className="w-full max-w-6xl mt-6 flex-shrink-0">
             <VideoUserProgress
               videoId={getCleanVideoId(video)}
               courseId={courseId}

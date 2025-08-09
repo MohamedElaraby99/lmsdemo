@@ -237,7 +237,7 @@ const OptimizedLessonContentModal = ({ isOpen, onClose, courseId, lessonId, unit
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-lg sm:text-xl text-gray-800 dark:text-gray-200 break-words">{exam.title}</div>
-              <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">امتحان نهائي</div>
+              <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">امتحان </div>
             </div>
             {exam.userResult?.hasTaken && (
               <div className="text-right">
@@ -300,7 +300,7 @@ const OptimizedLessonContentModal = ({ isOpen, onClose, courseId, lessonId, unit
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-lg sm:text-xl text-gray-800 dark:text-gray-200 break-words">{training.title}</div>
-              <div className="text-sm text-green-600 dark:text-green-400 font-medium">تدريب تفاعلي</div>
+              <div className="text-sm text-green-600 dark:text-green-400 font-medium">تدريب </div>
             </div>
             {training.attemptCount > 0 && (
               <div className="text-right">

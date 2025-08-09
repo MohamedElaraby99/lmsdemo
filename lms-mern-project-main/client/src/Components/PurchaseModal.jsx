@@ -298,7 +298,7 @@ const PurchaseModal = ({
               </div>
               <div className="flex items-center gap-2">
                 <FaCheck className="text-green-500 text-xs" />
-                امتحان نهائي شامل
+                امتحان  شامل
               </div>
             </div>
           </div>
