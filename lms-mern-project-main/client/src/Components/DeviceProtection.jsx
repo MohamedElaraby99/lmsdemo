@@ -14,13 +14,17 @@ const DeviceProtection = ({ children }) => {
     const [deviceInfo, setDeviceInfo] = useState(null);
 
   useEffect(() => {
-        if (isLoggedIn && role !== 'ADMIN') {
-            initializeDeviceProtection();
-        } else if (!isLoggedIn) {
-            setDeviceStatus('authorized'); // Allow access for non-logged in users
-        } else if (role === 'ADMIN') {
-            setDeviceStatus('authorized'); // Skip device check for admins
-        }
+        // Device checking is now handled during login, so always allow access
+        setDeviceStatus('authorized');
+        
+        // Commented out device checking since it's now handled during login
+        // if (isLoggedIn && role !== 'ADMIN') {
+        //     initializeDeviceProtection();
+        // } else if (!isLoggedIn) {
+        //     setDeviceStatus('authorized'); // Allow access for non-logged in users
+        // } else if (role === 'ADMIN') {
+        //     setDeviceStatus('authorized'); // Skip device check for admins
+        // }
     }, [isLoggedIn, role]);
 
     const initializeDeviceProtection = async () => {

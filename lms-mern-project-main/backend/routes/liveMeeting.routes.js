@@ -12,7 +12,7 @@ import {
   removeAttendee,
   getLiveMeetingStats
 } from '../controllers/liveMeeting.controller.js';
-import { isLoggedIn, requireAdmin } from '../middlewares/auth.middleware.js';
+import { isLoggedIn, requireAdmin } from '../middleware/auth.middleware.js';
 
 const router = Router();
 

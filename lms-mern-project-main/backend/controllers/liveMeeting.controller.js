@@ -2,8 +2,8 @@ import LiveMeeting from '../models/liveMeeting.model.js';
 import User from '../models/user.model.js';
 import Stage from '../models/stage.model.js';
 import Subject from '../models/subject.model.js';
-import AppError from '../utils/error.util.js';
-import asyncHandler from '../middlewares/asyncHandler.middleware.js';
+import AppError from '../utils/error.utils.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 // @desc    Create a new live meeting
 // @route   POST /api/v1/live-meetings
@@ -212,8 +212,13 @@ export const getUserLiveMeetings = asyncHandler(async (req, res, next) => {
 export const getUpcomingLiveMeetings = asyncHandler(async (req, res, next) => {
   const userStage = req.user.stage;
   
+  // If user doesn't have a stage, return empty array instead of error
   if (!userStage) {
-    return next(new AppError('لم يتم تحديد المرحلة الدراسية للمستخدم', 400));
+    return res.status(200).json({
+      success: true,
+      message: 'لا توجد اجتماعات قادمة - لم يتم تحديد المرحلة الدراسية',
+      upcomingMeetings: []
+    });
   }
 
   const upcomingMeetings = await LiveMeeting.find({

@@ -22,6 +22,7 @@ import {
   FaChevronDown,
   FaChevronUp,
   FaServer,
+  FaVideo,
 } from "react-icons/fa";
 
 export default function Sidebar({ hideBar = false }) {
@@ -133,6 +134,15 @@ export default function Sidebar({ hideBar = false }) {
               </li>
             )}
 
+            {isLoggedIn && (
+              <li>
+                <Link to="/live-meetings" className="flex gap-4 items-center" onClick={closeSidebar}>
+                  <FaVideo size={18} className="text-gray-500 dark:text-slate-100" />
+                  الاجتماعات المباشرة
+                </Link>
+              </li>
+            )}
+
             {role === "ADMIN" && (
               <li>
                 <Link to="/admin/dashboard" className="flex gap-4 items-center" onClick={closeSidebar}>
@@ -237,6 +247,16 @@ export default function Sidebar({ hideBar = false }) {
                       >
                         <FaWhatsapp size={16} className="text-gray-500 dark:text-slate-100" />
                         إدارة واتساب
+                      </Link>
+                    </li>
+                    <li>
+                      <Link 
+                        to="/admin/live-meetings" 
+                        className="flex gap-4 items-center text-sm"
+                        onClick={closeSidebar}
+                      >
+                        <FaVideo size={16} className="text-gray-500 dark:text-slate-100" />
+                        إدارة الاجتماعات المباشرة
                       </Link>
                     </li>
                     <li>

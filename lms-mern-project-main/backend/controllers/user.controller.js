@@ -6,6 +6,8 @@ import fs from 'fs';
 import cloudinary from 'cloudinary';
 import AppError from "../utils/error.utils.js";
 import sendEmail from "../utils/sendEmail.js";
+import UserDevice from '../models/userDevice.model.js';
+import { generateDeviceFingerprint, parseDeviceInfo, generateDeviceName } from '../utils/deviceUtils.js';
 
 const cookieOptions = {
     httpOnly: true,
@@ -138,7 +140,7 @@ const register = async (req, res, next) => {
 // login
 const login = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, deviceInfo } = req.body;
 
         // check if user miss any field
         if (!email || !password) {
@@ -149,6 +151,70 @@ const login = async (req, res, next) => {
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return next(new AppError('Email or Password does not match', 400))
+        }
+
+        // Skip device check for admin users
+        if (user.role !== 'ADMIN') {
+            // Check device authorization before allowing login
+            try {
+                const deviceFingerprint = generateDeviceFingerprint(req, deviceInfo || {});
+                
+                console.log('=== LOGIN DEVICE CHECK ===');
+                console.log('User ID:', user._id);
+                console.log('Device fingerprint:', deviceFingerprint);
+                
+                // Check if this device is already authorized
+                const existingDevice = await UserDevice.findOne({
+                    user: user._id,
+                    deviceFingerprint,
+                    isActive: true
+                });
+
+                if (existingDevice) {
+                    // Device is authorized, update last login
+                    existingDevice.lastActivity = new Date();
+                    existingDevice.loginCount += 1;
+                    await existingDevice.save();
+                    console.log('Device already authorized, login allowed');
+                } else {
+                    // Check if user has reached device limit
+                    const userDeviceCount = await UserDevice.countDocuments({
+                        user: user._id,
+                        isActive: true
+                    });
+
+                    const MAX_DEVICES = 2;
+                    
+                    if (userDeviceCount >= MAX_DEVICES) {
+                        console.log(`User has reached device limit: ${userDeviceCount}/${MAX_DEVICES}`);
+                        return next(new AppError(
+                            `تم الوصول للحد الأقصى من الأجهزة المسموحة (${MAX_DEVICES} أجهزة). يرجى التواصل مع الإدارة لإعادة تعيين الأجهزة المصرحة.`,
+                            403
+                        ));
+                    }
+
+                    // Register new device automatically on login
+                    const deviceName = generateDeviceName(deviceInfo || {}, req);
+                    const parsedDeviceInfo = parseDeviceInfo(req, deviceInfo || {});
+
+                    const newDevice = await UserDevice.create({
+                        user: user._id,
+                        deviceFingerprint,
+                        deviceName,
+                        deviceInfo: parsedDeviceInfo,
+                        isActive: true,
+                        firstLoginAt: new Date(),
+                        lastActivity: new Date(),
+                        loginCount: 1
+                    });
+
+                    console.log('New device registered automatically on login:', newDevice._id);
+                }
+            } catch (deviceError) {
+                console.error('Device check error during login:', deviceError);
+                // Continue with login if device check fails (fallback)
+                console.log('Device check failed, allowing login as fallback');
+            }
         }
 
         const token = await user.generateJWTToken();

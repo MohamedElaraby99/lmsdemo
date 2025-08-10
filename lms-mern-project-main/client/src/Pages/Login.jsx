@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Layout from "../Layout/Layout";
 import { login } from "../Redux/Slices/AuthSlice";
 import InputBox from "../Components/InputBox/InputBox";
+import { generateDeviceFingerprint, getDeviceType, getBrowserInfo, getOperatingSystem } from "../utils/deviceFingerprint";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSignInAlt, FaGraduationCap } from "react-icons/fa";
 
 export default function Login() {
@@ -34,7 +35,27 @@ export default function Login() {
     }
 
     setIsLoading(true);
-    const Data = { email: loginData.email, password: loginData.password };
+    
+    // Generate device information for fingerprinting
+    const deviceInfo = {
+      platform: getDeviceType(),
+      screenResolution: `${screen.width}x${screen.height}`,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      additionalInfo: {
+        browser: getBrowserInfo().browser,
+        browserVersion: getBrowserInfo().version,
+        os: getOperatingSystem(),
+        language: navigator.language,
+        colorDepth: screen.colorDepth,
+        touchSupport: 'ontouchstart' in window,
+      }
+    };
+
+    const Data = { 
+      email: loginData.email, 
+      password: loginData.password,
+      deviceInfo: deviceInfo
+    };
 
     // dispatch create account action
     const response = await dispatch(login(Data));
