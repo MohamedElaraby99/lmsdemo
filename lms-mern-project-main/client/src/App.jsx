@@ -50,6 +50,7 @@ import CourseDashboard from "./Pages/Dashboard/CourseDashboard";
 import UserProgressDashboard from "./Pages/Dashboard/UserProgressDashboard";
 import DeviceManagementDashboard from "./Pages/Dashboard/DeviceManagementDashboard";
 import LiveMeetingDashboard from "./Pages/Dashboard/LiveMeetingDashboard";
+import ExamResultsDashboard from "./Pages/Dashboard/ExamResultsDashboard";
 import LiveMeetings from "./Pages/User/LiveMeetings";
 import ExamHistory from "./Pages/User/ExamHistory";
 
@@ -110,6 +111,7 @@ function App() {
                     <Route path="/admin/user-progress" element={<UserProgressDashboard />} />
                     <Route path="/admin/device-management" element={<DeviceManagementDashboard />} />
                     <Route path="/admin/live-meetings" element={<LiveMeetingDashboard />} />
+                    <Route path="/admin/exam-results" element={<ExamResultsDashboard />} />
                   </Route>
 
         <Route element={<RequireAuth allowedRoles={["USER", "ADMIN"]} />}>

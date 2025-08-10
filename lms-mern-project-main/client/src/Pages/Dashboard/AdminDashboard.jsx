@@ -82,6 +82,27 @@ export default function AdminDashboard() {
   const [stages, setStages] = useState([]);
   const [stagesLoading, setStagesLoading] = useState(true);
   
+  // Dark mode detection
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Check for dark mode
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    };
+    
+    checkDarkMode();
+    
+    // Create observer to watch for dark mode changes
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
+  
   // Add state for recharge codes data
   const [rechargeCodesStats, setRechargeCodesStats] = useState({
     totalGenerated: 0,
@@ -99,23 +120,36 @@ export default function AdminDashboard() {
       
       if (response.data.success) {
         const stagesData = response.data.data?.stages || response.data.data || [];
-        console.log('📊 Real stages data received:', stagesData);
+        console.log('📊 Real stages data received:', response.data);
+        console.log('📊 Raw stages array:', stagesData);
+        
         // Process real stages data
-        const processedStages = stagesData.map(stage => ({
-          name: stage.name || 'مرحلة غير محددة',
-          studentsCount: stage.studentsCount || stage.usersCount || 0,
-          subjectsCount: stage.subjectsCount || stage.coursesCount || 0,
-          _id: stage._id
-        }));
-        setStages(processedStages);
+        const processedStages = stagesData.map(stage => {
+          console.log('📊 Processing stage:', stage);
+          return {
+            name: stage.name || 'مرحلة غير محددة',
+            studentsCount: stage.studentsCount || 0,
+            subjectsCount: stage.subjectsCount || 0,
+            _id: stage._id
+          };
+        });
+        
         console.log('✅ Real stages data processed and set:', processedStages);
+        
+        // Only set stages if we have valid data
+        if (processedStages.length > 0) {
+          setStages(processedStages);
+        } else {
+          console.log('⚠️ No valid stages data - chart will show empty state');
+          setStages([]);
+        }
       } else {
-        console.log('⚠️ No stages data available');
+        console.log('⚠️ No stages data available in response');
         setStages([]);
       }
     } catch (error) {
       console.error('❌ Error fetching stages data:', error);
-      console.log('⚠️ Stages API not available - chart will show empty state');
+      console.log('⚠️ Stages API error - chart will show empty state');
       setStages([]);
       toast.error('فشل في تحميل بيانات المراحل الدراسية');
     } finally {
@@ -150,40 +184,62 @@ export default function AdminDashboard() {
   };
 
   // Enhanced chart data for stages - now using real data
-  const stagesChartData = {
-    labels: stages.length > 0 ? stages.map(stage => stage.name) : ["لا توجد مراحل"],
-    datasets: [
-      {
-        label: "الطلاب حسب المرحلة",
-        data: stages.length > 0 ? stages.map(stage => stage.studentsCount || 0) : [0],
-        backgroundColor: [
-          "rgba(59, 130, 246, 0.8)",
-          "rgba(16, 185, 129, 0.8)",
-          "rgba(245, 158, 11, 0.8)",
-          "rgba(239, 68, 68, 0.8)",
-          "rgba(139, 92, 246, 0.8)",
-          "rgba(236, 72, 153, 0.8)",
-          "rgba(99, 102, 241, 0.8)",
-          "rgba(236, 72, 153, 0.8)",
-          "rgba(245, 101, 101, 0.8)",
-          "rgba(52, 211, 153, 0.8)"
+  const stagesChartData = useMemo(() => {
+    console.log('📊 Creating chart data for stages:', stages);
+    
+    if (!stages || stages.length === 0) {
+      return {
+        labels: ["لا توجد مراحل"],
+        datasets: [
+          {
+            label: "الطلاب حسب المرحلة",
+            data: [0],
+            backgroundColor: ["rgba(156, 163, 175, 0.5)"],
+            borderColor: ["rgba(156, 163, 175, 1)"],
+            borderWidth: 2,
+          },
         ],
-        borderColor: [
-          "rgba(59, 130, 246, 1)",
-          "rgba(16, 185, 129, 1)",
-          "rgba(245, 158, 11, 1)",
-          "rgba(239, 68, 68, 1)",
-          "rgba(139, 92, 246, 1)",
-          "rgba(236, 72, 153, 1)",
-          "rgba(99, 102, 241, 1)",
-          "rgba(236, 72, 153, 1)",
-          "rgba(245, 101, 101, 1)",
-          "rgba(52, 211, 153, 1)"
-        ],
-        borderWidth: 2,
-      },
-    ],
-  };
+      };
+    }
+
+    const chartData = {
+      labels: stages.map(stage => stage.name),
+      datasets: [
+        {
+          label: "الطلاب حسب المرحلة",
+          data: stages.map(stage => stage.studentsCount || 0),
+          backgroundColor: [
+            "rgba(59, 130, 246, 0.8)",
+            "rgba(16, 185, 129, 0.8)",
+            "rgba(245, 158, 11, 0.8)",
+            "rgba(239, 68, 68, 0.8)",
+            "rgba(139, 92, 246, 0.8)",
+            "rgba(236, 72, 153, 0.8)",
+            "rgba(99, 102, 241, 0.8)",
+            "rgba(6, 182, 212, 0.8)",
+            "rgba(245, 101, 101, 0.8)",
+            "rgba(52, 211, 153, 0.8)"
+          ],
+          borderColor: [
+            "rgba(59, 130, 246, 1)",
+            "rgba(16, 185, 129, 1)",
+            "rgba(245, 158, 11, 1)",
+            "rgba(239, 68, 68, 1)",
+            "rgba(139, 92, 246, 1)",
+            "rgba(236, 72, 153, 1)",
+            "rgba(99, 102, 241, 1)",
+            "rgba(6, 182, 212, 1)",
+            "rgba(245, 101, 101, 1)",
+            "rgba(52, 211, 153, 1)"
+          ],
+          borderWidth: 2,
+        },
+      ],
+    };
+    
+    console.log('📊 Final chart data:', chartData);
+    return chartData;
+  }, [stages]);
 
   // Enhanced chart data for platform growth
   const platformGrowthData = {
@@ -368,13 +424,13 @@ export default function AdminDashboard() {
                     المراحل الدراسية
                   </h3>
                 </div>
-                <div className="h-48 sm:h-56 lg:h-64 w-full">
+                <div className="relative h-48 sm:h-56 lg:h-64 w-full">
                   {stagesLoading ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                       <span className="mr-2 text-gray-600 dark:text-gray-300">جاري تحميل بيانات المراحل...</span>
                     </div>
-                  ) : stages.length > 0 ? (
+                  ) : (
                     <Pie
                       data={stagesChartData}
                       options={{
@@ -384,7 +440,7 @@ export default function AdminDashboard() {
                           legend: {
                             position: 'bottom',
                             labels: {
-                              color: '#374151', // Default gray color
+                              color: isDarkMode ? '#ffffff' : '#374151', // Dynamic color based on dark mode
                               font: { 
                                 size: window.innerWidth < 768 ? 10 : 12,
                                 family: 'system-ui, -apple-system, sans-serif'
@@ -396,7 +452,7 @@ export default function AdminDashboard() {
                             }
                           },
                           tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.8)',
                             titleColor: 'white',
                             bodyColor: 'white',
                             borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -404,6 +460,9 @@ export default function AdminDashboard() {
                             cornerRadius: 8,
                             callbacks: {
                               label: function(context) {
+                                if (stages.length === 0) {
+                                  return 'لا توجد بيانات للمراحل الدراسية';
+                                }
                                 const stage = stages[context.dataIndex];
                                 return [
                                   `${context.label}: ${context.parsed} طالب`,
@@ -423,16 +482,19 @@ export default function AdminDashboard() {
                         }
                       }}
                     />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
+                  )}
+                  
+                  {/* Show reload button overlay for empty data */}
+                  {!stagesLoading && stages.length === 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-800 bg-opacity-80 dark:bg-opacity-80 rounded-lg">
                       <div className="text-center">
                         <div className="text-4xl mb-4">📊</div>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
                           لا توجد بيانات للمراحل الدراسية
                         </p>
                         <button 
                           onClick={fetchStagesData}
-                          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition-colors"
                         >
                           إعادة التحميل
                         </button>
@@ -461,7 +523,7 @@ export default function AdminDashboard() {
                       plugins: {
                         legend: {
                           labels: {
-                            color: '#374151', // Default gray color
+                            color: isDarkMode ? '#ffffff' : '#374151', // Dynamic color based on dark mode
                             font: { 
                               size: window.innerWidth < 768 ? 10 : 12,
                               family: 'system-ui, -apple-system, sans-serif'
@@ -469,7 +531,7 @@ export default function AdminDashboard() {
                           }
                         },
                         tooltip: {
-                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.8)',
                           titleColor: 'white',
                           bodyColor: 'white',
                           borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -481,20 +543,20 @@ export default function AdminDashboard() {
                         y: {
                           beginAtZero: true,
                           ticks: {
-                            color: '#6B7280', // Neutral gray
+                            color: isDarkMode ? '#D1D5DB' : '#6B7280', // Light gray for dark mode, neutral gray for light mode
                             font: { 
                               size: window.innerWidth < 768 ? 10 : 12,
                               family: 'system-ui, -apple-system, sans-serif'
                             }
                           },
                           grid: {
-                            color: 'rgba(156, 163, 175, 0.2)', // Light gray grid
-                            borderColor: 'rgba(156, 163, 175, 0.3)'
+                            color: isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(156, 163, 175, 0.2)', // Different grid colors for dark/light mode
+                            borderColor: isDarkMode ? 'rgba(75, 85, 99, 0.4)' : 'rgba(156, 163, 175, 0.3)'
                           }
                         },
                         x: {
                           ticks: {
-                            color: '#6B7280', // Neutral gray
+                            color: isDarkMode ? '#D1D5DB' : '#6B7280', // Light gray for dark mode, neutral gray for light mode
                             font: { 
                               size: window.innerWidth < 768 ? 10 : 12,
                               family: 'system-ui, -apple-system, sans-serif'
@@ -503,8 +565,8 @@ export default function AdminDashboard() {
                             minRotation: window.innerWidth < 768 ? 45 : 0
                           },
                           grid: {
-                            color: 'rgba(156, 163, 175, 0.2)', // Light gray grid
-                            borderColor: 'rgba(156, 163, 175, 0.3)'
+                            color: isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(156, 163, 175, 0.2)', // Different grid colors for dark/light mode
+                            borderColor: isDarkMode ? 'rgba(75, 85, 99, 0.4)' : 'rgba(156, 163, 175, 0.3)'
                           }
                         }
                       }

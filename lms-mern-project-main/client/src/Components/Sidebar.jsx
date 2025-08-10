@@ -23,6 +23,7 @@ import {
   FaChevronUp,
   FaServer,
   FaVideo,
+  FaClipboardCheck,
 } from "react-icons/fa";
 
 export default function Sidebar({ hideBar = false }) {
@@ -257,6 +258,16 @@ export default function Sidebar({ hideBar = false }) {
                       >
                         <FaVideo size={16} className="text-gray-500 dark:text-slate-100" />
                         إدارة الجلسات المباشرة
+                      </Link>
+                    </li>
+                    <li>
+                      <Link 
+                        to="/admin/exam-results" 
+                        className="flex gap-4 items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        onClick={closeSidebar}
+                      >
+                        <FaClipboardCheck size={16} className="text-gray-500 dark:text-slate-100" />
+                        نتائج الامتحانات
                       </Link>
                     </li>
                     <li>

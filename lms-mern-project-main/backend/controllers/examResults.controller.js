@@ -432,8 +432,115 @@ const getExamResultById = async (req, res, next) => {
     }
 };
 
+// Export exam results to CSV
+const exportExamResults = async (req, res, next) => {
+    try {
+        const { 
+            userId, 
+            courseId, 
+            examType, 
+            passed, 
+            sortBy = 'completedAt', 
+            sortOrder = 'desc',
+            search
+        } = req.query;
+
+        const sort = {};
+        sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+        // Build match filter
+        let matchFilter = {};
+        
+        if (userId) {
+            matchFilter.user = userId;
+        }
+        
+        if (courseId) {
+            matchFilter.course = courseId;
+        }
+        
+        if (examType) {
+            matchFilter.examType = examType;
+        }
+        
+        if (passed !== undefined) {
+            matchFilter.passed = passed === 'true';
+        }
+
+        // Get all results without pagination for export
+        const results = await ExamResult.find(matchFilter)
+            .populate('user', 'fullName username email phoneNumber')
+            .populate('course', 'title')
+            .sort(sort);
+
+        // Apply search filter if provided
+        let filteredResults = results;
+        if (search) {
+            const searchLower = search.toLowerCase();
+            filteredResults = results.filter(result => 
+                result.user?.fullName?.toLowerCase().includes(searchLower) ||
+                result.user?.email?.toLowerCase().includes(searchLower) ||
+                result.user?.username?.toLowerCase().includes(searchLower) ||
+                result.course?.title?.toLowerCase().includes(searchLower) ||
+                result.lessonTitle?.toLowerCase().includes(searchLower)
+            );
+        }
+
+        // Create CSV content
+        const csvHeaders = [
+            'اسم الطالب',
+            'البريد الإلكتروني',
+            'الدورة',
+            'الدرس',
+            'الوحدة',
+            'نوع الامتحان',
+            'النتيجة (%)',
+            'الإجابات الصحيحة',
+            'إجمالي الأسئلة',
+            'الإجابات الخاطئة',
+            'الوقت المستغرق (دقيقة)',
+            'الحد الزمني (دقيقة)',
+            'النتيجة المطلوبة للنجاح (%)',
+            'حالة النجاح',
+            'تاريخ الامتحان'
+        ].join(',');
+
+        const csvRows = filteredResults.map(result => [
+            `"${result.user?.fullName || ''}"`,
+            `"${result.user?.email || ''}"`,
+            `"${result.course?.title || ''}"`,
+            `"${result.lessonTitle || ''}"`,
+            `"${result.unitTitle || ''}"`,
+            `"${result.examType === 'final' ? 'امتحان نهائي' : 'تدريب'}"`,
+            result.score,
+            result.correctAnswers,
+            result.totalQuestions,
+            result.wrongAnswers,
+            result.timeTaken,
+            result.timeLimit,
+            result.passingScore,
+            `"${result.passed ? 'ناجح' : 'راسب'}"`,
+            `"${new Date(result.completedAt).toLocaleString('ar-EG')}"`
+        ].join(','));
+
+        const csvContent = [csvHeaders, ...csvRows].join('\n');
+
+        // Set response headers for CSV download
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="exam-results-${new Date().toISOString().split('T')[0]}.csv"`);
+        
+        // Add BOM for proper UTF-8 encoding in Excel
+        res.write('\ufeff');
+        res.end(csvContent);
+
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
 export {
     getAllExamResults,
     getExamResultsStats,
-    getExamResultById
+    getExamResultById,
+    exportExamResults
 };

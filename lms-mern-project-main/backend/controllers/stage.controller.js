@@ -1,5 +1,6 @@
 import stageModel from '../models/stage.model.js';
 import subjectModel from '../models/subject.model.js';
+import userModel from '../models/user.model.js';
 import AppError from '../utils/error.utils.js';
 
 // Get all stages
@@ -210,22 +211,33 @@ export const getStageStats = async (req, res, next) => {
 // Get all stages with statistics
 export const getAllStagesWithStats = async (req, res, next) => {
     try {
+        console.log('📊 Fetching stages with statistics...');
         const stages = await stageModel.find().sort({ createdAt: -1 });
+        console.log(`📊 Found ${stages.length} stages`);
         
         // Get statistics for each stage
         const stagesWithStats = await Promise.all(
             stages.map(async (stage) => {
+                // Count subjects for this stage
                 const subjectsCount = await subjectModel.countDocuments({ stage: stage._id });
-                const subjects = await subjectModel.find({ stage: stage._id });
-                const totalStudents = subjects.reduce((sum, subject) => sum + (subject.studentsEnrolled || 0), 0);
+                
+                // Count actual users in this stage
+                const studentsCount = await userModel.countDocuments({ 
+                    stage: stage._id,
+                    role: 'USER' // Only count students, not admins
+                });
+                
+                console.log(`📊 Stage "${stage.name}": ${studentsCount} students, ${subjectsCount} subjects`);
                 
                 return {
                     ...stage.toObject(),
                     subjectsCount,
-                    studentsCount: totalStudents
+                    studentsCount
                 };
             })
         );
+        
+        console.log('📊 Stages with stats processed:', stagesWithStats.map(s => ({ name: s.name, students: s.studentsCount, subjects: s.subjectsCount })));
         
         res.status(200).json({
             success: true,
@@ -233,6 +245,7 @@ export const getAllStagesWithStats = async (req, res, next) => {
             data: { stages: stagesWithStats }
         });
     } catch (e) {
+        console.error('❌ Error in getAllStagesWithStats:', e);
         return next(new AppError(e.message, 500));
     }
 };
