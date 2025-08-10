@@ -212,31 +212,69 @@ export const getUserLiveMeetings = asyncHandler(async (req, res, next) => {
 // @access  User
 export const getUpcomingLiveMeetings = asyncHandler(async (req, res, next) => {
   const userStage = req.user.stage;
+  const userId = req.user._id || req.user.id;
   
-  // If user doesn't have a stage, return empty array instead of error
-  if (!userStage) {
-    return res.status(200).json({
-      success: true,
-      message: 'لا توجد اجتماعات قادمة - لم يتم تحديد المرحلة الدراسية',
-      upcomingMeetings: []
-    });
-  }
+  // Debug logging
+  console.log('Debug - User requesting upcoming meetings:', {
+    userId,
+    userStage,
+    userRole: req.user.role
+  });
 
-  const upcomingMeetings = await LiveMeeting.find({
-    stage: userStage,
+  // Build filter for upcoming meetings
+  let filter = {
     status: 'scheduled',
     scheduledDate: { $gte: new Date() }
-  })
+  };
+
+  // If user has a stage, filter by stage, otherwise show all upcoming meetings
+  if (userStage) {
+    filter.stage = userStage;
+  }
+
+  const upcomingMeetings = await LiveMeeting.find(filter)
     .populate('instructor', 'name email')
     .populate('stage', 'name')
     .populate('subject', 'title')
+    .populate('attendees.user', 'fullName email')
     .sort({ scheduledDate: 1 })
     .limit(10);
 
+  // Debug logging
+  console.log('Debug - Found upcoming meetings:', {
+    count: upcomingMeetings.length,
+    meetings: upcomingMeetings.map(m => ({
+      id: m._id,
+      title: m.title,
+      stage: m.stage?.name,
+      stageId: m.stage?._id,
+      scheduledDate: m.scheduledDate
+    }))
+  });
+
+  // Add attendee information for each meeting
+  const meetingsWithAttendeeInfo = upcomingMeetings.map(meeting => {
+    const meetingObj = meeting.toObject();
+    meetingObj.isUserAttendee = meeting.isUserAttendee(userId);
+    meetingObj.attendeesCount = meeting.attendees.length;
+    return meetingObj;
+  });
+
+  const message = userStage 
+    ? 'تم استرجاع الاجتماعات القادمة بنجاح'
+    : upcomingMeetings.length > 0 
+      ? 'تم استرجاع جميع الاجتماعات القادمة - لم يتم تحديد مرحلتك الدراسية'
+      : 'لا توجد اجتماعات قادمة';
+
   res.status(200).json({
     success: true,
-    message: 'تم استرجاع الاجتماعات القادمة بنجاح',
-    upcomingMeetings
+    message,
+    upcomingMeetings: meetingsWithAttendeeInfo,
+    debug: {
+      userHasStage: !!userStage,
+      userStage: userStage,
+      totalFound: upcomingMeetings.length
+    }
   });
 });
 

@@ -120,8 +120,12 @@ export default function HomePage() {
   // Google Play Store redirect (for future when app is published)
   const handlePlayStoreRedirect = () => {
     // Replace with your actual Google Play Store URL when published
-    const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.fikra.lms';
-    window.open(playStoreUrl, '_blank');
+    // Show a "Coming Soon" message instead of redirecting
+    if (window.toast) {
+      window.toast.info('قريباً على Google Play!');
+    } else {
+      alert('قريباً على Google Play!');
+    }
   };
 
   const formatDate = (dateString) => {
@@ -615,10 +619,10 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-8 mb-12">
             <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
               <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaQuestionCircle className="text-3xl text-blue-600 dark:text-blue-400" />
+                <FaQuestionCircle className="w-10 h-10 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 اطرح الأسئلة
@@ -720,7 +724,7 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <FaGooglePlay className="w-6 h-6 relative z-10 ml-3" />
                   <div className="text-right relative z-10">
-                    <div className="text-sm opacity-90">متوفر على</div>
+                    <div className="text-sm opacity-90">قريباً على</div>
                     <div className="font-bold">Google Play</div>
                   </div>
                 </button>
