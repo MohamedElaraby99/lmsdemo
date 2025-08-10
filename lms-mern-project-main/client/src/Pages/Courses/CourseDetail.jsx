@@ -33,6 +33,7 @@ import {
   FaTimes
 } from 'react-icons/fa';
 import { generateImageUrl } from '../../utils/fileUtils';
+import { placeholderImages } from '../../utils/placeholderImages';
 
 export default function CourseDetail() {
   const { id } = useParams();
@@ -360,7 +361,7 @@ export default function CourseDetail() {
                     alt={currentCourse.title}
                     className="w-full h-64 object-cover rounded-lg"
                     onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/800x400?text=Course+Image";
+                      e.target.src = placeholderImages.course;
                     }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-30"></div>

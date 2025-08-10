@@ -1,7 +1,8 @@
 import blogModel from '../models/blog.model.js';
 import AppError from '../utils/error.utils.js';
 import fs from 'fs';
-import cloudinary from 'cloudinary';
+import path from 'path';
+
 
 // Get all blogs (public - only published)
 export const getAllBlogs = async (req, res, next) => {
@@ -130,45 +131,29 @@ export const createBlog = async (req, res, next) => {
         
         // Handle image upload
         if (req.file) {
-            console.log('File uploaded:', req.file.filename);
-            console.log('File path:', req.file.path);
-            console.log('File mimetype:', req.file.mimetype);
-            console.log('File size:', req.file.size);
+            console.log('📸 Processing blog image upload:', req.file.filename);
             try {
-                // Check if Cloudinary is properly configured
-                if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
-                    process.env.CLOUDINARY_API_KEY === 'placeholder' || 
-                    process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-                    // Use local file path when Cloudinary is not configured
-                    console.log('Cloudinary not configured, using local file path');
-                    blogData.image = {
-                        public_id: req.file.filename,
-                        secure_url: `/uploads/${req.file.filename}`
-                    };
-                } else {
-                    const result = await cloudinary.v2.uploader.upload(req.file.path, {
-                        folder: 'Learning-Management-System/blogs',
-                        width: 800,
-                        height: 400,
-                        crop: 'fill'
-                    });
-                    
-                    if (result) {
-                        console.log('Cloudinary upload successful:', result.secure_url);
-                        blogData.image = {
-                            public_id: result.public_id,
-                            secure_url: result.secure_url
-                        };
-                    }
+                // Move file to uploads/blogs directory
+                const uploadsDir = path.join('uploads', 'blogs');
+                if (!fs.existsSync(uploadsDir)) {
+                    fs.mkdirSync(uploadsDir, { recursive: true });
                 }
                 
-                // Keep file on server for local serving (since Cloudinary is not configured)
-                console.log('File kept on server:', `uploads/${req.file.filename}`);
+                const destPath = path.join(uploadsDir, req.file.filename);
+                fs.renameSync(req.file.path, destPath);
+                
+                // Store local file path in database
+                blogData.image = {
+                    public_id: req.file.filename,
+                    secure_url: `/uploads/blogs/${req.file.filename}`
+                };
+                
+                console.log('✅ Blog image saved locally:', destPath);
             } catch (e) {
-                console.log('Image upload error:', e.message);
+                console.log('❌ Image upload error:', e.message);
                 blogData.image = {
                     public_id: 'placeholder',
-                    secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMjAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIEJsb2cgSW1hZ2UKICA8L3RleHQ+Cjwvc3ZnPgo='
+                    secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8dGV4dCB4PSI0MDAiIHk9IjIwMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+CiAgICBCbG9nIEltYWdlCiAgPC90ZXh0Pgo8L3N2Zz4K'
                 };
             }
         } else {
@@ -176,7 +161,7 @@ export const createBlog = async (req, res, next) => {
             console.log('No file uploaded, using default placeholder');
             blogData.image = {
                 public_id: 'placeholder',
-                secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMjAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIEJsb2cgSW1hZ2UKICA8L3RleHQ+Cjwvc3ZnPgo='
+                secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMjAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIEJsb2cgSW1hZ2UKICA8L3RleHQ+Cjwvc3ZnPgo='
             };
         }
         
@@ -217,39 +202,36 @@ export const updateBlog = async (req, res, next) => {
         // Handle image upload
         if (req.file) {
             try {
-                // Check if Cloudinary is properly configured
-                if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
-                    process.env.CLOUDINARY_API_KEY === 'placeholder' || 
-                    process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-                    console.log('Cloudinary not configured, using local file path');
-                    blog.image.public_id = req.file.filename;
-                    blog.image.secure_url = `/uploads/${req.file.filename}`;
-                } else {
-                    // Delete old image if exists
-                    if (blog.image.public_id && blog.image.public_id !== 'placeholder') {
-                        await cloudinary.v2.uploader.destroy(blog.image.public_id);
-                    }
-                    
-                    const result = await cloudinary.v2.uploader.upload(req.file.path, {
-                        folder: 'Learning-Management-System/blogs',
-                        width: 800,
-                        height: 400,
-                        crop: 'fill'
-                    });
-                    
-                    if (result) {
-                        blog.image.public_id = result.public_id;
-                        blog.image.secure_url = result.secure_url;
+                console.log('📸 Processing blog image update:', req.file.filename);
+                
+                // Delete old image if exists (local file)
+                if (blog.image.public_id && blog.image.public_id !== 'placeholder') {
+                    const oldImagePath = path.join('uploads', 'blogs', blog.image.public_id);
+                    if (fs.existsSync(oldImagePath)) {
+                        fs.rmSync(oldImagePath);
+                        console.log('🗑️ Deleted old blog image:', oldImagePath);
                     }
                 }
                 
-                // Keep file on server for local serving (since Cloudinary is not configured)
-                console.log('File kept on server:', `uploads/${req.file.filename}`);
+                // Move new file to uploads/blogs directory
+                const uploadsDir = path.join('uploads', 'blogs');
+                if (!fs.existsSync(uploadsDir)) {
+                    fs.mkdirSync(uploadsDir, { recursive: true });
+                }
+                
+                const destPath = path.join(uploadsDir, req.file.filename);
+                fs.renameSync(req.file.path, destPath);
+                
+                // Store local file path in database
+                blog.image.public_id = req.file.filename;
+                blog.image.secure_url = `/uploads/blogs/${req.file.filename}`;
+                
+                console.log('✅ Blog image updated locally:', destPath);
             } catch (e) {
-                console.log('Image upload error:', e.message);
+                console.log('❌ Image upload error:', e.message);
                 // Set local file path if upload fails
                 blog.image.public_id = req.file.filename;
-                blog.image.secure_url = `/uploads/${req.file.filename}`;
+                blog.image.secure_url = `/uploads/blogs/${req.file.filename}`;
             }
         }
         
@@ -276,10 +258,14 @@ export const deleteBlog = async (req, res, next) => {
             return next(new AppError('Blog not found', 404));
         }
         
-        // Delete image from Cloudinary if exists
+        // Delete image from local storage if exists
         if (blog.image.public_id && blog.image.public_id !== 'placeholder') {
             try {
-                await cloudinary.v2.uploader.destroy(blog.image.public_id);
+                const imagePath = path.join('uploads', 'blogs', blog.image.public_id);
+                if (fs.existsSync(imagePath)) {
+                    fs.rmSync(imagePath);
+                    console.log('🗑️ Deleted blog image from local storage:', imagePath);
+                }
             } catch (e) {
                 console.log('Error deleting image:', e.message);
             }

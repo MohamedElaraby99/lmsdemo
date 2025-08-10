@@ -5,6 +5,7 @@ import { deleteCourse } from '../../Redux/Slices/CourseSlice';
 import { FaEdit, FaTrash, FaList, FaEye } from 'react-icons/fa';
 import CourseStructureModal from './CourseStructureModal';
 import { generateImageUrl } from "../../utils/fileUtils";
+import { placeholderImages } from "../../utils/placeholderImages";
 
 const CourseDetailsModal = ({ course, onClose }) => {
   if (!course) return null;
@@ -98,7 +99,7 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role }) => {
                     alt={course.title}
                     className="w-full h-48 object-cover rounded-t-lg"
                     onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/400x300?text=Course+Image";
+                      e.target.src = placeholderImages.course;
                     }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-20"></div>

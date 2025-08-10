@@ -354,7 +354,7 @@ export default function BlogDashboard() {
                               alt={blog.title}
                               className="w-16 h-16 object-cover rounded"
                               onError={(e) => {
-                                e.target.src = "https://via.placeholder.com/64x64?text=Blog+Image";
+                                e.target.src = placeholderImages.blogSmall;
                               }}
                             />
                             <div>

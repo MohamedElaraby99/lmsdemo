@@ -89,7 +89,7 @@ export default function BlogList() {
                       alt={blog.title}
                       className="w-full h-48 object-cover rounded-t-lg"
                       onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/400x300?text=Blog+Image";
+                        e.target.src = placeholderImages.blog;
                       }}
                     />
                   </div>

@@ -1,7 +1,8 @@
 import Course from '../models/course.model.js';
 import AppError from '../utils/error.utils.js';
-import cloudinary from 'cloudinary';
+
 import fs from 'fs';
+import path from 'path';
 import jwt from 'jsonwebtoken';
 
 // Create a new course
@@ -26,36 +27,26 @@ export const createCourse = async (req, res, next) => {
     // Handle image upload if provided
     if (req.file) {
       try {
-        // Check if Cloudinary is properly configured
-        if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
-            process.env.CLOUDINARY_API_KEY === 'placeholder' || 
-            process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-          // Skip Cloudinary upload if using placeholder credentials
-          console.log('Cloudinary not configured, using placeholder course image');
-          courseData.image = {
-            public_id: 'placeholder',
-            secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBJbWFnZQogIDwvdGV4dD4KPC9zdmc+Cg=='
-          };
-        } else {
-          const result = await cloudinary.v2.uploader.upload(req.file.path, {
-            folder: 'lms-courses',
-            width: 800,
-            height: 600,
-            crop: 'fill'
-          });
-          
-          courseData.image = {
-            public_id: result.public_id,
-            secure_url: result.secure_url
-          };
+        console.log('📸 Processing course image upload:', req.file.filename);
+        
+        // Move file to uploads/courses directory
+        const uploadsDir = path.join('uploads', 'courses');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
         }
-
-        // Remove the file from the server
-        if (fs.existsSync(`uploads/${req.file.filename}`)) {
-          fs.rmSync(`uploads/${req.file.filename}`);
-        }
+        
+        const destPath = path.join(uploadsDir, req.file.filename);
+        fs.renameSync(req.file.path, destPath);
+        
+        // Store local file path in database
+        courseData.image = {
+          public_id: req.file.filename,
+          secure_url: `/uploads/courses/${req.file.filename}`
+        };
+        
+        console.log('✅ Course image saved locally:', destPath);
       } catch (uploadError) {
-        console.error('Image upload error:', uploadError);
+        console.error('❌ Image upload error:', uploadError);
         // Continue without image if upload fails
         
         // Clean up file even if upload fails
@@ -458,6 +449,12 @@ export const updateCourse = async (req, res, next) => {
     if (!existingCourse) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
+    
+    console.log('📋 Existing course before update:', {
+      id: existingCourse._id,
+      title: existingCourse.title,
+      image: existingCourse.image
+    });
 
     // Prepare update data
     const updateData = { title, description, instructor, stage, subject };
@@ -465,42 +462,40 @@ export const updateCourse = async (req, res, next) => {
     // Handle image upload if provided
     if (req.file) {
       try {
-        // Check if Cloudinary is properly configured
-        if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
-            process.env.CLOUDINARY_API_KEY === 'placeholder' || 
-            process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-          // Skip Cloudinary upload if using placeholder credentials
-          console.log('Cloudinary not configured, using placeholder course image');
-          updateData.image = {
-            public_id: 'placeholder',
-            secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjQwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIENvdXJzZSBJbWFnZQogIDwvdGV4dD4KPC9zdmc+Cg=='
-          };
-        } else {
-          // Delete old image if exists and it's not a placeholder
-          if (existingCourse.image?.public_id && existingCourse.image.public_id !== 'placeholder') {
-            await cloudinary.v2.uploader.destroy(existingCourse.image.public_id);
+        console.log('📸 Processing course image update:', req.file.filename);
+        console.log('📁 File details:', {
+          originalname: req.file.originalname,
+          filename: req.file.filename,
+          path: req.file.path,
+          size: req.file.size
+        });
+        
+        // Delete old image if exists (local file)
+        if (existingCourse.image?.public_id && existingCourse.image.public_id !== 'placeholder') {
+          const oldImagePath = path.join('uploads', 'courses', existingCourse.image.public_id);
+          if (fs.existsSync(oldImagePath)) {
+            fs.rmSync(oldImagePath);
+            console.log('🗑️ Deleted old course image:', oldImagePath);
           }
-
-          // Upload new image
-          const result = await cloudinary.v2.uploader.upload(req.file.path, {
-            folder: 'lms-courses',
-            width: 800,
-            height: 600,
-            crop: 'fill'
-          });
-          
-          updateData.image = {
-            public_id: result.public_id,
-            secure_url: result.secure_url
-          };
         }
-
-        // Remove the file from the server
-        if (fs.existsSync(`uploads/${req.file.filename}`)) {
-          fs.rmSync(`uploads/${req.file.filename}`);
+        
+        // Move new file to uploads/courses directory
+        const uploadsDir = path.join('uploads', 'courses');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
         }
-
-        console.log('📸 Image processed successfully');
+        
+        const destPath = path.join(uploadsDir, req.file.filename);
+        fs.renameSync(req.file.path, destPath);
+        
+        // Store local file path in database
+        updateData.image = {
+          public_id: req.file.filename,
+          secure_url: `/uploads/courses/${req.file.filename}`
+        };
+        
+        console.log('✅ Course image updated locally:', destPath);
+        console.log('📊 Update data image:', updateData.image);
       } catch (uploadError) {
         console.error('❌ Image upload error:', uploadError);
         
@@ -514,20 +509,40 @@ export const updateCourse = async (req, res, next) => {
           message: 'Failed to upload image' 
         });
       }
+    } else {
+      console.log('⚠️ No file uploaded during update');
     }
 
     // Update course with only basic info (NOT the full content)
-    const course = await Course.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    )
+    console.log('🔄 About to update course with data:', JSON.stringify(updateData, null, 2));
+    
+    // Try a different approach - update the existing course object directly
+    if (updateData.image) {
+      existingCourse.image = updateData.image;
+      console.log('🔄 Updated existing course image to:', existingCourse.image);
+    }
+    
+    // Update other fields
+    if (updateData.title) existingCourse.title = updateData.title;
+    if (updateData.description) existingCourse.description = updateData.description;
+    if (updateData.instructor) existingCourse.instructor = updateData.instructor;
+    if (updateData.stage) existingCourse.stage = updateData.stage;
+    if (updateData.subject) existingCourse.subject = updateData.subject;
+    
+    // Save the updated course
+    await existingCourse.save();
+    
+    // Fetch the updated course with populated fields
+    const course = await Course.findById(id)
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'title')
-      .select('title description instructor stage subject image createdAt updatedAt'); // Only select basic fields
+      .select('title description instructor stage subject image createdAt updatedAt');
     
     console.log('✅ Course updated successfully');
+    console.log('📊 Final course data:', JSON.stringify(course, null, 2));
+    console.log('📊 Update data that was applied:', JSON.stringify(updateData, null, 2));
+    
     return res.status(200).json({ 
       success: true, 
       message: 'Course updated', 
@@ -543,14 +558,33 @@ export const updateCourse = async (req, res, next) => {
 export const deleteCourse = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const course = await Course.findByIdAndDelete(id);
-        if (!course) {
+    
+    // Find the course first to get image info
+    const course = await Course.findById(id);
+    if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found' });
     }
-    return res.status(200).json({ success: true, message: 'Course deleted' });
-    } catch (error) {
-        return next(new AppError(error.message, 500));
+    
+    // Delete image from local storage if exists
+    if (course.image?.public_id && course.image.public_id !== 'placeholder') {
+      try {
+        const imagePath = path.join('uploads', 'courses', course.image.public_id);
+        if (fs.existsSync(imagePath)) {
+          fs.rmSync(imagePath);
+          console.log('🗑️ Deleted course image from local storage:', imagePath);
+        }
+      } catch (e) {
+        console.log('Error deleting image:', e.message);
+      }
     }
+    
+    // Delete the course
+    await Course.findByIdAndDelete(id);
+    
+    return res.status(200).json({ success: true, message: 'Course deleted' });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
 };
 
 // Get course stats

@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FaStar, FaUsers, FaClock, FaTag, FaPlay, FaGraduationCap } from "react-icons/fa";
 import { generateImageUrl } from "../utils/fileUtils";
+import { placeholderImages } from "../utils/placeholderImages";
 
 const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleFeatured, onUpdateStatus }) => {
   const getLevelColor = (level) => {
@@ -30,7 +31,7 @@ const SubjectCard = ({ subject, showActions = false, onEdit, onDelete, onToggleF
           alt={subject.name}
           className="w-full h-32 object-cover rounded-t-lg"
           onError={(e) => {
-            e.target.src = "https://via.placeholder.com/400x200?text=Subject+Image";
+            e.target.src = placeholderImages.course;
           }}
         />
         
