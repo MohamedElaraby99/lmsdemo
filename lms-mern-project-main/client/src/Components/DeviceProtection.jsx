@@ -13,7 +13,7 @@ const DeviceProtection = ({ children }) => {
     const [deviceStatus, setDeviceStatus] = useState('checking'); // checking, authorized, unauthorized, registering
     const [deviceInfo, setDeviceInfo] = useState(null);
 
-    useEffect(() => {
+  useEffect(() => {
         if (isLoggedIn && role !== 'ADMIN') {
             initializeDeviceProtection();
         } else if (!isLoggedIn) {
@@ -221,4 +221,4 @@ const DeviceProtection = ({ children }) => {
     return children;
 };
 
-export default DeviceProtection;
+export default DeviceProtection; 

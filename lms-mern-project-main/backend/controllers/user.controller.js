@@ -83,33 +83,30 @@ const register = async (req, res, next) => {
         // File upload
         if (req.file) {
             try {
-                // Check if Cloudinary is properly configured
-                if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
-                    process.env.CLOUDINARY_API_KEY === 'placeholder' || 
-                    process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-                    // Skip Cloudinary upload if using placeholder credentials
-                    console.log('Cloudinary not configured, using placeholder avatar');
-                    user.avatar.public_id = 'placeholder';
-                    user.avatar.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjEyNSIgeT0iMTI1IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIFVzZXIgQXZhdGFyCiAgPC90ZXh0Pgo8L3N2Zz4K';
-                } else {
-                    const result = await cloudinary.v2.uploader.upload(req.file.path, {
-                        folder: "Learning-Management-System",
-                        width: 250,
-                        height: 250,
-                        gravity: "faces",
-                        crop: "fill",
-                    });
-
-                    if (result) {
-                        user.avatar.public_id = result.public_id;
-                        user.avatar.secure_url = result.secure_url;
-                    }
+                // Use local file storage for avatars instead of Cloudinary
+                const fileName = req.file.filename;
+                const avatarPath = `/uploads/avatars/${fileName}`;
+                
+                // Create avatars directory if it doesn't exist
+                const avatarsDir = 'uploads/avatars';
+                if (!fs.existsSync(avatarsDir)) {
+                    fs.mkdirSync(avatarsDir, { recursive: true });
                 }
-
-                // Remove the file from the server
-                if (fs.existsSync(`uploads/${req.file.filename}`)) {
-                    fs.rmSync(`uploads/${req.file.filename}`);
+                
+                // Move file to avatars directory
+                const oldPath = `uploads/${fileName}`;
+                const newPath = `${avatarsDir}/${fileName}`;
+                
+                if (fs.existsSync(oldPath)) {
+                    fs.renameSync(oldPath, newPath);
                 }
+                
+                // Save the local file path
+                user.avatar.public_id = `local_${fileName}`;
+                user.avatar.secure_url = avatarPath;
+                
+                console.log('Avatar saved locally:', avatarPath);
+                
             } catch (e) {
                 console.log('File upload error:', e.message);
                 // Set placeholder avatar if upload fails
@@ -377,38 +374,38 @@ const updateUser = async (req, res, next) => {
 
         if (req.file) {
             try {
-                // Check if Cloudinary is properly configured
-                if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' || 
-                    process.env.CLOUDINARY_API_KEY === 'placeholder' || 
-                    process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-                    // Skip Cloudinary upload if using placeholder credentials
-                    console.log('Cloudinary not configured, using placeholder avatar');
-                    user.avatar.public_id = 'placeholder';
-                    user.avatar.secure_url = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjUwIiBoZWlnaHQ9IjI1MCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjEyNSIgeT0iMTI1IiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIFVzZXIgQXZhdGFyCiAgPC90ZXh0Pgo8L3N2Zz4K';
-                } else {
-                    // Only destroy if we have a valid public_id
-                    if (user.avatar.public_id && user.avatar.public_id !== 'placeholder') {
-                        await cloudinary.v2.uploader.destroy(user.avatar.public_id);
-                    }
-
-                    const result = await cloudinary.v2.uploader.upload(req.file.path, {
-                        folder: 'Learning-Management-System',
-                        width: 250,
-                        height: 250,
-                        gravity: 'faces',
-                        crop: 'fill'
-                    })
-
-                    if (result) {
-                        user.avatar.public_id = result.public_id;
-                        user.avatar.secure_url = result.secure_url;
+                // Use local file storage for avatars instead of Cloudinary
+                const fileName = req.file.filename;
+                const avatarPath = `/uploads/avatars/${fileName}`;
+                
+                // Create avatars directory if it doesn't exist
+                const avatarsDir = 'uploads/avatars';
+                if (!fs.existsSync(avatarsDir)) {
+                    fs.mkdirSync(avatarsDir, { recursive: true });
+                }
+                
+                // Move file to avatars directory
+                const oldPath = `uploads/${fileName}`;
+                const newPath = `${avatarsDir}/${fileName}`;
+                
+                if (fs.existsSync(oldPath)) {
+                    fs.renameSync(oldPath, newPath);
+                }
+                
+                // Remove old avatar file if it exists and is not a placeholder
+                if (user.avatar.public_id && user.avatar.public_id !== 'placeholder' && user.avatar.public_id.startsWith('local_')) {
+                    const oldAvatarPath = user.avatar.secure_url.replace('/uploads', 'uploads');
+                    if (fs.existsSync(oldAvatarPath)) {
+                        fs.rmSync(oldAvatarPath);
                     }
                 }
-
-                // Remove file from server
-                if (fs.existsSync(`uploads/${req.file.filename}`)) {
-                    fs.rmSync(`uploads/${req.file.filename}`);
-                }
+                
+                // Save the local file path
+                user.avatar.public_id = `local_${fileName}`;
+                user.avatar.secure_url = avatarPath;
+                
+                console.log('Avatar saved locally:', avatarPath);
+                
             } catch (e) {
                 console.log('File upload error:', e.message);
                 // Set placeholder avatar if upload fails

@@ -39,12 +39,12 @@ export default function BlogDashboard() {
 
 
   const categories = [
-    "Technology",
-    "Education", 
-    "Programming",
-    "Design",
-    "Business",
-    "Other"
+    "تكنولوجيا",
+    "تعليم", 
+    "برمجة",
+    "التصميم",
+    "الأعمال",
+    "أخرى"
   ];
 
   const handleCreateBlog = async (e) => {
@@ -109,17 +109,17 @@ export default function BlogDashboard() {
       });
       setSelectedImage(null);
     } catch (error) {
-      console.error("Error updating blog:", error);
+      console.error("خطأ في تحديث المدونة:", error);
     }
   };
 
   const handleDeleteBlog = async (blogId) => {
-    if (window.confirm("Are you sure you want to delete this blog?")) {
+    if (window.confirm("هل أنت متأكد من حذف هذه المدونة؟")) {
       try {
         await dispatch(deleteBlog(blogId));
-        toast.success("Blog deleted successfully");
+        toast.success("تم حذف المدونة بنجاح");
       } catch (error) {
-        console.error("Error deleting blog:", error);
+        console.error("خطأ في حذف المدونة:", error);
       }
     }
   };
@@ -157,7 +157,7 @@ export default function BlogDashboard() {
 
   return (
     <Layout>
-      <section className="min-h-screen py-8 px-4 lg:px-20">
+      <section className="min-h-screen py-8 px-4 lg:px-20" dir="rtl">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -183,7 +183,7 @@ export default function BlogDashboard() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Blogs</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">إجمالي المدونات</p>
                   <p className="text-2xl font-bold text-gray-800 dark:text-white">{totalBlogs}</p>
                 </div>
                 <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
@@ -195,7 +195,7 @@ export default function BlogDashboard() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Published</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">المنشورات</p>
                   <p className="text-2xl font-bold text-green-600">{publishedBlogs}</p>
                 </div>
                 <div className="bg-green-100 dark:bg-green-900 p-3 rounded-full">
@@ -340,7 +340,7 @@ export default function BlogDashboard() {
                     <tr>
                       <td colSpan="7" className="px-6 py-4 text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                        <p className="mt-2 text-gray-600 dark:text-gray-300">Loading blogs...</p>
+                        <p className="mt-2 text-gray-600 dark:text-gray-300">جاري تحميل المدونات...</p>
                       </td>
                     </tr>
                   ) : blogs && blogs.length > 0 ? (
@@ -456,7 +456,7 @@ export default function BlogDashboard() {
               <form onSubmit={handleCreateBlog} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Title *
+                    العنوان *
                   </label>
                   <input
                     type="text"
@@ -469,7 +469,7 @@ export default function BlogDashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Excerpt *
+                    الملخص *
                   </label>
                   <textarea
                     required
@@ -482,7 +482,7 @@ export default function BlogDashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Content *
+                    المحتوى *
                   </label>
                   <textarea
                     required
@@ -496,7 +496,7 @@ export default function BlogDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Category *
+                      الفئة *
                     </label>
                     <select
                       required
@@ -504,7 +504,7 @@ export default function BlogDashboard() {
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="">Select Category</option>
+                      <option value="">اختر الفئة</option>
                       {categories.map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
@@ -513,15 +513,15 @@ export default function BlogDashboard() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Status
+                      الحالة
                     </label>
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({...formData, status: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="published">Published</option>
-                      <option value="draft">Draft</option>
+                      <option value="published">منشور</option>
+                      <option value="draft">مسودة</option>
                     </select>
                   </div>
                 </div>
@@ -529,7 +529,7 @@ export default function BlogDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Author *
+                      المؤلف *
                     </label>
                     <input
                       type="text"
@@ -542,13 +542,13 @@ export default function BlogDashboard() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Tags (comma separated)
+                      علامات(مفصولة بفواصل)
                     </label>
                     <input
                       type="text"
                       value={formData.tags}
                       onChange={(e) => setFormData({...formData, tags: e.target.value})}
-                      placeholder="tag1, tag2, tag3"
+                      placeholder="علامة1، علامة2، علامة3"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -556,7 +556,7 @@ export default function BlogDashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Featured Image
+                    الصورة المميزة
                   </label>
                   <input
                     type="file"
@@ -589,7 +589,7 @@ export default function BlogDashboard() {
                     }}
                     className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    Cancel
+                    إلغاء
                   </button>
                   <button
                     type="submit"
@@ -620,7 +620,7 @@ export default function BlogDashboard() {
               <form onSubmit={handleEditBlog} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Title *
+                    العنوان *
                   </label>
                   <input
                     type="text"
@@ -633,7 +633,7 @@ export default function BlogDashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Excerpt *
+                    الملخص *
                   </label>
                   <textarea
                     required
@@ -646,7 +646,7 @@ export default function BlogDashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Content *
+                    المحتوى *
                   </label>
                   <textarea
                     required
@@ -660,7 +660,7 @@ export default function BlogDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Category *
+                      الفئة *
                     </label>
                     <select
                       required
@@ -668,7 +668,7 @@ export default function BlogDashboard() {
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="">Select Category</option>
+                      <option value="">اختر الفئة</option>
                       {categories.map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
@@ -677,15 +677,15 @@ export default function BlogDashboard() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Status
+                      الحالة
                     </label>
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({...formData, status: e.target.value})}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="published">Published</option>
-                      <option value="draft">Draft</option>
+                      <option value="published">منشور</option>
+                      <option value="draft">مسودة</option>
                     </select>
                   </div>
                 </div>
@@ -693,7 +693,7 @@ export default function BlogDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Author *
+                      المؤلف *
                     </label>
                     <input
                       type="text"
@@ -706,13 +706,13 @@ export default function BlogDashboard() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Tags (comma separated)
+                      علامات(مفصولة بفواصل)
                     </label>
                     <input
                       type="text"
                       value={formData.tags}
                       onChange={(e) => setFormData({...formData, tags: e.target.value})}
-                      placeholder="tag1, tag2, tag3"
+                      placeholder="علامة1، علامة2، علامة3"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -720,7 +720,7 @@ export default function BlogDashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Featured Image
+                    الصورة المميزة
                   </label>
                   <input
                     type="file"
@@ -744,7 +744,7 @@ export default function BlogDashboard() {
                   )}
                   {selectedBlog?.image?.secure_url && !selectedImage && (
                     <div className="mt-2">
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Current Image:</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">الصورة الحالية:</p>
                       <img 
                         src={selectedBlog.image.secure_url} 
                         alt="Current" 
@@ -763,7 +763,7 @@ export default function BlogDashboard() {
                     }}
                     className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    Cancel
+                    إلغاء
                   </button>
                   <button
                     type="submit"

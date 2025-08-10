@@ -239,14 +239,14 @@ export default function SubjectDashboard() {
                   placeholder="البحث في المواد الدراسية..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pr-10 pl-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  className="w-full pr-10 pl-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
 
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="">جميع الفئات</option>
                 {categories.map((cat) => (
@@ -257,7 +257,7 @@ export default function SubjectDashboard() {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="">جميع الحالات</option>
                 <option value="active">نشط</option>
@@ -323,7 +323,7 @@ export default function SubjectDashboard() {
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-right ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right ${
                         errors.title ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                     placeholder="عنوان المادة الدراسية"
@@ -342,7 +342,7 @@ export default function SubjectDashboard() {
                     value={formData.description}
                     onChange={handleInputChange}
                     rows="3"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-right ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right ${
                       errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
                     placeholder="وصف المادة الدراسية"
@@ -361,7 +361,7 @@ export default function SubjectDashboard() {
                       name="instructor"
                       value={formData.instructor}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                         errors.instructor ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
@@ -383,7 +383,7 @@ export default function SubjectDashboard() {
                       name="stage"
                       value={formData.stage}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                         errors.stage ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
@@ -409,7 +409,7 @@ export default function SubjectDashboard() {
                     name="image"
                     onChange={handleInputChange}
                     accept="image/*"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                       errors.image ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
                   />
@@ -489,7 +489,7 @@ export default function SubjectDashboard() {
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-right ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right ${
                         errors.title ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                     placeholder="عنوان المادة الدراسية"
@@ -508,7 +508,7 @@ export default function SubjectDashboard() {
                     value={formData.description}
                     onChange={handleInputChange}
                     rows="3"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-right ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-right ${
                       errors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
                     placeholder="وصف المادة الدراسية"
@@ -527,7 +527,7 @@ export default function SubjectDashboard() {
                       name="instructor"
                       value={formData.instructor}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                         errors.instructor ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
@@ -549,7 +549,7 @@ export default function SubjectDashboard() {
                       name="stage"
                       value={formData.stage}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                         errors.stage ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
@@ -620,7 +620,7 @@ export default function SubjectDashboard() {
                     name="image"
                     onChange={handleInputChange}
                     accept="image/*"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
                       errors.image ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
                   />

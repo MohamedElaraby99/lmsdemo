@@ -18,6 +18,7 @@ import StageSliceReducer from "./Slices/StageSlice"
 import PaymentSliceReducer from "./Slices/PaymentSlice"
 import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
 import DeviceManagementSliceReducer from "./Slices/DeviceManagementSlice"
+import LiveMeetingSliceReducer from "./Slices/LiveMeetingSlice"
 
  const store = configureStore({
     reducer: {
@@ -42,7 +43,8 @@ import DeviceManagementSliceReducer from "./Slices/DeviceManagementSlice"
   stage: StageSliceReducer,
   payment: PaymentSliceReducer,
   videoProgress: VideoProgressSliceReducer,
-  deviceManagement: DeviceManagementSliceReducer
+  deviceManagement: DeviceManagementSliceReducer,
+  liveMeeting: LiveMeetingSliceReducer
     },
     devTools: true
 })
