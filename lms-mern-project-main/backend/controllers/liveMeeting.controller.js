@@ -213,14 +213,8 @@ export const getUserLiveMeetings = asyncHandler(async (req, res, next) => {
 export const getUpcomingLiveMeetings = asyncHandler(async (req, res, next) => {
   const userStage = req.user.stage;
   
-  console.log('=== DEBUG: getUpcomingLiveMeetings ===');
-  console.log('User ID:', req.user._id || req.user.id);
-  console.log('User Stage:', userStage);
-  console.log('User Role:', req.user.role);
-  
   // If user doesn't have a stage, return empty array instead of error
   if (!userStage) {
-    console.log('❌ User has no stage assigned');
     return res.status(200).json({
       success: true,
       message: 'لا توجد اجتماعات قادمة - لم يتم تحديد المرحلة الدراسية',
@@ -228,40 +222,16 @@ export const getUpcomingLiveMeetings = asyncHandler(async (req, res, next) => {
     });
   }
 
-  const query = {
+  const upcomingMeetings = await LiveMeeting.find({
     stage: userStage,
     status: 'scheduled',
     scheduledDate: { $gte: new Date() }
-  };
-  
-  console.log('🔍 Query:', JSON.stringify(query, null, 2));
-  
-  const upcomingMeetings = await LiveMeeting.find(query)
+  })
     .populate('instructor', 'name email')
     .populate('stage', 'name')
     .populate('subject', 'title')
     .sort({ scheduledDate: 1 })
     .limit(10);
-
-  console.log('📅 Found meetings:', upcomingMeetings.length);
-  console.log('📋 Meetings:', upcomingMeetings.map(m => ({
-    id: m._id,
-    title: m.title,
-    stage: m.stage?.name,
-    scheduledDate: m.scheduledDate,
-    status: m.status
-  })));
-  
-  // Also check all meetings in database for debugging
-  const allMeetings = await LiveMeeting.find({}).populate('stage', 'name');
-  console.log('🗂️  All meetings in DB:', allMeetings.map(m => ({
-    id: m._id,
-    title: m.title,
-    stage: m.stage?.name,
-    stageId: m.stage?._id,
-    status: m.status,
-    scheduledDate: m.scheduledDate
-  })));
 
   res.status(200).json({
     success: true,

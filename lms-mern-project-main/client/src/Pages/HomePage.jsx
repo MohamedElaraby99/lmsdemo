@@ -720,8 +720,8 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <FaGooglePlay className="w-6 h-6 relative z-10 ml-3" />
                   <div className="text-right relative z-10">
-                    <div className="text-sm opacity-90">Google Play</div>
-                    <div className="font-bold">قريباً</div>
+                    <div className="text-sm opacity-90">متوفر على</div>
+                    <div className="font-bold">Google Play</div>
                   </div>
                 </button>
               </div>

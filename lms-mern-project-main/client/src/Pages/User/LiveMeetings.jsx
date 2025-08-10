@@ -127,7 +127,7 @@ const LiveMeetings = () => {
     return meetings.filter(meeting => {
       const matchesSearch = meeting.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            meeting.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           meeting.subject?.title?.toLowerCase().includes(searchQuery.toLowerCase());
+                           meeting.subject?.name?.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesSearch;
     });
   };
@@ -159,11 +159,11 @@ const LiveMeetings = () => {
         </div>
         <div className="flex items-center text-gray-600 dark:text-gray-300">
           <FaChalkboardTeacher className="ml-2 text-purple-500" />
-          <span className="text-sm">{meeting.instructor?.name}</span>
+          <span className="text-sm">{meeting.instructor?.fullName}</span>
         </div>
         <div className="flex items-center text-gray-600 dark:text-gray-300">
           <FaBookOpen className="ml-2 text-orange-500" />
-          <span className="text-sm">{meeting.subject?.title}</span>
+          <span className="text-sm">{meeting.subject?.name}</span>
         </div>
       </div>
 
@@ -353,7 +353,7 @@ const LiveMeetings = () => {
                     </div>
                     <div className="flex items-center">
                       <FaChalkboardTeacher className="ml-3 text-purple-500" />
-                      <span className="text-gray-600 dark:text-gray-300">{selectedMeeting.instructor?.name}</span>
+                      <span className="text-gray-600 dark:text-gray-300">{selectedMeeting.instructor?.fullName}</span>
                     </div>
                     <div className="flex items-center">
                       <FaGraduationCap className="ml-3 text-indigo-500" />
@@ -361,7 +361,7 @@ const LiveMeetings = () => {
                     </div>
                     <div className="flex items-center">
                       <FaBookOpen className="ml-3 text-orange-500" />
-                      <span className="text-gray-600 dark:text-gray-300">{selectedMeeting.subject?.title}</span>
+                      <span className="text-gray-600 dark:text-gray-300">{selectedMeeting.subject?.name}</span>
                     </div>
                   </div>
                 </div>
