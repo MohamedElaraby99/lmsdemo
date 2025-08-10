@@ -72,15 +72,15 @@ export default function Sidebar({ hideBar = false }) {
       <input className="drawer-toggle" id="sidebar-drawer" type="checkbox" />
       <div className="drawer-side z-50">
         <label htmlFor="sidebar-drawer" className="drawer-overlay"></label>
-        <div className="min-h-full w-80 bg-white dark:bg-gray-900 text-base-content p-4 relative z-60">
+        <div className="min-h-full w-80 bg-white dark:bg-gray-900 text-base-content p-4 relative z-60" dir="rtl">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400">
-              مركز التعلم
-            </h2>
             <button onClick={closeSidebar} className="text-red-500 hover:text-red-700">
               <AiFillCloseCircle size={24} />
             </button>
+            <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400">
+              مركز التعلم
+            </h2>
           </div>
 
           {/* Wallet Balance */}
@@ -112,43 +112,47 @@ export default function Sidebar({ hideBar = false }) {
           {/* Navigation Menu */}
           <ul className="menu space-y-2">
             <li>
-              <Link to="/" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
-                <FaHome size={18} className="text-gray-500 dark:text-slate-100" />
+              <Link to="/" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-right" onClick={closeSidebar}>
+              <FaHome size={18} className="text-gray-500 dark:text-slate-100" />
                 الرئيسية
+                
               </Link>
             </li>
 
             {/* Courses Section */}
             <li>
-              <Link to="/courses" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
-                <FaList size={18} className="text-gray-500 dark:text-slate-100" />
+              <Link to="/courses" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-right" onClick={closeSidebar}>
+              <FaList size={18} className="text-gray-500 dark:text-slate-100" />
                 {role === "ADMIN" ? "جميع الكورسات" : "كورساتي"}
+                
               </Link>
             </li>
 
             {isLoggedIn && role !== "ADMIN" && (
               <li>
-                <Link to="/wallet" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
-                  <FaWallet size={18} className="text-gray-500 dark:text-slate-100" />
+                <Link to="/wallet" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-right" onClick={closeSidebar}>
+                <FaWallet size={18} className="text-gray-500 dark:text-slate-100" />
                   محفظتي
+            
                 </Link>
               </li>
             )}
 
             {isLoggedIn && (
               <li>
-                <Link to="/live-meetings" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
-                  <FaVideo size={18} className="text-gray-500 dark:text-slate-100" />
+                <Link to="/live-meetings" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-right" onClick={closeSidebar}>
+                <FaVideo size={18} className="text-gray-500 dark:text-slate-100" />
                   الجلسات المباشرة
+                 
                 </Link>
               </li>
             )}
 
             {role === "ADMIN" && (
               <li>
-                <Link to="/admin/dashboard" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
-                  <FaUserCircle size={18} className="text-gray-500 dark:text-slate-100" />
+                <Link to="/admin/dashboard" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-right" onClick={closeSidebar}>
                   لوحة تحكم الإدارة
+                  <FaUserCircle size={18} className="text-gray-500 dark:text-slate-100" />
                 </Link>
               </li>
             )}
@@ -346,13 +350,13 @@ export default function Sidebar({ hideBar = false }) {
           </ul>
 
           {/* User Section */}
-          <div className="absolute bottom-4 left-4 right-4">
+          <div className="absolute bottom-2 left-4 right-4">
             {isLoggedIn ? (
-              <div className="w-full flex flex-col gap-4 items-center justify-center">
+              <div className="w-full flex flex-col gap-2 items-center justify-center">
                 {/* User Avatar */}
                 <Link 
                   to="/user/profile" 
-                  className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-white dark:border-gray-700"
+                  className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-2 border-white dark:border-gray-700"
                   onClick={closeSidebar}
                 >
                   {data?.avatar?.secure_url ? (
@@ -368,7 +372,7 @@ export default function Sidebar({ hideBar = false }) {
                 
                 {/* User Name */}
                 <div className="text-center">
-                  <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <div className="text-xs font-semibold text-gray-700 dark:text-gray-200">
                     {data?.fullName || "User"}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -380,17 +384,17 @@ export default function Sidebar({ hideBar = false }) {
                 <button
                   onClick={onLogout}
                   disabled={isLoading}
-                  className="w-full group relative overflow-hidden rounded-xl bg-gradient-to-r from-red-500 to-pink-500 p-0.5 hover:from-red-600 hover:to-pink-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full group relative overflow-hidden rounded-lg bg-gradient-to-r from-red-500 to-pink-500 p-0.5 hover:from-red-600 hover:to-pink-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div className="relative flex items-center justify-center gap-2 rounded-[10px] bg-white dark:bg-gray-800 px-4 py-3 transition-all duration-300 group-hover:bg-transparent">
-                    <div className="relative z-10 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-red-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="relative flex items-center justify-center gap-1 rounded-[6px] bg-white dark:bg-gray-800 px-3 py-2 transition-all duration-300 group-hover:bg-transparent">
+                    <div className="relative z-10 flex items-center gap-1">
+                      <svg className="w-3 h-3 text-red-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                       </svg>
-                      <span className="font-semibold text-red-500 group-hover:text-white transition-colors duration-300">
+                      <span className="font-semibold text-xs text-red-500 group-hover:text-white transition-colors duration-300">
                         {isLoading ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin group-hover:border-white group-hover:border-t-transparent"></div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin group-hover:border-white group-hover:border-t-transparent"></div>
                             جاري تسجيل الخروج...
                           </div>
                         ) : (
