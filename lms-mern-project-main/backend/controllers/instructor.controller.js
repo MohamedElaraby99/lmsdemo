@@ -1,8 +1,7 @@
 import Instructor from '../models/instructor.model.js';
-
 import AppError from '../utils/error.utils.js';
-import cloudinary from 'cloudinary';
-import { generateProductionFileUrl } from '../utils/fileUtils.js';
+import path from 'path';
+import fs from 'fs';
 
 // Create a new instructor
 const createInstructor = async (req, res, next) => {
@@ -33,26 +32,37 @@ const createInstructor = async (req, res, next) => {
       secure_url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzRGNDZFNSIvPgogIDx0ZXh0IHg9IjE1MCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIj4KICAgIEluc3RydWN0b3IgQXZhdGFyCiAgPC90ZXh0Pgo8L3N2Zz4K'
     };
     if (req.file) {
-      // Check if Cloudinary is properly configured
-      if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' ||
-          process.env.CLOUDINARY_API_KEY === 'placeholder' ||
-          process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-        // Use local file storage when Cloudinary is not configured
-        console.log('Cloudinary not configured, using local file path');
+      try {
+        console.log('📸 Processing instructor image upload:', req.file.filename);
+        
+        // Move file to uploads/avatars directory
+        const uploadsDir = path.join('uploads', 'avatars');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        
+        const destPath = path.join(uploadsDir, req.file.filename);
+        fs.renameSync(req.file.path, destPath);
+        
+        // Store local file path in database
         profileImage = {
-          public_id: 'local',
-          secure_url: generateProductionFileUrl(req.file.filename)
+          public_id: req.file.filename,
+          secure_url: `/uploads/avatars/${req.file.filename}`
         };
-      } else {
-        const result = await cloudinary.v2.uploader.upload(req.file.path, {
-          folder: 'instructors',
-          width: 300,
-          crop: 'scale'
+        
+        console.log('✅ Instructor image saved locally:', destPath);
+      } catch (uploadError) {
+        console.error('❌ Image upload error:', uploadError);
+        
+        // Clean up file even if upload fails
+        if (req.file && fs.existsSync(`uploads/${req.file.filename}`)) {
+          fs.rmSync(`uploads/${req.file.filename}`);
+        }
+        
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Failed to upload image' 
         });
-        profileImage = {
-          public_id: result.public_id,
-          secure_url: result.secure_url
-        };
       }
     }
 
@@ -269,39 +279,53 @@ const updateInstructor = async (req, res, next) => {
     // Handle profile image upload
     let profileImage = instructor.profileImage;
     if (req.file) {
-      console.log('Processing file upload:', req.file);
-      // Delete old image if exists and not placeholder
-      if (instructor.profileImage && instructor.profileImage.public_id && instructor.profileImage.public_id !== 'placeholder') {
-        try {
-          console.log('Deleting old image:', instructor.profileImage.public_id);
-          await cloudinary.v2.uploader.destroy(instructor.profileImage.public_id);
-        } catch (cloudinaryError) {
-          console.error('Error deleting old image:', cloudinaryError);
-        }
-      }
-      
-      // Check if Cloudinary is properly configured
-      if (process.env.CLOUDINARY_CLOUD_NAME === 'placeholder' ||
-          process.env.CLOUDINARY_API_KEY === 'placeholder' ||
-          process.env.CLOUDINARY_API_SECRET === 'placeholder') {
-        // Use local file storage when Cloudinary is not configured
-        console.log('Cloudinary not configured, using local file path');
-        profileImage = {
-          public_id: 'local',
-          secure_url: generateProductionFileUrl(req.file.filename)
-        };
-      } else {
-        console.log('Uploading to cloudinary...');
-        const result = await cloudinary.v2.uploader.upload(req.file.path, {
-          folder: 'instructors',
-          width: 300,
-          crop: 'scale'
+      try {
+        console.log('📸 Processing instructor image update:', req.file.filename);
+        console.log('📁 File details:', {
+          originalname: req.file.originalname,
+          filename: req.file.filename,
+          path: req.file.path,
+          size: req.file.size
         });
+        
+        // Delete old image if exists (local file)
+        if (instructor.profileImage && instructor.profileImage.public_id && instructor.profileImage.public_id !== 'placeholder') {
+          const oldImagePath = path.join('uploads', 'avatars', instructor.profileImage.public_id);
+          if (fs.existsSync(oldImagePath)) {
+            fs.rmSync(oldImagePath);
+            console.log('🗑️ Deleted old instructor image:', oldImagePath);
+          }
+        }
+        
+        // Move new file to uploads/avatars directory
+        const uploadsDir = path.join('uploads', 'avatars');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        
+        const destPath = path.join(uploadsDir, req.file.filename);
+        fs.renameSync(req.file.path, destPath);
+        
+        // Store local file path in database
         profileImage = {
-          public_id: result.public_id,
-          secure_url: result.secure_url
+          public_id: req.file.filename,
+          secure_url: `/uploads/avatars/${req.file.filename}`
         };
-        console.log('Upload successful:', result.public_id);
+        
+        console.log('✅ Instructor image updated locally:', destPath);
+        console.log('📊 Update data image:', profileImage);
+      } catch (uploadError) {
+        console.error('❌ Image upload error:', uploadError);
+        
+        // Clean up file even if upload fails
+        if (req.file && fs.existsSync(`uploads/${req.file.filename}`)) {
+          fs.rmSync(`uploads/${req.file.filename}`);
+        }
+        
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Failed to upload image' 
+        });
       }
     }
 
@@ -409,13 +433,17 @@ const deleteInstructor = async (req, res, next) => {
     }
 
     // Delete profile image if exists
-    if (instructor.profileImage && instructor.profileImage.public_id && instructor.profileImage.public_id !== 'placeholder' && instructor.profileImage.public_id !== 'local') {
+    if (instructor.profileImage && instructor.profileImage.public_id && instructor.profileImage.public_id !== 'placeholder') {
       try {
-        console.log('Deleting cloudinary image:', instructor.profileImage.public_id);
-        await cloudinary.v2.uploader.destroy(instructor.profileImage.public_id);
-      } catch (cloudinaryError) {
-        console.error('Error deleting cloudinary image:', cloudinaryError);
-        // Continue with deletion even if cloudinary fails
+        console.log('🗑️ Deleting local instructor image:', instructor.profileImage.public_id);
+        const imagePath = path.join('uploads', 'avatars', instructor.profileImage.public_id);
+        if (fs.existsSync(imagePath)) {
+          fs.rmSync(imagePath);
+          console.log('✅ Local instructor image deleted:', imagePath);
+        }
+      } catch (fileError) {
+        console.error('❌ Error deleting local instructor image:', fileError);
+        // Continue with deletion even if file deletion fails
       }
     }
 
