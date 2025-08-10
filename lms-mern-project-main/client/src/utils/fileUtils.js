@@ -33,6 +33,12 @@ export const generateFileUrl = (filePath, subfolder = '') => {
   // Remove leading slash if present
   const cleanPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
   
+  // Check if the path already contains uploads directory
+  if (cleanPath.startsWith('uploads/')) {
+    // Path already has uploads, so just append to base URL
+    return `${baseUrl}/${cleanPath}`;
+  }
+  
   // Build the full URL
   let fullUrl;
   if (subfolder) {
@@ -70,7 +76,15 @@ export const generateImageUrl = (secureUrl) => {
     return secureUrl;
   }
   
-  // For local files, generate the proper API URL
+  // For local files, check if the path already contains uploads directory
+  if (secureUrl.startsWith('/uploads/')) {
+    // Path already has uploads, so just append to base URL
+    const baseUrl = getBaseApiUrl();
+    const cleanPath = secureUrl.slice(1); // Remove leading slash
+    return `${baseUrl}/${cleanPath}`;
+  }
+  
+  // For other local files, use the general file URL generator
   return generateFileUrl(secureUrl);
 };
 
