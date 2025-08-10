@@ -6,6 +6,7 @@ import heroPng from "../assets/images/hero.png";
 import { getAllBlogs } from "../Redux/Slices/BlogSlice";
 import { getFeaturedSubjects } from "../Redux/Slices/SubjectSlice";
 import { getFeaturedCourses } from "../Redux/Slices/CourseSlice";
+import { generateImageUrl } from "../utils/fileUtils";
 
 // Lazy load components
 const FAQAccordion = lazy(() => import("../Components/FAQAccordion"));
@@ -360,9 +361,7 @@ export default function HomePage() {
                     {course.image?.secure_url ? (
                       <>
                         <img
-                          src={course.image.secure_url.startsWith('/uploads/') 
-                            ? `http://localhost:4000${course.image.secure_url}` 
-                            : course.image.secure_url}
+                          src={generateImageUrl(course.image.secure_url)}
                           alt={course.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           onError={(e) => {
@@ -548,9 +547,7 @@ export default function HomePage() {
                 >
                   <div className="h-48 overflow-hidden">
                     <img
-                      src={blog.image?.secure_url?.startsWith('/uploads/') 
-                        ? `http://localhost:4000${blog.image.secure_url}` 
-                        : blog.image?.secure_url || placeholderImages.blog}
+                      src={generateImageUrl(blog.image?.secure_url)}
                       alt={blog.title}
                       className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                       onError={(e) => {

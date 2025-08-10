@@ -5,6 +5,7 @@ import Layout from "../../Layout/Layout";
 import { Link } from "react-router-dom";
 import { FaEye, FaHeart, FaCalendar, FaUser } from "react-icons/fa";
 import { placeholderImages } from "../../utils/placeholderImages";
+import { generateImageUrl } from "../../utils/fileUtils";
 
 export default function BlogList() {
   const dispatch = useDispatch();
@@ -84,13 +85,11 @@ export default function BlogList() {
                   {/* Blog Image */}
                   <div className="h-48 overflow-hidden">
                     <img
-                                src={blog.image?.secure_url?.startsWith('/uploads/') 
-                  ? `http://localhost:4000${blog.image.secure_url}` 
-                  : blog.image?.secure_url || placeholderImages.blog}
+                      src={generateImageUrl(blog.image?.secure_url)}
                       alt={blog.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-48 object-cover rounded-t-lg"
                       onError={(e) => {
-                        e.target.src = placeholderImages.blog;
+                        e.target.src = "https://via.placeholder.com/400x300?text=Blog+Image";
                       }}
                     />
                   </div>

@@ -1,59 +1,89 @@
 import React, { useState } from 'react';
+import { generateFileUrl } from '../utils/fileUtils';
 
 const BackendTest = () => {
   const [testResult, setTestResult] = useState('');
+  const [convertResult, setConvertResult] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const testPdfConverter = async () => {
+  const testPdfAccess = async () => {
     setLoading(true);
-    setTestResult('Testing...');
-    
     try {
-      // Test if the PDF file exists
-      const testResponse = await fetch('http://localhost:4000/api/v1/pdf-converter/test/ex_level_1%20(1).pdf', {
-        credentials: 'include'
-      });
+      const testUrl = generateFileUrl('ex_level_1 (1).pdf', 'pdfs');
+      const response = await fetch(testUrl);
       
-      const testData = await testResponse.json();
-      console.log('Test response:', testData);
-      
-      if (testData.success) {
-        setTestResult('✅ PDF file found! Path: ' + testData.path);
-        
-        // Now test the conversion API
-        const convertResponse = await fetch('http://localhost:4000/api/v1/pdf-converter/convert', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            pdfUrl: 'http://localhost:4000/uploads/pdfs/ex_level_1%20(1).pdf'
-          })
-        });
-        
-        const convertData = await convertResponse.json();
-        console.log('Convert response:', convertData);
-        
-        if (convertData.success) {
-          setTestResult(prev => prev + '\n✅ Conversion successful! Pages: ' + convertData.data.length);
-        } else {
-          setTestResult(prev => prev + '\n❌ Conversion failed: ' + convertData.message);
-        }
+      if (response.ok) {
+        setTestResult('✅ PDF access successful!');
       } else {
-        setTestResult('❌ PDF file not found: ' + testData.message);
+        setTestResult(`❌ PDF access failed: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      console.error('Test error:', error);
-      setTestResult('❌ Test failed: ' + error.message);
+      setTestResult(`❌ Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const testPdfConversion = async () => {
+    setLoading(true);
+    try {
+      const pdfUrl = generateFileUrl('ex_level_1 (1).pdf', 'pdfs');
+      const response = await fetch('/api/v1/pdf-converter/convert', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pdfUrl: pdfUrl
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setConvertResult(`✅ Conversion successful! Pages: ${data.data.length}`);
+      } else {
+        setConvertResult(`❌ Conversion failed: ${data.message}`);
+      }
+    } catch (error) {
+      setConvertResult(`❌ Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div >
-    
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+      <h2 className="text-xl font-bold mb-4">Backend Test</h2>
+      
+      <div className="space-y-4">
+        <button
+          onClick={testPdfAccess}
+          disabled={loading}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+        >
+          Test PDF Access
+        </button>
+        
+        <button
+          onClick={testPdfConversion}
+          disabled={loading}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+        >
+          Test PDF Conversion
+        </button>
+        
+        {testResult && (
+          <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded">
+            <strong>Test Result:</strong> {testResult}
+          </div>
+        )}
+        
+        {convertResult && (
+          <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded">
+            <strong>Conversion Result:</strong> {convertResult}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { getBlogById, likeBlog } from "../../Redux/Slices/BlogSlice";
+import { generateImageUrl } from "../../utils/fileUtils";
 import Layout from "../../Layout/Layout";
 import { FaEye, FaHeart, FaCalendar, FaUser, FaArrowLeft } from "react-icons/fa";
 import { placeholderImages } from "../../utils/placeholderImages";
@@ -116,9 +117,7 @@ export default function BlogDetail() {
           {/* Blog Image */}
           <div className="mb-8">
             <img
-                        src={currentBlog.image?.secure_url?.startsWith('/uploads/') 
-                  ? `http://localhost:4000${currentBlog.image.secure_url}` 
-                  : currentBlog.image?.secure_url || placeholderImages.blog}
+              src={generateImageUrl(currentBlog.image?.secure_url)}
               alt={currentBlog.title}
               className="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg"
               onError={(e) => {

@@ -2,6 +2,7 @@ import Instructor from '../models/instructor.model.js';
 
 import AppError from '../utils/error.utils.js';
 import cloudinary from 'cloudinary';
+import { generateProductionFileUrl } from '../utils/fileUtils.js';
 
 // Create a new instructor
 const createInstructor = async (req, res, next) => {
@@ -40,7 +41,7 @@ const createInstructor = async (req, res, next) => {
         console.log('Cloudinary not configured, using local file path');
         profileImage = {
           public_id: 'local',
-          secure_url: `${process.env.BACKEND_URL || 'http://localhost:4000'}/uploads/${req.file.filename}`
+          secure_url: generateProductionFileUrl(req.file.filename)
         };
       } else {
         const result = await cloudinary.v2.uploader.upload(req.file.path, {
@@ -287,7 +288,7 @@ const updateInstructor = async (req, res, next) => {
         console.log('Cloudinary not configured, using local file path');
         profileImage = {
           public_id: 'local',
-          secure_url: `${process.env.BACKEND_URL || 'http://localhost:4000'}/uploads/${req.file.filename}`
+          secure_url: generateProductionFileUrl(req.file.filename)
         };
       } else {
         console.log('Uploading to cloudinary...');

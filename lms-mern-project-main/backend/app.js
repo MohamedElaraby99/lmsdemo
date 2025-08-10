@@ -52,26 +52,54 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
 }));
 
-// Serve uploaded files
+// Serve uploaded files - accessible via /api/v1/uploads/ for production
+app.use('/api/v1/uploads', express.static('uploads', {
+  setHeaders: (res, path) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+  }
+}));
+
+// Backward compatibility - serve uploads on root path as well
 app.use('/uploads', express.static('uploads', {
   setHeaders: (res, path) => {
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET');
     res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Cache-Control', 'public, max-age=31536000');
   }
 }));
 
 // Test route to check uploads
-app.get('/test-uploads', (req, res) => {
+app.get('/api/v1/test-uploads', (req, res) => {
   const fs = require('fs');
   const path = require('path');
   const uploadsDir = path.join(__dirname, 'uploads');
-  const files = fs.readdirSync(uploadsDir);
-  res.json({ 
-    message: 'Uploads directory accessible',
-    files: files,
-    uploadsPath: uploadsDir
-  });
+  
+  try {
+    const files = fs.readdirSync(uploadsDir);
+    const baseUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 4000}`;
+    
+    res.json({ 
+      message: 'Uploads directory accessible',
+      files: files.slice(0, 10), // Show first 10 files
+      uploadsPath: uploadsDir,
+      apiUploadUrl: `${baseUrl}/api/v1/uploads/`,
+      legacyUploadUrl: `${baseUrl}/uploads/`,
+      sampleUrls: files.slice(0, 3).map(file => ({
+        filename: file,
+        apiUrl: `${baseUrl}/api/v1/uploads/${file}`,
+        legacyUrl: `${baseUrl}/uploads/${file}`
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error accessing uploads directory',
+      error: error.message
+    });
+  }
 });
 
 // Simple test route

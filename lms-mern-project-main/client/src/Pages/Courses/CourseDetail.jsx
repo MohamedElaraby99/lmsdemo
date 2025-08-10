@@ -32,6 +32,7 @@ import {
   FaWallet,
   FaTimes
 } from 'react-icons/fa';
+import { generateImageUrl } from '../../utils/fileUtils';
 
 export default function CourseDetail() {
   const { id } = useParams();
@@ -355,14 +356,11 @@ export default function CourseDetail() {
               {currentCourse.image?.secure_url ? (
                 <>
                   <img
-                    src={currentCourse.image.secure_url.startsWith('/uploads/') 
-                      ? `http://localhost:4000${currentCourse.image.secure_url}` 
-                      : currentCourse.image.secure_url}
+                    src={generateImageUrl(currentCourse.image?.secure_url)}
                     alt={currentCourse.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-64 object-cover rounded-lg"
                     onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'block';
+                      e.target.src = "https://via.placeholder.com/800x400?text=Course+Image";
                     }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-30"></div>

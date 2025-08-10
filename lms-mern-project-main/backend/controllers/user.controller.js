@@ -8,6 +8,7 @@ import AppError from "../utils/error.utils.js";
 import sendEmail from "../utils/sendEmail.js";
 import UserDevice from '../models/userDevice.model.js';
 import { generateDeviceFingerprint, parseDeviceInfo, generateDeviceName } from '../utils/deviceUtils.js';
+import { generateProductionFileUrl } from '../utils/fileUtils.js';
 
 const cookieOptions = {
     httpOnly: true,
@@ -87,7 +88,6 @@ const register = async (req, res, next) => {
             try {
                 // Use local file storage for avatars instead of Cloudinary
                 const fileName = req.file.filename;
-                const avatarPath = `/uploads/avatars/${fileName}`;
                 
                 // Create avatars directory if it doesn't exist
                 const avatarsDir = 'uploads/avatars';
@@ -103,11 +103,14 @@ const register = async (req, res, next) => {
                     fs.renameSync(oldPath, newPath);
                 }
                 
-                // Save the local file path
-                user.avatar.public_id = `local_${fileName}`;
-                user.avatar.secure_url = avatarPath;
+                // Generate the proper production URL
+                const avatarUrl = generateProductionFileUrl(fileName, 'avatars');
                 
-                console.log('Avatar saved locally:', avatarPath);
+                // Save the avatar information
+                user.avatar.public_id = `local_${fileName}`;
+                user.avatar.secure_url = avatarUrl;
+                
+                console.log('Avatar saved locally:', avatarUrl);
                 
             } catch (e) {
                 console.log('File upload error:', e.message);
@@ -442,7 +445,6 @@ const updateUser = async (req, res, next) => {
             try {
                 // Use local file storage for avatars instead of Cloudinary
                 const fileName = req.file.filename;
-                const avatarPath = `/uploads/avatars/${fileName}`;
                 
                 // Create avatars directory if it doesn't exist
                 const avatarsDir = 'uploads/avatars';
@@ -460,17 +462,22 @@ const updateUser = async (req, res, next) => {
                 
                 // Remove old avatar file if it exists and is not a placeholder
                 if (user.avatar.public_id && user.avatar.public_id !== 'placeholder' && user.avatar.public_id.startsWith('local_')) {
-                    const oldAvatarPath = user.avatar.secure_url.replace('/uploads', 'uploads');
+                    // Extract filename from old URL to build proper file path
+                    const oldFileName = user.avatar.secure_url.split('/').pop();
+                    const oldAvatarPath = `uploads/avatars/${oldFileName}`;
                     if (fs.existsSync(oldAvatarPath)) {
                         fs.rmSync(oldAvatarPath);
                     }
                 }
                 
-                // Save the local file path
-                user.avatar.public_id = `local_${fileName}`;
-                user.avatar.secure_url = avatarPath;
+                // Generate the proper production URL
+                const avatarUrl = generateProductionFileUrl(fileName, 'avatars');
                 
-                console.log('Avatar saved locally:', avatarPath);
+                // Save the avatar information
+                user.avatar.public_id = `local_${fileName}`;
+                user.avatar.secure_url = avatarUrl;
+                
+                console.log('Avatar saved locally:', avatarUrl);
                 
             } catch (e) {
                 console.log('File upload error:', e.message);

@@ -20,8 +20,8 @@ const convertPdfToImages = asyncHandler(async (req, res) => {
     // Extract filename from URL and decode it
     let filename;
     
-    if (pdfUrl.includes('localhost:4000')) {
-      // Full backend URL provided
+    if (pdfUrl.includes('localhost:4000') || pdfUrl.includes('api.lms.fikra.solutions')) {
+      // Full backend URL provided (development or production)
       const urlParts = pdfUrl.split('/');
       const encodedFilename = urlParts[urlParts.length - 1];
       filename = decodeURIComponent(encodedFilename);
@@ -184,8 +184,7 @@ const getConvertedImage = asyncHandler(async (req, res) => {
     // If the converted image doesn't exist, serve a placeholder or the original PDF
     console.log(`Converted image not found: ${filename}, serving placeholder`);
     
-    // For now, redirect to a placeholder or serve the original PDF
-    // In a real implementation, you would serve the actual converted image
+    // For now, redirect to a placeholder or serve the actual converted image
     res.status(404).json({
       success: false,
       message: "Converted image not found. Please install pdf2pic package for full functionality."

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from 'react-redux';
 import { FaTimes, FaFilePdf, FaVideo, FaClipboardList, FaDumbbell, FaPlay, FaEye, FaSpinner, FaCheckCircle, FaTrophy } from 'react-icons/fa';
 import CustomVideoPlayer from './CustomVideoPlayer';
 import PDFViewer from './PDFViewer';
 import ExamModal from './Exam/ExamModal';
 import useLessonData from '../Helpers/useLessonData';
+import { generateFileUrl } from "../utils/fileUtils";
 
 const OptimizedLessonContentModal = ({ isOpen, onClose, courseId, lessonId, unitId = null, lessonTitle = "درس" }) => {
   const { data: userData } = useSelector((state) => state.auth);
@@ -99,37 +100,35 @@ const OptimizedLessonContentModal = ({ isOpen, onClose, courseId, lessonId, unit
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   };
 
-  // Convert PDF URL to backend URL
-  const getPdfUrl = (url) => {
-    if (!url) return '';
+  const convertUrl = (url) => {
+    if (!url) return null;
     
-    console.log('Original PDF URL:', url);
-    
-    // If it's already a full URL pointing to frontend, convert it to backend
-    if (url.includes('localhost:5173')) {
-      const frontendUrl = url.replace('http://localhost:5173', 'http://localhost:4000');
-      console.log('Frontend URL detected, converting to backend:', frontendUrl);
-      return frontendUrl;
-    }
-    
-    // If it's already a full URL pointing to backend, return as is
-    if (url.startsWith('http://localhost:4000') || url.startsWith('https://')) {
-      console.log('Backend URL detected, returning as is:', url);
+    // If it's already a full URL, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
     
-    // If it's a relative path, convert to backend URL
+    // If it's a local file path, generate the proper API URL
     if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
-      const cleanPath = url.startsWith('/') ? url.substring(1) : url;
-      const backendUrl = `http://localhost:4000/${cleanPath}`;
-      console.log('Converted to backend URL:', backendUrl);
-      return backendUrl;
+      return generateFileUrl(url);
     }
     
-    // If it's just a filename, assume it's in uploads/pdfs/
-    const backendUrl = `http://localhost:4000/uploads/pdfs/${url}`;
-    console.log('Assumed PDF path, converted to:', backendUrl);
-    return backendUrl;
+    // If it's just a filename, assume it's in the pdfs folder
+    return generateFileUrl(url, 'pdfs');
+  };
+
+  const handleUrlChange = (e) => {
+    const url = e.target.value;
+    setInputUrl(url);
+    
+    // Convert the URL immediately
+    const convertedUrl = convertUrl(url);
+    setConvertedUrl(convertedUrl);
+    
+    console.log('URL Conversion:', {
+      input: url,
+      converted: convertedUrl
+    });
   };
 
   const renderVideoContent = () => (
@@ -486,7 +485,7 @@ const OptimizedLessonContentModal = ({ isOpen, onClose, courseId, lessonId, unit
 
       {/* PDF Viewer */}
       {pdfViewerOpen && currentPdf && (() => {
-        const pdfUrl = getPdfUrl(currentPdf.url);
+        const pdfUrl = convertUrl(currentPdf.url);
         console.log('🔍 PDF Debug Info:');
         console.log('Current PDF data:', currentPdf);
         console.log('Original URL:', currentPdf.url);

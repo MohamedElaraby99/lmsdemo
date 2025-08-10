@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaTimes, FaChevronLeft, FaChevronRight, FaEye, FaFilePdf, FaSpinner, FaDownload, FaExternalLinkAlt } from 'react-icons/fa';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import { axiosInstance } from '../Helpers/axiosInstance';
+import { generateFileUrl } from '../utils/fileUtils';
 
 const PDFViewer = ({ 
   pdfUrl, 
@@ -77,19 +78,18 @@ const PDFViewer = ({
       
       if (data.success && data.data) {
         // Filter out failed conversions and use the actual converted image URLs
-        const backendUrl = axiosInstance.defaults.baseURL.replace('/api/v1', '');
         const validImages = data.data.filter(page => page.imageUrl !== null);
         
         if (validImages.length > 0) {
           const convertedImages = validImages.map(page => ({
             ...page,
-            imageUrl: `${backendUrl}${page.imageUrl}` // Convert to full backend URL
+            imageUrl: generateFileUrl(page.imageUrl) // Use utility function instead of hardcoded URL
           }));
           
           setPageImages(convertedImages);
           setTotalPages(convertedImages.length);
           setIsLoading(false);
-           setUseNativePdf(false);
+          setUseNativePdf(false);
           
           console.log('PDF conversion completed successfully');
           console.log('Converted images:', convertedImages);

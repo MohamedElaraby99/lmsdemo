@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useDispatch } from 'react-redux';
 import { deleteCourse } from '../../Redux/Slices/CourseSlice';
 import { FaEdit, FaTrash, FaList, FaEye } from 'react-icons/fa';
 import CourseStructureModal from './CourseStructureModal';
+import { generateImageUrl } from "../../utils/fileUtils";
 
 const CourseDetailsModal = ({ course, onClose }) => {
   if (!course) return null;
@@ -92,18 +94,11 @@ const CourseList = ({ courses, loading, pagination, onEditCourse, role }) => {
                     isUpload: course.image.secure_url.startsWith('/uploads/')
                   })}
                   <img
-                    src={course.image.secure_url.startsWith('/uploads/') 
-                      ? `http://localhost:4000${course.image.secure_url}` 
-                      : course.image.secure_url}
+                    src={generateImageUrl(course.image?.secure_url)}
                     alt={course.title}
-                    className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                    onLoad={(e) => {
-                      console.log('✅ Image loaded successfully:', course.title);
-                    }}
+                    className="w-full h-48 object-cover rounded-t-lg"
                     onError={(e) => {
-                      console.log('❌ Image failed to load:', course.title, e);
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'block';
+                      e.target.src = "https://via.placeholder.com/400x300?text=Course+Image";
                     }}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-20"></div>
