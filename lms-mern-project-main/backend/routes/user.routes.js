@@ -2,10 +2,11 @@ import { Router } from "express";
 
 const router = Router();
 import { register, login, logout, getProfile, forgotPassword, resetPassword, changePassword, updateUser } from '../controllers/user.controller.js';
+import { requireCaptchaVerification } from '../controllers/captcha.controller.js';
 import { isLoggedIn } from "../middleware/auth.middleware.js";
 import upload from '../middleware/multer.middleware.js'
 
-router.post('/register', upload.single("avatar"), register);
+router.post('/register', upload.single("avatar"), requireCaptchaVerification, register);
 router.post('/login', login);
 router.get('/logout', logout);
 router.get('/me', isLoggedIn, getProfile);

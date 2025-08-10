@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Layout from "../Layout/Layout";
 import { createAccount } from "../Redux/Slices/AuthSlice";
 import InputBox from "../Components/InputBox/InputBox";
+import CaptchaComponent from "../Components/CaptchaComponent";
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUserPlus, FaGraduationCap, FaCamera, FaUpload, FaPhone, FaMapMarkerAlt, FaBook } from "react-icons/fa";
 import { axiosInstance } from "../Helpers/axiosInstance";
 import { useEffect } from "react";
@@ -19,6 +20,8 @@ export default function Signup() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [stages, setStages] = useState([]);
+  const [captchaSessionId, setCaptchaSessionId] = useState("");
+  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
   const [signupData, setSignupData] = useState({
     fullName: "",
     username: "",
@@ -75,8 +78,30 @@ export default function Signup() {
     }
   }
 
+  // CAPTCHA handlers
+  function handleCaptchaVerified(sessionId) {
+    console.log('CAPTCHA verified with session ID:', sessionId);
+    setCaptchaSessionId(sessionId);
+    setIsCaptchaVerified(true);
+  }
+
+  function handleCaptchaError(error) {
+    console.log('CAPTCHA error:', error);
+    setIsCaptchaVerified(false);
+    setCaptchaSessionId("");
+  }
+
   async function createNewAccount(event) {
     event.preventDefault();
+    
+    // Check CAPTCHA verification first
+    console.log('Form submission - CAPTCHA verified:', isCaptchaVerified);
+    console.log('Form submission - CAPTCHA session ID:', captchaSessionId);
+    
+    if (!isCaptchaVerified) {
+      toast.error("يرجى التحقق من رمز الأمان أولاً");
+      return;
+    }
     
     // Check if this is an admin registration
     const isAdminRegistration = signupData.adminCode === 'ADMIN123';
@@ -140,6 +165,7 @@ export default function Signup() {
     formData.append("email", signupData.email);
     formData.append("password", signupData.password);
     formData.append("adminCode", signupData.adminCode);
+    formData.append("captchaSessionId", captchaSessionId);
     
     // Only append additional fields for regular users
     if (!isAdminRegistration) {
@@ -169,6 +195,8 @@ export default function Signup() {
         adminCode: "",
       });
       setPreviewImage("");
+      setIsCaptchaVerified(false);
+      setCaptchaSessionId("");
 
       navigate("/");
     }
@@ -472,10 +500,16 @@ export default function Signup() {
                 </div>
               </div>
 
+              {/* CAPTCHA Component */}
+              <CaptchaComponent
+                onVerified={handleCaptchaVerified}
+                onError={handleCaptchaError}
+              />
+
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !isCaptchaVerified}
                 className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
