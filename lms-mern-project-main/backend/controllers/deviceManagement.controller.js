@@ -12,7 +12,18 @@ const MAX_DEVICES_PER_USER = 2;
  * Register or update device for user
  */
 export const registerDevice = asyncHandler(async (req, res, next) => {
-    const { userId } = req.user;
+    // Try both _id and id fields from the JWT token
+    const userId = req.user._id || req.user.id;
+    
+    console.log('=== DEVICE REGISTRATION DEBUG ===');
+    console.log('Full req.user object:', req.user);
+    console.log('Extracted userId:', userId);
+    console.log('Request body:', req.body);
+    
+    if (!userId) {
+        return next(new ApiError(400, "User ID not found in request"));
+    }
+    
     const { 
         platform, 
         screenResolution, 
@@ -103,7 +114,18 @@ export const registerDevice = asyncHandler(async (req, res, next) => {
  * Check if current device is authorized
  */
 export const checkDeviceAuthorization = asyncHandler(async (req, res, next) => {
-    const { userId } = req.user;
+    // Try both _id and id fields from the JWT token
+    const userId = req.user._id || req.user.id;
+    
+    console.log('=== DEVICE AUTHORIZATION CHECK DEBUG ===');
+    console.log('Full req.user object:', req.user);
+    console.log('Extracted userId:', userId);
+    console.log('Request body:', req.body);
+    
+    if (!userId) {
+        return next(new ApiError(400, "User ID not found in request"));
+    }
+    
     const { 
         platform, 
         screenResolution, 

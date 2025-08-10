@@ -96,7 +96,7 @@ const checkDeviceAuthorization = async (req, res, next) => {
     }
 
     try {
-        const userId = req.user.userId || req.user.id;
+        const userId = req.user._id || req.user.id;
         
         // Generate device fingerprint for current request
         const deviceFingerprint = generateDeviceFingerprint(req, {

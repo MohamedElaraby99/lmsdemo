@@ -88,7 +88,15 @@ export const getAdminCourses = async (req, res, next) => {
 // Get all courses (secure version for public listing)
 export const getAllCourses = async (req, res, next) => {
   try {
-    const courses = await Course.find()
+    let query = {};
+    
+    // If user is logged in and has a stage, filter courses by their stage
+    if (req.user && req.user.stage) {
+      query.stage = req.user.stage;
+      console.log('Filtering courses by user stage:', req.user.stage);
+    }
+    
+    const courses = await Course.find(query)
       .populate('instructor', 'name')
       .populate('stage', 'name')
       .populate('subject', 'name')

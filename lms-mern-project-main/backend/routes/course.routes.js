@@ -1,4 +1,6 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
+import User from '../models/user.model.js';
 import upload from '../middleware/multer.middleware.js';
 import { isLoggedIn, authorisedRoles } from '../middleware/auth.middleware.js';
 import {
@@ -25,8 +27,19 @@ import {
 
 const router = express.Router();
 
-// Public routes
-router.get('/', getAllCourses);
+// Public routes (with optional authentication for filtering)
+router.get('/', (req, res, next) => {
+  // Try to authenticate if token exists, but don't fail if not authenticated
+  const token = req.cookies?.token || req.header('Authorization')?.replace('Bearer ', '');
+  if (token) {
+    isLoggedIn(req, res, (err) => {
+      // Continue regardless of authentication result
+      getAllCourses(req, res, next);
+    });
+  } else {
+    getAllCourses(req, res, next);
+  }
+});
 router.get('/featured', getFeaturedCourses);
 
 // Admin routes

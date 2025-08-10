@@ -199,11 +199,12 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
           {question.image && (
             <div className="mb-4">
               <img 
-                src={question.image.startsWith('http') ? question.image : `http://localhost:4000${question.image}`}
+                src={question.image.startsWith('http') ? question.image : `${axiosInstance.defaults.baseURL}${question.image}`}
                 alt="صورة السؤال" 
                 className="max-w-full h-auto rounded-lg shadow-md"
                 onError={(e) => {
                   console.error('Failed to load image:', question.image);
+                  console.error('Attempted URL:', e.target.src);
                   e.target.style.display = 'none';
                 }}
               />

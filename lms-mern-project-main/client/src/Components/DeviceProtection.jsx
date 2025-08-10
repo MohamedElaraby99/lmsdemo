@@ -58,14 +58,12 @@ const DeviceProtection = ({ children }) => {
             // First, try to check if device is already authorized
             try {
                 await dispatch(checkDeviceAuthorization(deviceData)).unwrap();
+                console.log('Device authorization successful');
                 setDeviceStatus('authorized');
             } catch (checkError) {
-                // If not authorized, try to register the device
-                if (checkError.includes('DEVICE_NOT_AUTHORIZED') || checkError.includes('غير مصرح')) {
-                    await registerNewDevice(deviceData);
-                } else {
-                    throw new Error(checkError);
-                }
+                console.log('Device check failed, trying to register:', checkError);
+                // If device check fails, try to register the device
+                await registerNewDevice(deviceData);
             }
         } catch (error) {
             console.error('Device protection initialization failed:', error);
@@ -82,15 +80,25 @@ const DeviceProtection = ({ children }) => {
     const registerNewDevice = async (deviceData) => {
         try {
             setDeviceStatus('registering');
-            await dispatch(registerDevice(deviceData)).unwrap();
+            console.log('Attempting to register device with data:', deviceData);
+            const result = await dispatch(registerDevice(deviceData)).unwrap();
+            console.log('Device registration successful:', result);
             setDeviceStatus('authorized');
             toast.success('تم تسجيل الجهاز بنجاح في المنصة');
         } catch (registerError) {
             console.error('Device registration failed:', registerError);
-            if (registerError.includes('DEVICE_LIMIT_EXCEEDED') || registerError.includes('الحد الأقصى')) {
+            console.error('Register error type:', typeof registerError);
+            console.error('Register error message:', registerError?.message || registerError);
+            
+            const errorMessage = registerError?.message || registerError || '';
+            if (errorMessage.includes('DEVICE_LIMIT_EXCEEDED') || errorMessage.includes('الحد الأقصى')) {
+                console.log('Device limit exceeded, blocking access');
                 setDeviceStatus('unauthorized');
             } else {
-                throw new Error(registerError);
+                // For other errors, allow access with warning to avoid blocking logged-in users
+                console.warn('Device registration failed, but allowing access:', errorMessage);
+                setDeviceStatus('authorized');
+                toast.error('تحذير: لم يتم تسجيل الجهاز بشكل صحيح، لكن يمكنك المتابعة');
             }
         }
     };
