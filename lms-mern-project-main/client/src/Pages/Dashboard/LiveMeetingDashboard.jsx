@@ -243,7 +243,7 @@ const LiveMeetingDashboard = () => {
   const filteredMeetings = liveMeetings.filter(meeting => {
     const matchesSearch = meeting.title.toLowerCase().includes(search.toLowerCase()) ||
                          meeting.description.toLowerCase().includes(search.toLowerCase()) ||
-                         meeting.instructor?.fullName?.toLowerCase().includes(search.toLowerCase());
+                         meeting.instructor?.name?.toLowerCase().includes(search.toLowerCase());
     return matchesSearch;
   });
 
@@ -255,10 +255,10 @@ const LiveMeetingDashboard = () => {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-                إدارة الاجتماعات المباشرة
+                إدارة الجلسات المباشرة
               </h1>
               <p className="text-gray-600 dark:text-gray-300">
-                إدارة الاجتماعات المباشرة والجدولة
+                إدارة الجلسات المباشرة والجدولة
               </p>
             </div>
             <button
@@ -278,7 +278,7 @@ const LiveMeetingDashboard = () => {
                   <FaVideo className="text-2xl text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="mr-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">إجمالي الاجتماعات</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">إجمالي الجلسات</p>
                   <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.total}</p>
                 </div>
               </div>
@@ -328,7 +328,7 @@ const LiveMeetingDashboard = () => {
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="البحث في الاجتماعات..."
+                  placeholder="البحث في الجلسات..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
@@ -379,7 +379,7 @@ const LiveMeetingDashboard = () => {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">جاري تحميل الاجتماعات المباشرة...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">جاري تحميل الجلسات المباشرة...</p>
             </div>
           ) : (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
@@ -424,7 +424,7 @@ const LiveMeetingDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                          {meeting.instructor?.fullName}
+                          {meeting.instructor?.name}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                           <div>{formatDate(meeting.scheduledDate)}</div>

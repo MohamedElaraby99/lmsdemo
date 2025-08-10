@@ -127,7 +127,7 @@ const LiveMeetings = () => {
     return meetings.filter(meeting => {
       const matchesSearch = meeting.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            meeting.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           meeting.subject?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+                           meeting.subject?.title?.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesSearch;
     });
   };
@@ -159,11 +159,11 @@ const LiveMeetings = () => {
         </div>
         <div className="flex items-center text-gray-600 dark:text-gray-300">
           <FaChalkboardTeacher className="ml-2 text-purple-500" />
-          <span className="text-sm">{meeting.instructor?.fullName}</span>
+          <span className="text-sm">{meeting.instructor?.name}</span>
         </div>
         <div className="flex items-center text-gray-600 dark:text-gray-300">
           <FaBookOpen className="ml-2 text-orange-500" />
-          <span className="text-sm">{meeting.subject?.name}</span>
+          <span className="text-sm">{meeting.subject?.title}</span>
         </div>
       </div>
 
@@ -213,10 +213,10 @@ const LiveMeetings = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
-              الاجتماعات المباشرة
+              الجلسات المباشرة
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300">
-              شاهد واشترك في الاجتماعات التعليمية المباشرة
+              شاهد واشترك في الجلسات التعليمية المباشرة
             </p>
           </div>
 
@@ -231,7 +231,7 @@ const LiveMeetings = () => {
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
-                الاجتماعات القادمة
+                الجلسات القادمة
               </button>
               <button
                 onClick={() => setActiveTab('my-meetings')}
@@ -253,7 +253,7 @@ const LiveMeetings = () => {
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="البحث في الاجتماعات..."
+                  placeholder="البحث في الجلسات..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
@@ -280,7 +280,7 @@ const LiveMeetings = () => {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">جاري تحميل الاجتماعات...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-300">جاري تحميل الجلسات...</p>
             </div>
           ) : (
             <div>
@@ -353,7 +353,7 @@ const LiveMeetings = () => {
                     </div>
                     <div className="flex items-center">
                       <FaChalkboardTeacher className="ml-3 text-purple-500" />
-                      <span className="text-gray-600 dark:text-gray-300">{selectedMeeting.instructor?.fullName}</span>
+                      <span className="text-gray-600 dark:text-gray-300">{selectedMeeting.instructor?.name}</span>
                     </div>
                     <div className="flex items-center">
                       <FaGraduationCap className="ml-3 text-indigo-500" />
@@ -361,7 +361,7 @@ const LiveMeetings = () => {
                     </div>
                     <div className="flex items-center">
                       <FaBookOpen className="ml-3 text-orange-500" />
-                      <span className="text-gray-600 dark:text-gray-300">{selectedMeeting.subject?.name}</span>
+                      <span className="text-gray-600 dark:text-gray-300">{selectedMeeting.subject?.title}</span>
                     </div>
                   </div>
                 </div>

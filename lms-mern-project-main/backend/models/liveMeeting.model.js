@@ -42,7 +42,7 @@ const liveMeetingSchema = new Schema({
   },
   instructor: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Instructor',
     required: [true, 'Instructor is required']
   },
   stage: {

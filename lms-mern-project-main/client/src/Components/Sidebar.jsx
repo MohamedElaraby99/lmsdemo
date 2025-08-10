@@ -138,7 +138,7 @@ export default function Sidebar({ hideBar = false }) {
               <li>
                 <Link to="/live-meetings" className="flex gap-4 items-center" onClick={closeSidebar}>
                   <FaVideo size={18} className="text-gray-500 dark:text-slate-100" />
-                  الاجتماعات المباشرة
+                  الجلسات المباشرة
                 </Link>
               </li>
             )}
@@ -256,7 +256,7 @@ export default function Sidebar({ hideBar = false }) {
                         onClick={closeSidebar}
                       >
                         <FaVideo size={16} className="text-gray-500 dark:text-slate-100" />
-                        إدارة الاجتماعات المباشرة
+                        إدارة الجلسات المباشرة
                       </Link>
                     </li>
                     <li>
