@@ -384,7 +384,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-12">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-12">
               {statsCards.map((card, index) => (
                 <div key={index} className="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl p-4 lg:p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                   <div className="flex items-center justify-between mb-3 lg:mb-4">
