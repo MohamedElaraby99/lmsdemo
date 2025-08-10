@@ -151,8 +151,9 @@ export default function Sidebar({ hideBar = false }) {
             {role === "ADMIN" && (
               <li>
                 <Link to="/admin/dashboard" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-right" onClick={closeSidebar}>
+                <FaUserCircle size={18} className="text-gray-500 dark:text-slate-100" />
                   لوحة تحكم الإدارة
-                  <FaUserCircle size={18} className="text-gray-500 dark:text-slate-100" />
+                  
                 </Link>
               </li>
             )}

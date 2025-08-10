@@ -231,6 +231,17 @@ const InstructorDashboard = () => {
                 />
               </div>
             </div>
+            <div className="md:w-48">
+              <select
+                value={filterFeatured}
+                onChange={(e) => setFilterFeatured(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              >
+                <option value="">جميع المدرسين</option>
+                <option value="true">المدرسين المميزين</option>
+                <option value="false">المدرسين العاديين</option>
+              </select>
+            </div>
           </div>
         </div>
 
