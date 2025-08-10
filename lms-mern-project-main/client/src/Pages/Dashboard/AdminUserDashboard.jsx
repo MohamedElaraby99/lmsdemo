@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import Layout from "../../Layout/Layout";
 import { 
     getAllUsers, 
+    createUser,
     getUserDetails, 
     toggleUserStatus, 
     deleteUser, 
@@ -42,9 +43,13 @@ import {
     FaArrowDown,
     FaExclamationTriangle,
     FaCheckCircle,
-    FaTimesCircle
+    FaTimesCircle,
+    FaPlus,
+    FaSave,
+    FaTimes
 } from "react-icons/fa";
 import { axiosInstance } from "../../Helpers/axiosInstance";
+import { egyptianGovernorates } from "../../utils/governorateMapping";
 
 export default function AdminUserDashboard() {
     const dispatch = useDispatch();
@@ -72,6 +77,19 @@ export default function AdminUserDashboard() {
     const [showUserDetails, setShowUserDetails] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [createUserForm, setCreateUserForm] = useState({
+        fullName: '',
+        username: '',
+        email: '',
+        password: '',
+        role: 'USER',
+        phoneNumber: '',
+        fatherPhoneNumber: '',
+        governorate: '',
+        stage: '',
+        age: ''
+    });
     const [activeTab, setActiveTab] = useState("users");
     const [stages, setStages] = useState([]);
 
@@ -274,7 +292,7 @@ export default function AdminUserDashboard() {
 
     return (
         <Layout>
-            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8">
+            <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8" dir="rtl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="text-center mb-8">
@@ -296,7 +314,7 @@ export default function AdminUserDashboard() {
                                 <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/20">
                                     <FaUsers className="h-6 w-6 text-blue-600" />
                                 </div>
-                                <div className="ml-4">
+                                <div className="mr-4">
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">إجمالي المستخدمين</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalUsers}</p>
                                 </div>
@@ -308,7 +326,7 @@ export default function AdminUserDashboard() {
                                 <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/20">
                                     <FaUserCheck className="h-6 w-6 text-green-600" />
                                 </div>
-                                <div className="ml-4">
+                                <div className="mr-4">
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون النشطون</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.activeUsers}</p>
                                 </div>
@@ -320,7 +338,7 @@ export default function AdminUserDashboard() {
                                 <div className="p-3 rounded-full bg-red-100 dark:bg-red-900/20">
                                     <FaUserTimes className="h-6 w-6 text-red-600" />
                                 </div>
-                                <div className="ml-4">
+                                <div className="mr-4">
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستخدمون غير النشطين</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.inactiveUsers}</p>
                                 </div>
@@ -332,7 +350,7 @@ export default function AdminUserDashboard() {
                                 <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/20">
                                     <FaCrown className="h-6 w-6 text-purple-600" />
                                 </div>
-                                <div className="ml-4">
+                                <div className="mr-4">
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المديرون</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.adminUsers}</p>
                                 </div>
@@ -344,7 +362,7 @@ export default function AdminUserDashboard() {
                                 <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900/20">
                                     <FaUser className="h-6 w-6 text-indigo-600" />
                                 </div>
-                                <div className="ml-4">
+                                <div className="mr-4">
                                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الطلاب</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.regularUsers}</p>
                                 </div>
@@ -353,7 +371,7 @@ export default function AdminUserDashboard() {
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex space-x-4 mb-6">
+                    <div className="flex space-x-4 space-x-reverse mb-6">
                         <button
                             onClick={() => setActiveTab("users")}
                             className={`px-6 py-3 rounded-lg font-medium transition-colors ${
@@ -386,6 +404,17 @@ export default function AdminUserDashboard() {
                         >
                             <FaUser className="inline mr-2" />
                             جميع المستخدمين
+                        </button>
+                    </div>
+
+                    {/* Create User Button */}
+                    <div className="mb-6 flex justify-end">
+                        <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors duration-200 shadow-lg hover:shadow-xl"
+                        >
+                            <FaPlus />
+                            إنشاء مستخدم جديد
                         </button>
                     </div>
 
@@ -879,6 +908,262 @@ export default function AdminUserDashboard() {
                         )}
                     </div>
                 </div>
+
+                {/* Create User Modal */}
+                {showCreateModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" dir="rtl">
+                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+                            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        إنشاء مستخدم جديد
+                                    </h3>
+                                    <button
+                                        onClick={() => setShowCreateModal(false)}
+                                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    >
+                                        <FaTimes size={20} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <form
+                                onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    try {
+                                        await dispatch(createUser(createUserForm)).unwrap();
+                                        setShowCreateModal(false);
+                                        setCreateUserForm({
+                                            fullName: '',
+                                            username: '',
+                                            email: '',
+                                            password: '',
+                                            role: 'USER',
+                                            phoneNumber: '',
+                                            fatherPhoneNumber: '',
+                                            governorate: '',
+                                            stage: '',
+                                            age: ''
+                                        });
+                                        toast.success('تم إنشاء المستخدم بنجاح');
+                                    } catch (error) {
+                                        toast.error(error || 'فشل في إنشاء المستخدم');
+                                    }
+                                }}
+                                className="p-6 space-y-4"
+                            >
+                                {/* Role Selection */}
+                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        نوع الحساب *
+                                    </label>
+                                    <div className="flex space-x-4 space-x-reverse">
+                                        <label className="flex items-center">
+                                            <input
+                                                type="radio"
+                                                name="role"
+                                                value="USER"
+                                                checked={createUserForm.role === 'USER'}
+                                                onChange={(e) => setCreateUserForm({...createUserForm, role: e.target.value})}
+                                                className="ml-2"
+                                            />
+                                            طالب (USER)
+                                        </label>
+                                        <label className="flex items-center">
+                                            <input
+                                                type="radio"
+                                                name="role"
+                                                value="ADMIN"
+                                                checked={createUserForm.role === 'ADMIN'}
+                                                onChange={(e) => setCreateUserForm({...createUserForm, role: e.target.value})}
+                                                className="ml-2"
+                                            />
+                                            مدير (ADMIN)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Basic Information */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            الاسم الكامل *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={createUserForm.fullName}
+                                            onChange={(e) => setCreateUserForm({...createUserForm, fullName: e.target.value})}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                            placeholder="أدخل الاسم الكامل"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            اسم المستخدم *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={createUserForm.username}
+                                            onChange={(e) => setCreateUserForm({...createUserForm, username: e.target.value})}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                            placeholder="أدخل اسم المستخدم"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            البريد الإلكتروني *
+                                        </label>
+                                        <input
+                                            type="email"
+                                            required
+                                            value={createUserForm.email}
+                                            onChange={(e) => setCreateUserForm({...createUserForm, email: e.target.value})}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                            placeholder="أدخل البريد الإلكتروني"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            كلمة المرور *
+                                        </label>
+                                        <input
+                                            type="password"
+                                            required
+                                            value={createUserForm.password}
+                                            onChange={(e) => setCreateUserForm({...createUserForm, password: e.target.value})}
+                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                            placeholder="أدخل كلمة المرور"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* User-specific fields */}
+                                {createUserForm.role === 'USER' && (
+                                    <div className="space-y-4 border-t pt-4">
+                                        <h4 className="font-medium text-gray-900 dark:text-white">معلومات إضافية للطلاب</h4>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    رقم الهاتف *
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    required
+                                                    value={createUserForm.phoneNumber}
+                                                    onChange={(e) => setCreateUserForm({...createUserForm, phoneNumber: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="أدخل رقم الهاتف"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    رقم هاتف ولي الأمر *
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    required
+                                                    value={createUserForm.fatherPhoneNumber}
+                                                    onChange={(e) => setCreateUserForm({...createUserForm, fatherPhoneNumber: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="أدخل رقم هاتف ولي الأمر"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    المحافظة *
+                                                </label>
+                                                <select
+                                                    required
+                                                    value={createUserForm.governorate}
+                                                    onChange={(e) => setCreateUserForm({...createUserForm, governorate: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="">اختر المحافظة</option>
+                                                    {egyptianGovernorates.map((gov) => (
+                                                        <option key={gov.value} value={gov.value}>
+                                                            {gov.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    المرحلة الدراسية *
+                                                </label>
+                                                <select
+                                                    required
+                                                    value={createUserForm.stage}
+                                                    onChange={(e) => setCreateUserForm({...createUserForm, stage: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="">اختر المرحلة الدراسية</option>
+                                                    {stages.map((stage) => (
+                                                        <option key={stage._id} value={stage._id}>
+                                                            {stage.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                    العمر *
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    required
+                                                    min="10"
+                                                    max="25"
+                                                    value={createUserForm.age}
+                                                    onChange={(e) => setCreateUserForm({...createUserForm, age: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="أدخل العمر"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Form Actions */}
+                                <div className="flex justify-end space-x-3 space-x-reverse pt-4 border-t">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCreateModal(false)}
+                                        className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg transition-colors"
+                                    >
+                                        إلغاء
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={actionLoading}
+                                        className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    >
+                                        {actionLoading ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                جاري الإنشاء...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaSave />
+                                                إنشاء المستخدم
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
 
                 {/* Delete Confirmation Modal */}
                 {showDeleteConfirm && (

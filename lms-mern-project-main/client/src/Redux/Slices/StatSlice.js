@@ -33,15 +33,16 @@ const statSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder.addCase(getStatsData.fulfilled, (state, action) => {
-            state.allUsersCount = action?.payload?.allUsersCount;
-            state.subscribedCount = action?.payload?.subscribedUsersCount;
-            state.totalCourses = action?.payload?.totalCourses;
-            state.totalLectures = action?.payload?.totalLectures;
-            state.totalPayments = action?.payload?.totalPayments;
-            state.totalRevenue = action?.payload?.totalRevenue;
-            state.monthlySalesData = action?.payload?.monthlySalesData;
-            state.recentPayments = action?.payload?.recentPayments;
-            state.recentCourses = action?.payload?.recentCourses;
+            console.log('📊 Stats data received:', action?.payload);
+            state.allUsersCount = action?.payload?.allUsersCount || 0;
+            state.subscribedCount = action?.payload?.subscribedUsersCount || 0;
+            state.totalCourses = action?.payload?.totalCourses || 0;
+            state.totalLectures = action?.payload?.totalLectures || 0;
+            state.totalPayments = action?.payload?.totalPayments || 0;
+            state.totalRevenue = action?.payload?.totalRevenue || 0;
+            state.monthlySalesData = action?.payload?.monthlySalesData || new Array(12).fill(0);
+            state.recentPayments = action?.payload?.recentPayments || [];
+            state.recentCourses = action?.payload?.recentCourses || [];
         })
     }
 });

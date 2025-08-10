@@ -68,7 +68,7 @@ export default function CourseDetail() {
   // Check purchase status for all items when course loads
   useEffect(() => {
     if (currentCourse && user && isLoggedIn) {
-      // Check direct lessons
+      // Check درس
       currentCourse.directLessons?.forEach(lesson => {
         if (lesson.price > 0) {
           dispatch(checkPurchaseStatus({
@@ -223,7 +223,7 @@ export default function CourseDetail() {
     const lessonInfo = {
       lessonId: item._id,
       courseId: currentCourse._id,
-      unitId: unitId, // Will be null for direct lessons
+      unitId: unitId, // Will be null for درس
       title: item.title
     };
     setSelectedLesson(lessonInfo);
@@ -474,7 +474,7 @@ export default function CourseDetail() {
           </div>
         </div>
 
-        {/* Course Structure */}
+        {/* هيكل الدورة */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -485,7 +485,7 @@ export default function CourseDetail() {
             </div>
 
             <div className="p-6">
-              {/* Direct Lessons */}
+              {/* درس */}
               {currentCourse.directLessons && currentCourse.directLessons.length > 0 && (
                 <div className="mb-8">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">

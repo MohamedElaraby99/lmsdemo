@@ -214,10 +214,27 @@ const CourseStructure = ({ course, onUpdate }) => {
   };
 
   const formatDuration = (minutes) => {
-    if (!minutes) return '0 min';
+    if (!minutes) return '0 دقيقة';
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+    return hours > 0 ? `${hours} ساعة ${mins} دقيقة` : `${mins} دقيقة`;
+  };
+
+  const getArabicLessonType = (lessonType) => {
+    switch (lessonType) {
+      case 'video':
+        return 'فيديو';
+      case 'pdf':
+        return 'ملف PDF';
+      case 'text':
+        return 'نص';
+      case 'exam':
+        return 'امتحان';
+      case 'assignment':
+        return 'مهمة';
+      default:
+        return 'غير محدد';
+    }
   };
 
   const handleFileChange = (field, file) => {
@@ -283,11 +300,11 @@ const CourseStructure = ({ course, onUpdate }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Course Structure
+          هيكل الدورة
         </h3>
         <div className="flex gap-2">
           <button
@@ -295,14 +312,14 @@ const CourseStructure = ({ course, onUpdate }) => {
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
             <FaPlus className="text-sm" />
-            Add Unit
+            إضافة وحدة
           </button>
           <button
             onClick={() => setShowAddDirectLesson(true)}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
           >
             <FaPlus className="text-sm" />
-            Add Direct Lesson
+            إضافة درس مباشر
           </button>
         </div>
       </div>
@@ -316,7 +333,7 @@ const CourseStructure = ({ course, onUpdate }) => {
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                    Unit {unitIndex + 1}: {unit.title}
+                    الوحدة {unitIndex + 1}: {unit.title}
                   </h4>
                   {unit.description && (
                     <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
@@ -329,7 +346,7 @@ const CourseStructure = ({ course, onUpdate }) => {
                   className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors flex items-center gap-1 text-sm"
                 >
                   <FaPlus className="text-xs" />
-                  Add Lesson
+                  إضافة درس
                 </button>
               </div>
             </div>
@@ -357,8 +374,8 @@ const CourseStructure = ({ course, onUpdate }) => {
                           )}
                           <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
                             <span>{formatDuration(lesson.duration)}</span>
-                            <span>{lesson.isFree ? 'Free' : `$${lesson.price}`}</span>
-                            <span className="capitalize">{lesson.lessonType}</span>
+                            <span>{lesson.isFree ? 'مجاني' : `$${lesson.price}`}</span>
+                            <span className="capitalize">{getArabicLessonType(lesson.lessonType)}</span>
                           </div>
                         </div>
                       </div>
@@ -381,7 +398,7 @@ const CourseStructure = ({ course, onUpdate }) => {
                 </div>
               ) : (
                 <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                  No lessons in this unit yet
+                  لا توجد دروس في هذه الوحدة بعد
                 </p>
               )}
             </div>
@@ -394,7 +411,7 @@ const CourseStructure = ({ course, onUpdate }) => {
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-              Direct Lessons (Not in Units)
+              الدروس المباشرة (غير مرتبطة بوحدات)
             </h4>
           </div>
           <div className="p-4">
@@ -418,8 +435,8 @@ const CourseStructure = ({ course, onUpdate }) => {
                       )}
                       <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
                         <span>{formatDuration(lesson.duration)}</span>
-                        <span>{lesson.isFree ? 'Free' : `$${lesson.price}`}</span>
-                        <span className="capitalize">{lesson.lessonType}</span>
+                        <span>{lesson.isFree ? 'مجاني' : `$${lesson.price}`}</span>
+                        <span className="capitalize">{getArabicLessonType(lesson.lessonType)}</span>
                       </div>
                     </div>
                   </div>
@@ -447,27 +464,27 @@ const CourseStructure = ({ course, onUpdate }) => {
       {/* Add Unit Modal */}
       {showAddUnit && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Add New Unit</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md" dir="rtl">
+            <h3 className="text-lg font-semibold mb-4">إضافة وحدة جديدة</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Title *</label>
+                <label className="block text-sm font-medium mb-1">العنوان *</label>
                 <input
                   type="text"
                   value={newUnit.title}
                   onChange={(e) => setNewUnit({ ...newUnit, title: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-md"
-                  placeholder="Enter unit title"
+                  placeholder="أدخل عنوان الوحدة"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
+                <label className="block text-sm font-medium mb-1">الوصف</label>
                 <textarea
                   value={newUnit.description}
                   onChange={(e) => setNewUnit({ ...newUnit, description: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-md"
                   rows="3"
-                  placeholder="Enter unit description"
+                  placeholder="أدخل وصف الوحدة"
                 />
               </div>
             </div>
@@ -476,13 +493,13 @@ const CourseStructure = ({ course, onUpdate }) => {
                 onClick={handleAddUnit}
                 className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
               >
-                Add Unit
+                إضافة الوحدة
               </button>
               <button
                 onClick={() => setShowAddUnit(false)}
                 className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-md hover:bg-gray-400"
               >
-                Cancel
+                إلغاء
               </button>
             </div>
           </div>
@@ -815,7 +832,7 @@ const CourseStructure = ({ course, onUpdate }) => {
                   className="rounded"
                 />
                 <label htmlFor="isFree" className="text-sm font-medium">
-                  This lesson is free
+                 هذا الدرس مجاني
                 </label>
               </div>
             </div>
@@ -824,7 +841,7 @@ const CourseStructure = ({ course, onUpdate }) => {
                 onClick={() => showAddDirectLesson ? handleAddLesson() : handleAddLesson(showAddLesson.unitIndex)}
                 className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
               >
-                Add Lesson
+                اضافة درس
               </button>
               <button
                 onClick={() => {

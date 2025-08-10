@@ -69,7 +69,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
     e.preventDefault();
 
     if (!formData.title.trim() || !formData.instructor || !formData.stage || !formData.subject) {
-      alert('Please fill in all required fields');
+      alert('يرجى ملء جميع الحقول المطلوبة');
       return;
     }
 
@@ -102,11 +102,11 @@ const CourseModal = ({ course, onClose, isOpen }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" dir="rtl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {course ? 'Edit Course' : 'Add New Course'}
+            {course ? 'تعديل الدورة' : 'إضافة دورة جديدة'}
           </h2>
           <button
             onClick={onClose}
@@ -119,32 +119,32 @@ const CourseModal = ({ course, onClose, isOpen }) => {
         {/* Content */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div>
-            <label className="block text-sm font-medium mb-1">Title *</label>
+            <label className="block text-sm font-medium mb-1">العنوان *</label>
             <input
               type="text"
               name="title"
               value={formData.title}
               onChange={handleInputChange}
               className="w-full p-2 border border-gray-300 rounded-md"
-              placeholder="Enter course title"
+              placeholder="أدخل عنوان الدورة"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label className="block text-sm font-medium mb-1">الوصف</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleInputChange}
               className="w-full p-2 border border-gray-300 rounded-md"
               rows="3"
-              placeholder="Enter course description"
+              placeholder="أدخل وصف الدورة"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Instructor *</label>
+            <label className="block text-sm font-medium mb-1">المدرس *</label>
             <select
               name="instructor"
               value={formData.instructor}
@@ -152,7 +152,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
               className="w-full p-2 border border-gray-300 rounded-md"
               required
             >
-              <option value="">Select instructor</option>
+              <option value="">اختر المدرس</option>
               {instructors?.map((instructor) => (
                 <option key={instructor._id} value={instructor._id}>
                   {instructor.name}
@@ -162,7 +162,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Stage *</label>
+            <label className="block text-sm font-medium mb-1">المرحلة *</label>
             <select
               name="stage"
               value={formData.stage}
@@ -170,7 +170,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
               className="w-full p-2 border border-gray-300 rounded-md"
               required
             >
-              <option value="">Select stage</option>
+              <option value="">اختر المرحلة</option>
               {stages?.map((stage) => (
                 <option key={stage._id} value={stage._id}>
                   {stage.name}
@@ -180,7 +180,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Subject *</label>
+            <label className="block text-sm font-medium mb-1">المادة *</label>
             <select
               name="subject"
               value={formData.subject}
@@ -188,7 +188,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
               className="w-full p-2 border border-gray-300 rounded-md"
               required
             >
-              <option value="">Select subject</option>
+              <option value="">اختر المادة</option>
               {subjects?.map((subject) => (
                 <option key={subject._id} value={subject._id}>
                   {subject.name || subject.title || subject._id}
@@ -198,7 +198,7 @@ const CourseModal = ({ course, onClose, isOpen }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Thumbnail</label>
+            <label className="block text-sm font-medium mb-1">صورة الدورة</label>
             <input
               type="file"
               accept="image/*"
@@ -213,14 +213,14 @@ const CourseModal = ({ course, onClose, isOpen }) => {
               onClick={onClose}
               className="px-6 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              Cancel
+              إلغاء
             </button>
             <button
               type="submit"
               disabled={createLoading || updateLoading}
               className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {createLoading || updateLoading ? 'Saving...' : (course ? 'Update' : 'Create')}
+              {createLoading || updateLoading ? 'جاري الحفظ...' : (course ? 'تحديث' : 'إنشاء')}
             </button>
           </div>
         </form>

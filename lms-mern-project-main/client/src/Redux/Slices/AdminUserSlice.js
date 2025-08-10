@@ -40,6 +40,18 @@ export const getUserDetails = createAsyncThunk(
     }
 );
 
+export const createUser = createAsyncThunk(
+    "adminUser/create",
+    async (userData, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.post(`/admin/users/create`, userData);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Failed to create user");
+        }
+    }
+);
+
 export const toggleUserStatus = createAsyncThunk(
     "adminUser/toggleStatus",
     async ({ userId, isActive }, { rejectWithValue }) => {
@@ -191,6 +203,34 @@ const adminUserSlice = createSlice({
                 state.selectedUser = action.payload.data.user;
             })
             .addCase(getUserDetails.rejected, (state, action) => {
+                state.actionLoading = false;
+                state.actionError = action.payload;
+            });
+
+        // Create user
+        builder
+            .addCase(createUser.pending, (state) => {
+                state.actionLoading = true;
+                state.actionError = null;
+            })
+            .addCase(createUser.fulfilled, (state, action) => {
+                state.actionLoading = false;
+                // Add new user to the beginning of the list
+                state.users.unshift(action.payload.data.user);
+                // Update stats
+                if (state.stats) {
+                    state.stats.totalUsers += 1;
+                    if (action.payload.data.user.isActive) {
+                        state.stats.activeUsers += 1;
+                    }
+                    if (action.payload.data.user.role === 'ADMIN') {
+                        state.stats.adminUsers += 1;
+                    } else {
+                        state.stats.regularUsers += 1;
+                    }
+                }
+            })
+            .addCase(createUser.rejected, (state, action) => {
                 state.actionLoading = false;
                 state.actionError = action.payload;
             });

@@ -315,9 +315,52 @@ const getUserVideoTracking = async (req, res, next) => {
     
     console.log('📊 Getting comprehensive tracking for user:', userId);
     
-    // Get all video progress for this user
+    // Helper function to find video title from course structure
+    const findVideoTitle = (course, videoId) => {
+      if (!course || !videoId) return null;
+      
+      // Search in direct lessons
+      if (course.directLessons) {
+        for (const lesson of course.directLessons) {
+          if (lesson.videos) {
+            const video = lesson.videos.find(v => v.url && v.url.includes(videoId));
+            if (video) {
+              return video.title || `فيديو من درس: ${lesson.title}`;
+            }
+          }
+        }
+      }
+      
+      // Search in units
+      if (course.units) {
+        for (const unit of course.units) {
+          if (unit.lessons) {
+            for (const lesson of unit.lessons) {
+              if (lesson.videos) {
+                const video = lesson.videos.find(v => v.url && v.url.includes(videoId));
+                if (video) {
+                  return video.title || `فيديو من درس: ${lesson.title}`;
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      return null;
+    };
+    
+    // Get all video progress for this user with course details
     const allProgress = await videoProgressModel.find({ userId })
-      .populate('courseId', 'title description')
+      .populate({
+        path: 'courseId',
+        select: 'title description units directLessons',
+        populate: [
+          { path: 'instructor', select: 'name' },
+          { path: 'stage', select: 'name' },
+          { path: 'subject', select: 'name' }
+        ]
+      })
       .sort({ lastWatched: -1 });
     
     // Calculate comprehensive statistics
@@ -351,8 +394,12 @@ const getUserVideoTracking = async (req, res, next) => {
         };
       }
       
+      // Find video title from course structure
+      const videoTitle = findVideoTitle(progress.courseId, progress.videoId);
+      
       courseGroups[courseId].videos.push({
         videoId: progress.videoId,
+        videoTitle: videoTitle || `فيديو: ${progress.videoId}`,
         progress: progress.progress,
         currentTime: progress.currentTime,
         duration: progress.duration,
@@ -378,6 +425,22 @@ const getUserVideoTracking = async (req, res, next) => {
       }
     });
     
+    // Process recent activity with video titles
+    const recentActivityWithTitles = allProgress.slice(0, 10).map(progress => {
+      const videoTitle = findVideoTitle(progress.courseId, progress.videoId);
+      return {
+        videoId: progress.videoId,
+        videoTitle: videoTitle || `فيديو: ${progress.videoId}`,
+        courseName: progress.courseId?.title || 'دورة غير محددة',
+        courseId: progress.courseId?._id,
+        progress: progress.progress,
+        isCompleted: progress.isCompleted,
+        totalWatchTime: progress.totalWatchTime,
+        lastWatched: progress.lastWatched,
+        createdAt: progress.createdAt
+      };
+    });
+
     res.status(200).json({
       success: true,
       message: "User video tracking data retrieved successfully",
@@ -385,7 +448,7 @@ const getUserVideoTracking = async (req, res, next) => {
         userId,
         overallStats: stats,
         courseBreakdown: Object.values(courseGroups),
-        recentActivity: allProgress.slice(0, 10) // Last 10 videos watched
+        recentActivity: recentActivityWithTitles // Last 10 videos watched with titles
       }
     });
   } catch (error) {

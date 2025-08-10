@@ -1167,7 +1167,7 @@ const CourseContentManager = () => {
                   )}
                 </div>
               ))}
-              {/* Direct Lessons */}
+              {/* درس */}
               {selectedCourse.directLessons?.length > 0 && (
                 <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl shadow p-3 md:p-4">
                   <div className="font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-2">

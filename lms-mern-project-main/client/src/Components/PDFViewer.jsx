@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaTimes, FaChevronLeft, FaChevronRight, FaEye, FaFilePdf, FaSpinner, FaDownload, FaExternalLinkAlt } from 'react-icons/fa';
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+import { axiosInstance } from '../Helpers/axiosInstance';
 
 const PDFViewer = ({ 
   pdfUrl, 
@@ -63,32 +64,20 @@ const PDFViewer = ({
         });
       }, 200);
 
-             // Call the backend API to convert PDF to images
-       const backendUrl = window.location.hostname === 'localhost' ? 'http://localhost:4000' : 'https://lms.fikra.solutions';
-       const response = await fetch(`${backendUrl}/api/v1/pdf-converter/convert`, {
-         method: 'POST',
-         headers: {
-           'Content-Type': 'application/json'
-         },
-         credentials: 'include', // Include cookies for authentication
-         body: JSON.stringify({
-           pdfUrl: cleanUrl
-         })
+             // Call the backend API to convert PDF to images using axiosInstance for proper auth
+       const response = await axiosInstance.post('/pdf-converter/convert', {
+         pdfUrl: cleanUrl
        });
 
       clearInterval(progressInterval);
       setConversionProgress(100);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`HTTP error! status: ${response.status} - ${errorData.message || 'Unknown error'}`);
-      }
-
-      const data = await response.json();
+      // axiosInstance automatically handles response status and throws on errors
+      const data = response.data;
       
       if (data.success && data.data) {
         // Filter out failed conversions and use the actual converted image URLs
-        const backendUrl = window.location.hostname === 'localhost' ? 'http://localhost:4000' : 'https://lms.fikra.solutions';
+        const backendUrl = axiosInstance.defaults.baseURL.replace('/api/v1', '');
         const validImages = data.data.filter(page => page.imageUrl !== null);
         
         if (validImages.length > 0) {

@@ -8,6 +8,7 @@ import { FiMoreVertical } from "react-icons/fi";
 import Layout from "../../Layout/Layout";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../Helpers/axiosInstance";
+import { egyptianGovernorates, getArabicGovernorate } from "../../utils/governorateMapping";
 
 
 export default function Profile() {
@@ -509,35 +510,12 @@ export default function Profile() {
                       }`}
                     >
                       <option value="">اختر المحافظة</option>
-                      <option value="Cairo">Cairo</option>
-                      <option value="Alexandria">Alexandria</option>
-                      <option value="Giza">Giza</option>
-                      <option value="Qalyubia">Qalyubia</option>
-                      <option value="Port Said">Port Said</option>
-                      <option value="Suez">Suez</option>
-                      <option value="Gharbia">Gharbia</option>
-                      <option value="Monufia">Monufia</option>
-                      <option value="Beheira">Beheira</option>
-                      <option value="Ismailia">Ismailia</option>
-                      <option value="Kafr El Sheikh">Kafr El Sheikh</option>
-                      <option value="Dakahlia">Dakahlia</option>
-                      <option value="Sharqia">Sharqia</option>
-                      <option value="Damietta">Damietta</option>
-                      <option value="Assiut">Assiut</option>
-                      <option value="Sohag">Sohag</option>
-                      <option value="Qena">Qena</option>
-                      <option value="Aswan">Aswan</option>
-                      <option value="Luxor">Luxor</option>
-                      <option value="Red Sea">Red Sea</option>
-                      <option value="New Valley">New Valley</option>
-                      <option value="Matruh">Matruh</option>
-                      <option value="North Sinai">North Sinai</option>
-                      <option value="South Sinai">South Sinai</option>
-                      <option value="Beni Suef">Beni Suef</option>
-                      <option value="Faiyum">Faiyum</option>
-                      <option value="Minya">Minya</option>
-                      <option value="Asyut">Asyut</option>
-                      <option value="Other">Other</option>
+                      {egyptianGovernorates.map((gov) => (
+                        <option key={gov.value} value={gov.value}>
+                          {gov.label}
+                        </option>
+                      ))}
+                      <option value="Other">أخرى</option>
                     </select>
                   </div>
                 </>

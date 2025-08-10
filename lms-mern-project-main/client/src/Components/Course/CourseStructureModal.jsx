@@ -187,7 +187,7 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Course Structure: {course?.title}
+            هيكل الدورة: {course?.title}
           </h2>
           <button
             onClick={onClose}
@@ -202,14 +202,13 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
           {/* Units */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Units</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">وحدات</h3>
               <button
                 onClick={() => setShowAddUnit(true)}
                 className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
               >
                 <FaPlus className="text-sm" />
-                Add Unit
-              </button>
+اضافة وحدة              </button>
             </div>
 
             {course?.units?.map((unit) => (
@@ -219,7 +218,7 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
                     <h4 className="font-medium text-gray-900 dark:text-white">
                       {unit.title}
                     </h4>
-                    <span className="text-xs text-gray-500 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                    <span className="text-xs text-gray-500 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded sr-only">
                       ID: {unit._id}
                     </span>
                   </div>
@@ -243,7 +242,7 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
                       className="flex items-center gap-2 bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 text-sm"
                     >
                       <FaPlus className="text-xs" />
-                      Add Lesson
+                      اضافة درس
                     </button>
                   </div>
                 </div>
@@ -272,7 +271,7 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
                               {lesson.description}
                             </p>
                           )}
-                          <span className="text-xs text-gray-500 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                          <span className="text-xs text-gray-500 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded sr-only">
                             ID: {lesson._id}
                           </span>
                         </div>
@@ -299,16 +298,16 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
             ))}
           </div>
 
-          {/* Direct Lessons */}
+          {/* درس */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Direct Lessons</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">درس</h3>
               <button
                 onClick={() => setShowAddDirectLesson(true)}
                 className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
               >
                 <FaPlus className="text-sm" />
-                Add Direct Lesson
+اضافة درس
               </button>
             </div>
 
@@ -328,7 +327,7 @@ const CourseStructureModal = ({ courseId, onClose, isOpen }) => {
                         {lesson.description}
                       </p>
                     )}
-                    <span className="text-xs text-gray-500 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                    <span className="text-xs text-gray-500 bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded sr-only">
                       ID: {lesson._id}
                     </span>
                   </div>

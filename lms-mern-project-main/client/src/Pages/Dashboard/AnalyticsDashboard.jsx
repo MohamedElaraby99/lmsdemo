@@ -336,7 +336,7 @@ export default function AnalyticsDashboard() {
                             {progress.user?.fullName || progress.user?.username}
                           </p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            فيديو: {progress.videoId}
+                            {progress.videoTitle || `فيديو: ${progress.videoId}`}
                           </p>
                         </div>
                         <div className="text-left">

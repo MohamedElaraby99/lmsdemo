@@ -15,6 +15,7 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 import { takeTrainingExam, takeFinalExam, clearExamError, clearLastExamResult } from '../../Redux/Slices/ExamSlice';
+import { axiosInstance } from '../../Helpers/axiosInstance';
 
 const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType = 'training' }) => {
   const dispatch = useDispatch();
@@ -193,6 +194,21 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 leading-relaxed">
             {question.question}
           </h3>
+
+          {/* Question Image */}
+          {question.image && (
+            <div className="mb-4">
+              <img 
+                src={question.image.startsWith('http') ? question.image : `http://localhost:4000${question.image}`}
+                alt="صورة السؤال" 
+                className="max-w-full h-auto rounded-lg shadow-md"
+                onError={(e) => {
+                  console.error('Failed to load image:', question.image);
+                  e.target.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <div className="space-y-3">

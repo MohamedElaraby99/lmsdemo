@@ -17,6 +17,7 @@ import whatsappServiceRoutes from './routes/whatsappService.routes.js';
 import pdfConverterRoutes from './routes/pdfConverter.routes.js';
 import examRoutes from './routes/exam.routes.js';
 import videoProgressRoutes from './routes/videoProgress.routes.js';
+import deviceManagementRoutes from './routes/deviceManagement.routes.js';
 
 
 
@@ -91,6 +92,7 @@ app.use('/api/v1/whatsapp-services', whatsappServiceRoutes);
 app.use('/api/v1/pdf-converter', pdfConverterRoutes);
 app.use('/api/v1/exams', examRoutes);
 app.use('/api/v1/video-progress', videoProgressRoutes);
+app.use('/api/v1/device-management', deviceManagementRoutes);
 
 
 

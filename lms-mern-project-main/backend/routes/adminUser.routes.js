@@ -2,6 +2,7 @@ import express from "express";
 import { isLoggedIn, authorisedRoles } from "../middleware/auth.middleware.js";
 import { 
     getAllUsers,
+    createUser,
     getUserDetails,
     toggleUserStatus,
     deleteUser,
@@ -22,6 +23,9 @@ router.get("/users", (req, res, next) => {
     console.log('User making request:', req.user);
     next();
 }, getAllUsers);
+
+// Create new user
+router.post("/create", createUser);
 
 // Get user details
 router.get("/users/:userId", getUserDetails);

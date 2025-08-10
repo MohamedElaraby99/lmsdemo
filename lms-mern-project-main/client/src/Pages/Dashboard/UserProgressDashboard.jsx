@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { axiosInstance } from '../../Helpers/axiosInstance';
 import Layout from '../../Layout/Layout';
+import { getArabicGovernorate } from "../../utils/governorateMapping";
 import { 
   FaUsers, 
   FaPlay, 
@@ -541,7 +542,7 @@ const UserProgressDashboard = () => {
                         <p><strong>رقم الهاتف:</strong> {selectedUser.user.phoneNumber}</p>
                       )}
                       {selectedUser.user.governorate && (
-                        <p><strong>المحافظة:</strong> {selectedUser.user.governorate}</p>
+                        <p><strong>المحافظة:</strong> {getArabicGovernorate(selectedUser.user.governorate)}</p>
                       )}
                     </div>
                   </div>
@@ -567,7 +568,7 @@ const UserProgressDashboard = () => {
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div>
                           <p className="font-medium text-gray-900 dark:text-white">
-                            فيديو: {activity.videoId}
+                            {activity.videoTitle || `فيديو: ${activity.videoId}`}
                           </p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             {activity.courseName || 'دورة غير محددة'}

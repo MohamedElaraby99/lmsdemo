@@ -21,6 +21,7 @@ import {
   FaGraduationCap,
   FaChevronDown,
   FaChevronUp,
+  FaServer,
 } from "react-icons/fa";
 
 export default function Sidebar({ hideBar = false }) {
@@ -157,6 +158,15 @@ export default function Sidebar({ hideBar = false }) {
                 <Link to="/admin/users" className="flex gap-4 items-center" onClick={closeSidebar}>
                   <FaUsers size={18} className="text-gray-500 dark:text-slate-100" />
                   إدارة المستخدمين
+                </Link>
+              </li>
+            )}
+
+            {role === "ADMIN" && (
+              <li>
+                <Link to="/admin/device-management" className="flex gap-4 items-center" onClick={closeSidebar}>
+                  <FaServer size={18} className="text-gray-500 dark:text-slate-100" />
+                  إدارة الأجهزة
                 </Link>
               </li>
             )}

@@ -1,9 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import useScrollToTop from "./Helpers/useScrollToTop";
-import { initializeDeviceProtection } from "./utils/deviceDetection";
 import DeviceProtection from "./Components/DeviceProtection";
-import "./utils/deviceProtection.css";
 import HomePage from "./Pages/HomePage";
 import AboutUs from "./Pages/About";
 import NotFound from "./Pages/NotFound";
@@ -50,16 +48,12 @@ import Profile from "./Pages/User/Profile";
 import AdminDashboard from "./Pages/Dashboard/AdminDashboard";
 import CourseDashboard from "./Pages/Dashboard/CourseDashboard";
 import UserProgressDashboard from "./Pages/Dashboard/UserProgressDashboard";
+import DeviceManagementDashboard from "./Pages/Dashboard/DeviceManagementDashboard";
 import ExamHistory from "./Pages/User/ExamHistory";
 
 function App() {
   // Auto scroll to top on route change
   useScrollToTop();
-
-  // Initialize device protection on app load
-  useEffect(() => {
-    initializeDeviceProtection();
-  }, []);
 
   return (
     <DeviceProtection>
@@ -112,6 +106,7 @@ function App() {
                     <Route path="/admin/qa-pending" element={<QAPendingQuestions />} />
                     <Route path="/admin/subject-dashboard" element={<SubjectDashboard />} />
                     <Route path="/admin/user-progress" element={<UserProgressDashboard />} />
+                    <Route path="/admin/device-management" element={<DeviceManagementDashboard />} />
                   </Route>
 
         <Route element={<RequireAuth allowedRoles={["USER", "ADMIN"]} />}>

@@ -9,6 +9,7 @@ import InputBox from "../Components/InputBox/InputBox";
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUserPlus, FaGraduationCap, FaCamera, FaUpload, FaPhone, FaMapMarkerAlt, FaBook } from "react-icons/fa";
 import { axiosInstance } from "../Helpers/axiosInstance";
 import { useEffect } from "react";
+import { egyptianGovernorates } from "../utils/governorateMapping";
 
 export default function Signup() {
   const dispatch = useDispatch();
@@ -362,33 +363,11 @@ export default function Signup() {
                       onChange={handleUserInput}
                     >
                       <option value="">اختر المحافظة</option>
-                      <option value="Cairo">Cairo</option>
-                      <option value="Giza">Giza</option>
-                      <option value="Alexandria">Alexandria</option>
-                      <option value="Dakahlia">Dakahlia</option>
-                      <option value="Red Sea">Red Sea</option>
-                      <option value="Beheira">Beheira</option>
-                      <option value="Fayoum">Fayoum</option>
-                      <option value="Gharbiya">Gharbiya</option>
-                      <option value="Ismailia">Ismailia</option>
-                      <option value="Menofia">Menofia</option>
-                      <option value="Minya">Minya</option>
-                      <option value="Qaliubiya">Qaliubiya</option>
-                      <option value="New Valley">New Valley</option>
-                      <option value="Suez">Suez</option>
-                      <option value="Aswan">Aswan</option>
-                      <option value="Assiut">Assiut</option>
-                      <option value="Beni Suef">Beni Suef</option>
-                      <option value="Port Said">Port Said</option>
-                      <option value="Damietta">Damietta</option>
-                      <option value="Sharkia">Sharkia</option>
-                      <option value="South Sinai">South Sinai</option>
-                      <option value="Kafr Al sheikh">Kafr Al sheikh</option>
-                      <option value="Matrouh">Matrouh</option>
-                      <option value="Luxor">Luxor</option>
-                      <option value="Qena">Qena</option>
-                      <option value="North Sinai">North Sinai</option>
-                      <option value="Sohag">Sohag</option>
+                      {egyptianGovernorates.map((gov) => (
+                        <option key={gov.value} value={gov.value}>
+                          {gov.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>

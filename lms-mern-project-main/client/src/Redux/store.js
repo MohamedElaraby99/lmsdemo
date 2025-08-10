@@ -17,6 +17,7 @@ import InstructorSliceReducer from "./Slices/InstructorSlice"
 import StageSliceReducer from "./Slices/StageSlice"
 import PaymentSliceReducer from "./Slices/PaymentSlice"
 import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
+import DeviceManagementSliceReducer from "./Slices/DeviceManagementSlice"
 
  const store = configureStore({
     reducer: {
@@ -40,7 +41,8 @@ import VideoProgressSliceReducer from "./Slices/VideoProgressSlice"
   instructor: InstructorSliceReducer,
   stage: StageSliceReducer,
   payment: PaymentSliceReducer,
-  videoProgress: VideoProgressSliceReducer
+  videoProgress: VideoProgressSliceReducer,
+  deviceManagement: DeviceManagementSliceReducer
     },
     devTools: true
 })

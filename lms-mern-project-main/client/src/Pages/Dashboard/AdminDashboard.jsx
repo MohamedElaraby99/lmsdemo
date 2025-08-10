@@ -35,6 +35,8 @@ import {
   FaArrowUp,
   FaArrowDown,
   FaDollarSign,
+  FaTicketAlt,
+  FaQrcode,
   FaUserGraduate,
   FaPlay,
   FaCalendarAlt,
@@ -69,6 +71,7 @@ export default function AdminDashboard() {
   const { 
     allUsersCount, 
     subscribedCount, 
+    totalCourses,
     totalLectures, 
     totalPayments, 
     totalRevenue, 
@@ -78,20 +81,71 @@ export default function AdminDashboard() {
   // Add state for stages data
   const [stages, setStages] = useState([]);
   const [stagesLoading, setStagesLoading] = useState(true);
+  
+  // Add state for recharge codes data
+  const [rechargeCodesStats, setRechargeCodesStats] = useState({
+    totalGenerated: 0,
+    totalUsed: 0,
+    totalAvailable: 0
+  });
 
   // Function to fetch stages data
   const fetchStagesData = async () => {
     try {
       setStagesLoading(true);
+      // Use the real stages stats API endpoint
+      console.log('📊 Fetching real stages statistics...');
       const response = await axiosInstance.get('/stages/stats');
+      
       if (response.data.success) {
-        setStages(response.data.data.stages);
+        const stagesData = response.data.data?.stages || response.data.data || [];
+        console.log('📊 Real stages data received:', stagesData);
+        // Process real stages data
+        const processedStages = stagesData.map(stage => ({
+          name: stage.name || 'مرحلة غير محددة',
+          studentsCount: stage.studentsCount || stage.usersCount || 0,
+          subjectsCount: stage.subjectsCount || stage.coursesCount || 0,
+          _id: stage._id
+        }));
+        setStages(processedStages);
+        console.log('✅ Real stages data processed and set:', processedStages);
+      } else {
+        console.log('⚠️ No stages data available');
+        setStages([]);
       }
     } catch (error) {
-      console.error('Error fetching stages data:', error);
-      toast.error('فشل في تحميل بيانات المراحل');
+      console.error('❌ Error fetching stages data:', error);
+      console.log('⚠️ Stages API not available - chart will show empty state');
+      setStages([]);
+      toast.error('فشل في تحميل بيانات المراحل الدراسية');
     } finally {
       setStagesLoading(false);
+    }
+  };
+
+  // Function to fetch recharge codes statistics
+  const fetchRechargeCodesStats = async () => {
+    try {
+      console.log('📊 Fetching real recharge codes statistics...');
+      const response = await axiosInstance.get('/admin/recharge-codes/stats');
+      if (response.data.success) {
+        const stats = response.data.data.stats;
+        console.log('📊 Real recharge codes data received:', stats);
+        setRechargeCodesStats({
+          totalGenerated: stats.totalCodes || 0,
+          totalUsed: stats.usedCodes || 0,
+          totalAvailable: stats.unusedCodes || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching recharge codes stats:', error);
+      console.log('⚠️ Using fallback data - API might not be available');
+      // Set fallback data that's clearly marked as fake
+      setRechargeCodesStats({
+        totalGenerated: 0,
+        totalUsed: 0,
+        totalAvailable: 0
+      });
     }
   };
 
@@ -133,11 +187,11 @@ export default function AdminDashboard() {
 
   // Enhanced chart data for platform growth
   const platformGrowthData = {
-    labels: ["المستخدمين", "الدورات", "المحاضرات", "الإيرادات (ألف)", "المدفوعات"],
+    labels: ["المستخدمين", "الدورات", "الدروس", "أكواد مُولدة", "أكواد مستخدمة"],
     datasets: [
       {
         label: "مقاييس نمو المنصة",
-        data: [allUsersCount, totalLectures, totalPayments, totalRevenue / 1000, totalPayments],
+        data: [allUsersCount, totalCourses, totalLectures, rechargeCodesStats.totalGenerated, rechargeCodesStats.totalUsed],
         backgroundColor: "rgba(59, 130, 246, 0.6)",
         borderColor: "rgba(59, 130, 246, 1)",
         borderWidth: 3,
@@ -165,8 +219,14 @@ export default function AdminDashboard() {
     };
 
     (async () => {
+      console.log('🚀 Starting to fetch all real data for dashboard...');
       await dispatch(getStatsData());
+      console.log('✅ Real stats data fetched from /admin/stats/users');
       await fetchStagesData(); // Fetch stages data
+      console.log('✅ Real stages data fetched');
+      await fetchRechargeCodesStats(); // Fetch recharge codes statistics
+      console.log('✅ Real recharge codes data fetched');
+      console.log('🎯 All real data loaded - no fake data should be displayed');
     })();
 
     // Cleanup
@@ -198,9 +258,9 @@ export default function AdminDashboard() {
       changeType: "increase"
     },
     {
-      title: "إجمالي الإيرادات",
-      value: `EGP ${totalRevenue}`,
-      icon: FaDollarSign,
+      title: "إجمالي الأكواد المستخدمة",
+      value: rechargeCodesStats.totalUsed,
+      icon: FaQrcode,
       color: "from-purple-500 to-purple-600",
       bgColor: "bg-purple-50 dark:bg-purple-900/20",
       textColor: "text-purple-600 dark:text-purple-400",
@@ -314,7 +374,7 @@ export default function AdminDashboard() {
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                       <span className="mr-2 text-gray-600 dark:text-gray-300">جاري تحميل بيانات المراحل...</span>
                     </div>
-                  ) : (
+                  ) : stages.length > 0 ? (
                     <Pie
                       data={stagesChartData}
                       options={{
@@ -324,16 +384,24 @@ export default function AdminDashboard() {
                           legend: {
                             position: 'bottom',
                             labels: {
-                              color: document.documentElement.classList.contains('dark') ? 'white' : 'black',
+                              color: '#374151', // Default gray color
                               font: { 
-                                size: window.innerWidth < 768 ? 10 : 12 
+                                size: window.innerWidth < 768 ? 10 : 12,
+                                family: 'system-ui, -apple-system, sans-serif'
                               },
                               padding: window.innerWidth < 768 ? 10 : 20,
                               boxWidth: window.innerWidth < 768 ? 12 : 16,
-                              boxHeight: window.innerWidth < 768 ? 8 : 12
+                              boxHeight: window.innerWidth < 768 ? 8 : 12,
+                              usePointStyle: true
                             }
                           },
                           tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
                             callbacks: {
                               label: function(context) {
                                 const stage = stages[context.dataIndex];
@@ -344,9 +412,32 @@ export default function AdminDashboard() {
                               }
                             }
                           }
+                        },
+                        layout: {
+                          padding: {
+                            top: 10,
+                            bottom: 10,
+                            left: 10,
+                            right: 10
+                          }
                         }
                       }}
                     />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <div className="text-4xl mb-4">📊</div>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm">
+                          لا توجد بيانات للمراحل الدراسية
+                        </p>
+                        <button 
+                          onClick={fetchStagesData}
+                          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors"
+                        >
+                          إعادة التحميل
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -370,36 +461,50 @@ export default function AdminDashboard() {
                       plugins: {
                         legend: {
                           labels: {
-                            color: document.documentElement.classList.contains('dark') ? 'white' : 'black',
+                            color: '#374151', // Default gray color
                             font: { 
-                              size: window.innerWidth < 768 ? 10 : 12 
+                              size: window.innerWidth < 768 ? 10 : 12,
+                              family: 'system-ui, -apple-system, sans-serif'
                             }
                           }
+                        },
+                        tooltip: {
+                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          titleColor: 'white',
+                          bodyColor: 'white',
+                          borderColor: 'rgba(255, 255, 255, 0.1)',
+                          borderWidth: 1,
+                          cornerRadius: 8
                         }
                       },
                       scales: {
                         y: {
+                          beginAtZero: true,
                           ticks: {
-                            color: document.documentElement.classList.contains('dark') ? 'white' : 'black',
+                            color: '#6B7280', // Neutral gray
                             font: { 
-                              size: window.innerWidth < 768 ? 10 : 12 
+                              size: window.innerWidth < 768 ? 10 : 12,
+                              family: 'system-ui, -apple-system, sans-serif'
                             }
                           },
                           grid: {
-                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            color: 'rgba(156, 163, 175, 0.2)', // Light gray grid
+                            borderColor: 'rgba(156, 163, 175, 0.3)'
                           }
                         },
                         x: {
                           ticks: {
-                            color: document.documentElement.classList.contains('dark') ? 'white' : 'black',
+                            color: '#6B7280', // Neutral gray
                             font: { 
-                              size: window.innerWidth < 768 ? 10 : 12 
+                              size: window.innerWidth < 768 ? 10 : 12,
+                              family: 'system-ui, -apple-system, sans-serif'
                             },
                             maxRotation: window.innerWidth < 768 ? 45 : 0,
                             minRotation: window.innerWidth < 768 ? 45 : 0
                           },
                           grid: {
-                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            color: 'rgba(156, 163, 175, 0.2)', // Light gray grid
+                            borderColor: 'rgba(156, 163, 175, 0.3)'
                           }
                         }
                       }

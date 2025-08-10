@@ -102,6 +102,112 @@ const getAllUsers = async (req, res, next) => {
     }
 };
 
+// Create new user (Admin only)
+const createUser = async (req, res, next) => {
+    try {
+        const { 
+            fullName, 
+            username, 
+            email, 
+            password, 
+            role = 'USER',
+            phoneNumber,
+            fatherPhoneNumber,
+            governorate,
+            stage,
+            age 
+        } = req.body;
+
+        // Validate required fields
+        if (!fullName || !username || !email || !password || !role) {
+            return next(new AppError("Full name, username, email, password, and role are required", 400));
+        }
+
+        // Validate role
+        if (!['USER', 'ADMIN'].includes(role)) {
+            return next(new AppError("Role must be either USER or ADMIN", 400));
+        }
+
+        // For USER role, require additional fields
+        if (role === 'USER') {
+            if (!phoneNumber || !fatherPhoneNumber || !governorate || !stage || !age) {
+                return next(new AppError("Phone number, father phone number, governorate, stage, and age are required for regular users", 400));
+            }
+        }
+
+        // Check if user already exists
+        const existingUser = await userModel.findOne({ 
+            $or: [{ email }, { username }] 
+        });
+
+        if (existingUser) {
+            if (existingUser.email === email) {
+                return next(new AppError("Email already exists", 400));
+            }
+            if (existingUser.username === username) {
+                return next(new AppError("Username already exists", 400));
+            }
+        }
+
+        // Prepare user data
+        const userData = {
+            fullName,
+            username: username.toLowerCase(),
+            email: email.toLowerCase(),
+            password,
+            role,
+            isActive: true,
+            avatar: {
+                public_id: email,
+                secure_url: "",
+            }
+        };
+
+        // Add optional fields for USER role
+        if (role === 'USER') {
+            userData.phoneNumber = phoneNumber;
+            userData.fatherPhoneNumber = fatherPhoneNumber;
+            userData.governorate = governorate;
+            userData.stage = stage;
+            userData.age = parseInt(age);
+        }
+
+        // Create user
+        const user = await userModel.create(userData);
+
+        if (!user) {
+            return next(new AppError("Failed to create user", 500));
+        }
+
+        // Remove password from response
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        res.status(201).json({
+            success: true,
+            message: `${role} account created successfully`,
+            data: {
+                user: {
+                    id: userResponse._id,
+                    fullName: userResponse.fullName,
+                    username: userResponse.username,
+                    email: userResponse.email,
+                    role: userResponse.role,
+                    isActive: userResponse.isActive,
+                    phoneNumber: userResponse.phoneNumber,
+                    fatherPhoneNumber: userResponse.fatherPhoneNumber,
+                    governorate: userResponse.governorate,
+                    stage: userResponse.stage,
+                    age: userResponse.age,
+                    createdAt: userResponse.createdAt
+                }
+            }
+        });
+    } catch (error) {
+        return next(new AppError(error.message, 500));
+    }
+};
+
 // Get user details with activities
 const getUserDetails = async (req, res, next) => {
     try {
@@ -332,6 +438,7 @@ const getUserStats = async (req, res, next) => {
 
 export {
     getAllUsers,
+    createUser,
     getUserDetails,
     toggleUserStatus,
     deleteUser,
