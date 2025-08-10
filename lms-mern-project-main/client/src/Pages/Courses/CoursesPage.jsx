@@ -282,9 +282,7 @@ export default function CoursesPage() {
                         <FaEye />
                         <span>عرض التفاصيل</span>
                       </Link>
-                      <button className="px-4 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                        <FaArrowRight />
-                      </button>
+                     
                     </div>
                   </div>
                 </div>

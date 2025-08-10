@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { 
   FaTimes, 
@@ -38,6 +38,9 @@ const TakeExamModal = ({
   const [examTaken, setExamTaken] = useState(false);
   const [existingResult, setExistingResult] = useState(null);
   const [checkingExam, setCheckingExam] = useState(true);
+  
+  // Add startTime tracking
+  const startTimeRef = useRef(null);
 
   const exam = examType === 'training' ? lesson?.trainingExam : lesson?.finalExam;
   const totalQuestions = exam?.questions?.length || 0;
@@ -101,6 +104,7 @@ const TakeExamModal = ({
       toast.error('You have already taken this exam!');
       return;
     }
+    startTimeRef.current = Date.now(); // Track start time
     setExamStarted(true);
     setTimeLeft(timeLimit * 60); // Convert to seconds
     setIsTimerRunning(true);
@@ -164,6 +168,7 @@ const TakeExamModal = ({
           questionIndex: index,
           selectedAnswer: answer?.selectedAnswer || 0
         })),
+        startTime: startTimeRef.current ? new Date(startTimeRef.current).toISOString() : null, // Send start time
         timeTaken
       });
 

@@ -127,7 +127,12 @@ liveMeetingSchema.methods.isUpcoming = function() {
 
 // Method to check if user is attendee
 liveMeetingSchema.methods.isUserAttendee = function(userId) {
-  return this.attendees.some(attendee => attendee.user.toString() === userId.toString());
+  const userIdStr = userId.toString();
+  return this.attendees.some(attendee => {
+    // Handle both populated and non-populated attendee.user
+    const attendeeUserId = attendee.user._id ? attendee.user._id.toString() : attendee.user.toString();
+    return attendeeUserId === userIdStr;
+  });
 };
 
 // Method to add attendee
@@ -141,7 +146,12 @@ liveMeetingSchema.methods.addAttendee = function(userId) {
 
 // Method to remove attendee
 liveMeetingSchema.methods.removeAttendee = function(userId) {
-  const index = this.attendees.findIndex(attendee => attendee.user.toString() === userId.toString());
+  const userIdStr = userId.toString();
+  const index = this.attendees.findIndex(attendee => {
+    // Handle both populated and non-populated attendee.user
+    const attendeeUserId = attendee.user._id ? attendee.user._id.toString() : attendee.user.toString();
+    return attendeeUserId === userIdStr;
+  });
   if (index > -1) {
     this.attendees.splice(index, 1);
     return true;

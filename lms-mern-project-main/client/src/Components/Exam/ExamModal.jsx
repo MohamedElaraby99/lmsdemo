@@ -136,7 +136,8 @@ const ExamModal = ({ isOpen, onClose, exam, courseId, lessonId, unitId, examType
         questionIndex: parseInt(key),
         selectedAnswer: answers[key]
       })),
-      timeTaken: timeTakenMinutes
+      startTime: new Date(startTimeRef.current).toISOString(), // Send start time to backend
+      timeTaken: timeTakenMinutes // Keep for backwards compatibility
     };
 
     console.log('=== EXAM SUBMISSION DEBUG ===');

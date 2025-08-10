@@ -302,9 +302,26 @@ export const getLiveMeeting = asyncHandler(async (req, res, next) => {
     const isAttendee = liveMeeting.isUserAttendee(userId);
     const isInstructor = liveMeeting.instructor._id.toString() === userId.toString();
     
+    // Debug logging for authorization
+    console.log('🔐 Authorization check for meeting access:', {
+      userId: userId,
+      userRole: userRole,
+      meetingId: id,
+      isAttendee: isAttendee,
+      isInstructor: isInstructor,
+      instructorId: liveMeeting.instructor._id.toString(),
+      attendees: liveMeeting.attendees.map(a => ({
+        userId: a.user.toString(),
+        matches: a.user.toString() === userId.toString()
+      }))
+    });
+    
     if (!isAttendee && !isInstructor) {
+      console.log('❌ Access denied - user is not attendee or instructor');
       return next(new AppError('غير مصرح لك بالوصول لهذا الاجتماع', 403));
     }
+    
+    console.log('✅ Access granted - user is authorized');
   }
 
   res.status(200).json({
@@ -398,14 +415,32 @@ export const joinLiveMeeting = asyncHandler(async (req, res, next) => {
   }
 
   // Check if user is an attendee
-  if (!liveMeeting.isUserAttendee(userId)) {
+  const isAttendee = liveMeeting.isUserAttendee(userId);
+  
+  // Debug logging for join authorization
+  console.log('🔐 Join authorization check:', {
+    userId: userId,
+    meetingId: id,
+    isAttendee: isAttendee,
+    attendees: liveMeeting.attendees.map(a => ({
+      userId: a.user.toString(),
+      matches: a.user.toString() === userId.toString()
+    }))
+  });
+  
+  if (!isAttendee) {
+    console.log('❌ Join denied - user is not attendee');
     return next(new AppError('غير مصرح لك بالانضمام لهذا الاجتماع', 403));
   }
+  
+  console.log('✅ Join access granted');
 
   // Mark user as joined
-  const attendeeIndex = liveMeeting.attendees.findIndex(
-    attendee => attendee.user.toString() === userId.toString()
-  );
+  const userIdStr = userId.toString();
+  const attendeeIndex = liveMeeting.attendees.findIndex(attendee => {
+    const attendeeUserId = attendee.user._id ? attendee.user._id.toString() : attendee.user.toString();
+    return attendeeUserId === userIdStr;
+  });
 
   if (attendeeIndex > -1) {
     liveMeeting.attendees[attendeeIndex].hasJoined = true;

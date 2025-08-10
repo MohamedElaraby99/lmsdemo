@@ -31,12 +31,14 @@ const ExamResultsDashboard = () => {
     limit: 20,
     search: '',
     courseId: '',
+    stageId: '',
     examType: '',
     passed: '',
     sortBy: 'completedAt',
     sortOrder: 'desc'
   });
   const [courses, setCourses] = useState([]);
+  const [stages, setStages] = useState([]);
   const [selectedResult, setSelectedResult] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
@@ -49,6 +51,18 @@ const ExamResultsDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching courses:', error);
+    }
+  };
+
+  // Fetch stages for filter dropdown
+  const fetchStages = async () => {
+    try {
+      const response = await axiosInstance.get('/stages');
+      if (response.data.success) {
+        setStages(response.data.data.stages || []);
+      }
+    } catch (error) {
+      console.error('Error fetching stages:', error);
     }
   };
 
@@ -67,7 +81,39 @@ const ExamResultsDashboard = () => {
       const response = await axiosInstance.get(`/exam-results?${queryParams}`);
       
       if (response.data.success) {
-        setExamResults(response.data.data || []);
+        console.log('📊 Exam results API response:', response.data);
+        
+        // Map the backend data structure to frontend expectations
+        const results = response.data.data || [];
+        const mappedResults = results.map(result => ({
+          _id: result.id || result._id,
+          user: {
+            fullName: result.user?.name || result.user?.fullName,
+            email: result.user?.email,
+            _id: result.user?.id || result.user?._id
+          },
+          course: {
+            title: result.course?.title,
+            _id: result.course?.id || result.course?._id
+          },
+          lessonTitle: result.lesson?.title || result.lessonTitle,
+          unitTitle: result.lesson?.unitTitle || result.unitTitle,
+          examType: result.exam?.type || result.examType,
+          score: result.exam?.score || result.score,
+          correctAnswers: result.exam?.correctAnswers || result.correctAnswers,
+          totalQuestions: result.exam?.totalQuestions || result.totalQuestions,
+          wrongAnswers: result.exam?.wrongAnswers || result.wrongAnswers,
+          timeTaken: result.exam?.timeTaken || result.timeTaken,
+          timeLimit: result.exam?.timeLimit || result.timeLimit,
+          passingScore: result.exam?.passingScore || result.passingScore,
+          passed: result.exam?.passed || result.passed,
+          completedAt: result.completedAt,
+          answers: result.answers || []
+        }));
+        
+        console.log('📊 Mapped exam results:', mappedResults);
+        
+        setExamResults(mappedResults);
         setSummary(response.data.summary || {});
         setPagination(response.data.pagination || {});
       }
@@ -82,6 +128,7 @@ const ExamResultsDashboard = () => {
   useEffect(() => {
     fetchExamResults();
     fetchCourses();
+    fetchStages();
   }, [filters]);
 
   const handleFilterChange = (key, value) => {
@@ -253,7 +300,7 @@ const ExamResultsDashboard = () => {
 
           {/* Filters */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
               {/* Search */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -285,6 +332,25 @@ const ExamResultsDashboard = () => {
                   {courses.map((course) => (
                     <option key={course._id} value={course._id}>
                       {course.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Stage Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  المرحلة الدراسية
+                </label>
+                <select
+                  value={filters.stageId}
+                  onChange={(e) => handleFilterChange('stageId', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">جميع المراحل</option>
+                  {stages.map((stage) => (
+                    <option key={stage._id} value={stage._id}>
+                      {stage.name}
                     </option>
                   ))}
                 </select>
@@ -353,6 +419,9 @@ const ExamResultsDashboard = () => {
                           الدرس
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          المرحلة
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                           نوع الامتحان
                         </th>
                         <th 
@@ -406,6 +475,16 @@ const ExamResultsDashboard = () => {
                                   الوحدة: {result.unitTitle}
                                 </div>
                               )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-blue-600 dark:text-blue-400">
+                                {result.user?.stage || result.course?.stage || 'غير محدد'}
+                              </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {result.course?.subject || 'مادة غير محددة'}
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">

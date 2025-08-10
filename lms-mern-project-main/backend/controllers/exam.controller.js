@@ -9,7 +9,7 @@ const asyncHandler = (fn) => (req, res, next) => {
 
 // Take training exam
 const takeTrainingExam = asyncHandler(async (req, res) => {
-    const { courseId, lessonId, unitId, examId, answers } = req.body;
+    const { courseId, lessonId, unitId, examId, answers, startTime } = req.body;
     
     console.log('=== TRAINING EXAM BACKEND DEBUG ===');
     console.log('Request Body:', req.body);
@@ -80,11 +80,28 @@ const takeTrainingExam = asyncHandler(async (req, res) => {
     const totalQuestions = questions.length;
     const score = correctAnswers;
     const percentage = Math.round((correctAnswers / totalQuestions) * 100);
+    
+    // Calculate time taken
+    const endTime = new Date();
+    let timeTaken = 0;
+    
+    if (startTime) {
+        const start = new Date(startTime);
+        timeTaken = Math.round((endTime - start) / 1000 / 60); // Convert to minutes
+        console.log('⏱️ Time calculation:', {
+            startTime: start,
+            endTime: endTime,
+            timeTakenMinutes: timeTaken
+        });
+    } else {
+        console.log('⚠️ No startTime provided, using timeTaken from request body');
+        timeTaken = req.body.timeTaken || 0;
+    }
 
     // Save attempt to training
     const attempt = {
         userId,
-        takenAt: new Date(),
+        takenAt: endTime,
         score,
         totalQuestions,
         answers: detailedAnswers
@@ -102,7 +119,7 @@ const takeTrainingExam = asyncHandler(async (req, res) => {
             percentage,
             correctAnswers,
             wrongAnswers: totalQuestions - correctAnswers,
-            timeTaken: req.body.timeTaken || 0,
+            timeTaken: timeTaken,
             answers: detailedAnswers,
             questionsWithAnswers: questions.map((question, index) => ({
                 question: question.question,
@@ -119,7 +136,7 @@ const takeTrainingExam = asyncHandler(async (req, res) => {
 
 // Take final exam
 const takeFinalExam = asyncHandler(async (req, res) => {
-    const { courseId, lessonId, unitId, examId, answers } = req.body;
+    const { courseId, lessonId, unitId, examId, answers, startTime } = req.body;
     
     console.log('=== FINAL EXAM BACKEND DEBUG ===');
     console.log('Request Body:', req.body);
@@ -226,11 +243,28 @@ const takeFinalExam = asyncHandler(async (req, res) => {
     const totalQuestions = questions.length;
     const score = correctAnswers;
     const percentage = Math.round((correctAnswers / totalQuestions) * 100);
+    
+    // Calculate time taken
+    const endTime = new Date();
+    let timeTaken = 0;
+    
+    if (startTime) {
+        const start = new Date(startTime);
+        timeTaken = Math.round((endTime - start) / 1000 / 60); // Convert to minutes
+        console.log('⏱️ Final exam time calculation:', {
+            startTime: start,
+            endTime: endTime,
+            timeTakenMinutes: timeTaken
+        });
+    } else {
+        console.log('⚠️ No startTime provided for final exam, using timeTaken from request body');
+        timeTaken = req.body.timeTaken || 0;
+    }
 
     // Save attempt to exam
     const attempt = {
         userId,
-        takenAt: new Date(),
+        takenAt: endTime,
         score,
         totalQuestions,
         answers: detailedAnswers
@@ -248,7 +282,7 @@ const takeFinalExam = asyncHandler(async (req, res) => {
             percentage,
             correctAnswers,
             wrongAnswers: totalQuestions - correctAnswers,
-            timeTaken: req.body.timeTaken || 0,
+            timeTaken: timeTaken,
             answers: detailedAnswers
         }
     });
