@@ -322,6 +322,17 @@ const courseSlice = createSlice({
       })
       .addCase(getAllCourses.fulfilled, (state, action) => {
         state.loading = false;
+        console.log('🔍 Frontend received courses data:', {
+          totalCourses: action.payload.data.courses?.length,
+          firstCourse: action.payload.data.courses?.[0],
+          stageInfo: action.payload.data.courses?.map(c => ({
+            id: c._id,
+            title: c.title,
+            stage: c.stage,
+            stageName: c.stage?.name,
+            hasStage: !!c.stage
+          }))
+        });
         state.courses = action.payload.data.courses;
       })
       .addCase(getAllCourses.rejected, (state, action) => {
@@ -348,6 +359,17 @@ const courseSlice = createSlice({
       })
       .addCase(getFeaturedCourses.fulfilled, (state, action) => {
         state.loading = false;
+        console.log('🌟 Frontend received FEATURED courses data:', {
+          totalCourses: action.payload.data.courses?.length,
+          firstCourse: action.payload.data.courses?.[0],
+          stageInfo: action.payload.data.courses?.map(c => ({
+            id: c._id,
+            title: c.title,
+            stage: c.stage,
+            stageName: c.stage?.name,
+            hasStage: !!c.stage
+          }))
+        });
         state.courses = action.payload.data.courses;
       })
       .addCase(getFeaturedCourses.rejected, (state, action) => {

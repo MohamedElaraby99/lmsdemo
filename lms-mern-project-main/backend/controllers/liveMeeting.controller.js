@@ -427,6 +427,8 @@ export const addAttendees = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { attendees } = req.body;
 
+  console.log('Debug - addAttendees request:', { id, attendees });
+
   if (!attendees || !Array.isArray(attendees) || attendees.length === 0) {
     return next(new AppError('قائمة الحضور مطلوبة', 400));
   }
@@ -437,14 +439,41 @@ export const addAttendees = asyncHandler(async (req, res, next) => {
     return next(new AppError('الاجتماع المباشر غير موجود', 404));
   }
 
+  console.log('Debug - Found meeting:', { meetingId: liveMeeting._id, currentAttendees: liveMeeting.attendees.length });
+
   // Validate all attendees exist
   const validAttendees = [];
+  const invalidAttendees = [];
+  
   for (const attendeeId of attendees) {
+    console.log('Debug - Checking attendeeId:', attendeeId);
+    
+    // Skip null or undefined values
+    if (!attendeeId) {
+      console.log('Debug - Skipping null/undefined attendeeId');
+      invalidAttendees.push(attendeeId);
+      continue;
+    }
+    
     const user = await User.findById(attendeeId);
+    console.log('Debug - User lookup result:', { attendeeId, userFound: !!user });
+    
     if (user && !liveMeeting.isUserAttendee(attendeeId)) {
       validAttendees.push({ user: attendeeId });
+      console.log('Debug - Added valid attendee:', attendeeId);
+    } else if (!user) {
+      console.log('Debug - User not found:', attendeeId);
+      invalidAttendees.push(attendeeId);
+    } else {
+      console.log('Debug - User already attendee:', attendeeId);
     }
   }
+
+  console.log('Debug - Validation results:', { 
+    validAttendees: validAttendees.length, 
+    invalidAttendees: invalidAttendees.length,
+    invalidIds: invalidAttendees
+  });
 
   // Check if adding attendees would exceed max limit
   if (liveMeeting.attendees.length + validAttendees.length > liveMeeting.maxAttendees) {
@@ -457,11 +486,17 @@ export const addAttendees = asyncHandler(async (req, res, next) => {
 
   await liveMeeting.populate('attendees.user', 'fullName email');
 
+  console.log('Debug - Final attendees after save:', liveMeeting.attendees.map(a => ({ userId: a.user?._id, userExists: !!a.user })));
+
   res.status(200).json({
     success: true,
     message: 'تم إضافة الحضور بنجاح',
     attendeesAdded: validAttendees.length,
-    totalAttendees: liveMeeting.attendees.length
+    totalAttendees: liveMeeting.attendees.length,
+    debug: {
+      invalidAttendees: invalidAttendees,
+      validAttendeesCount: validAttendees.length
+    }
   });
 });
 

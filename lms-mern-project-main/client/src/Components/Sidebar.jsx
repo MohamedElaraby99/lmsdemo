@@ -111,7 +111,7 @@ export default function Sidebar({ hideBar = false }) {
           {/* Navigation Menu */}
           <ul className="menu space-y-2">
             <li>
-              <Link to="/" className="flex gap-4 items-center" onClick={closeSidebar}>
+              <Link to="/" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                 <FaHome size={18} className="text-gray-500 dark:text-slate-100" />
                 الرئيسية
               </Link>
@@ -119,7 +119,7 @@ export default function Sidebar({ hideBar = false }) {
 
             {/* Courses Section */}
             <li>
-              <Link to="/courses" className="flex gap-4 items-center" onClick={closeSidebar}>
+              <Link to="/courses" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                 <FaList size={18} className="text-gray-500 dark:text-slate-100" />
                 {role === "ADMIN" ? "جميع الكورسات" : "كورساتي"}
               </Link>
@@ -127,7 +127,7 @@ export default function Sidebar({ hideBar = false }) {
 
             {isLoggedIn && role !== "ADMIN" && (
               <li>
-                <Link to="/wallet" className="flex gap-4 items-center" onClick={closeSidebar}>
+                <Link to="/wallet" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                   <FaWallet size={18} className="text-gray-500 dark:text-slate-100" />
                   محفظتي
                 </Link>
@@ -136,7 +136,7 @@ export default function Sidebar({ hideBar = false }) {
 
             {isLoggedIn && (
               <li>
-                <Link to="/live-meetings" className="flex gap-4 items-center" onClick={closeSidebar}>
+                <Link to="/live-meetings" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                   <FaVideo size={18} className="text-gray-500 dark:text-slate-100" />
                   الجلسات المباشرة
                 </Link>
@@ -145,7 +145,7 @@ export default function Sidebar({ hideBar = false }) {
 
             {role === "ADMIN" && (
               <li>
-                <Link to="/admin/dashboard" className="flex gap-4 items-center" onClick={closeSidebar}>
+                <Link to="/admin/dashboard" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                   <FaUserCircle size={18} className="text-gray-500 dark:text-slate-100" />
                   لوحة تحكم الإدارة
                 </Link>
@@ -156,7 +156,7 @@ export default function Sidebar({ hideBar = false }) {
 
             {role === "ADMIN" && (
               <li>
-                <Link to="/admin/recharge-codes" className="flex gap-4 items-center" onClick={closeSidebar}>
+                <Link to="/admin/recharge-codes" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                   <FaCreditCard size={18} className="text-gray-500 dark:text-slate-100" />
                   رموز الشحن
                 </Link>
@@ -165,7 +165,7 @@ export default function Sidebar({ hideBar = false }) {
 
             {role === "ADMIN" && (
               <li>
-                <Link to="/admin/users" className="flex gap-4 items-center" onClick={closeSidebar}>
+                <Link to="/admin/users" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                   <FaUsers size={18} className="text-gray-500 dark:text-slate-100" />
                   إدارة المستخدمين
                 </Link>
@@ -174,7 +174,7 @@ export default function Sidebar({ hideBar = false }) {
 
             {role === "ADMIN" && (
               <li>
-                <Link to="/admin/device-management" className="flex gap-4 items-center" onClick={closeSidebar}>
+                <Link to="/admin/device-management" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                   <FaServer size={18} className="text-gray-500 dark:text-slate-100" />
                   إدارة الأجهزة
                 </Link>
@@ -183,7 +183,7 @@ export default function Sidebar({ hideBar = false }) {
 
             {role === "ADMIN" && (
               <li>
-                <Link to="/admin/instructors" className="flex gap-4 items-center" onClick={closeSidebar}>
+                <Link to="/admin/instructors" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                   <FaChalkboardTeacher size={18} className="text-gray-500 dark:text-slate-100" />
                   إدارة المدرسين
                 </Link>
@@ -192,7 +192,7 @@ export default function Sidebar({ hideBar = false }) {
 
             {role === "ADMIN" && (
               <li>
-                <Link to="/admin/stages" className="flex gap-4 items-center" onClick={closeSidebar}>
+                <Link to="/admin/stages" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                   <FaGraduationCap size={18} className="text-gray-500 dark:text-slate-100" />
                   إدارة المراحل
                 </Link>
@@ -204,7 +204,7 @@ export default function Sidebar({ hideBar = false }) {
               <li>
                 <button 
                   onClick={toggleAdminDropdown}
-                  className="flex gap-4 items-center justify-between w-full"
+                  className="flex gap-4 items-center justify-between w-full text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   <div className="flex gap-4 items-center">
                     <FaInfoCircle size={18} className="text-gray-500 dark:text-slate-100" />
@@ -222,7 +222,7 @@ export default function Sidebar({ hideBar = false }) {
                     <li>
                       <Link 
                         to="/admin/blog-dashboard" 
-                        className="flex gap-4 items-center text-sm"
+                        className="flex gap-4 items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         onClick={closeSidebar}
                       >
                         <FaBlog size={16} className="text-gray-500 dark:text-slate-100" />
@@ -232,7 +232,7 @@ export default function Sidebar({ hideBar = false }) {
                     <li>
                       <Link 
                         to="/admin/qa-dashboard" 
-                        className="flex gap-4 items-center text-sm"
+                        className="flex gap-4 items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         onClick={closeSidebar}
                       >
                         <FaQuestionCircle size={16} className="text-gray-500 dark:text-slate-100" />
@@ -242,7 +242,7 @@ export default function Sidebar({ hideBar = false }) {
                     <li>
                       <Link 
                         to="/admin/whatsapp-services" 
-                        className="flex gap-4 items-center text-sm"
+                        className="flex gap-4 items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         onClick={closeSidebar}
                       >
                         <FaWhatsapp size={16} className="text-gray-500 dark:text-slate-100" />
@@ -252,7 +252,7 @@ export default function Sidebar({ hideBar = false }) {
                     <li>
                       <Link 
                         to="/admin/live-meetings" 
-                        className="flex gap-4 items-center text-sm"
+                        className="flex gap-4 items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         onClick={closeSidebar}
                       >
                         <FaVideo size={16} className="text-gray-500 dark:text-slate-100" />
@@ -262,7 +262,7 @@ export default function Sidebar({ hideBar = false }) {
                     <li>
                       <Link 
                         to="/about" 
-                        className="flex gap-4 items-center text-sm"
+                        className="flex gap-4 items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         onClick={closeSidebar}
                       >
                         <FaInfoCircle size={16} className="text-gray-500 dark:text-slate-100" />
@@ -272,7 +272,7 @@ export default function Sidebar({ hideBar = false }) {
                     <li>
                       <Link 
                         to="/contact" 
-                        className="flex gap-4 items-center text-sm"
+                        className="flex gap-4 items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         onClick={closeSidebar}
                       >
                         <FaPhone size={16} className="text-gray-500 dark:text-slate-100" />
@@ -287,7 +287,7 @@ export default function Sidebar({ hideBar = false }) {
 
 
             <li>
-              <Link to="/instructors" className="flex gap-4 items-center" onClick={closeSidebar}>
+              <Link to="/instructors" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                 <FaChalkboardTeacher size={18} className="text-gray-500 dark:text-slate-100" />
                 المدرسين
               </Link>
@@ -297,35 +297,35 @@ export default function Sidebar({ hideBar = false }) {
             {role !== "ADMIN" && (
               <>
                 <li>
-                  <Link to="/blogs" className="flex gap-4 items-center" onClick={closeSidebar}>
+                  <Link to="/blogs" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                     <FaBlog size={18} className="text-gray-500 dark:text-slate-100" />
                     المدونة
                   </Link>
                 </li>
 
                 <li>
-                  <Link to="/qa" className="flex gap-4 items-center" onClick={closeSidebar}>
+                  <Link to="/qa" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                     <FaQuestionCircle size={18} className="text-gray-500 dark:text-slate-100" />
                     الأسئلة والأجوبة
                   </Link>
                 </li>
 
                 <li>
-                  <Link to="/whatsapp-services" className="flex gap-4 items-center" onClick={closeSidebar}>
+                  <Link to="/whatsapp-services" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                     <FaWhatsapp size={18} className="text-gray-500 dark:text-slate-100" />
                     خدمات واتساب
                   </Link>
                 </li>
 
                 <li>
-                  <Link to="/contact" className="flex gap-4 items-center" onClick={closeSidebar}>
+                  <Link to="/contact" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                     <FaPhone size={18} className="text-gray-500 dark:text-slate-100" />
                     اتصل بنا
                   </Link>
                 </li>
 
                 <li>
-                  <Link to="/about" className="flex gap-4 items-center" onClick={closeSidebar}>
+                  <Link to="/about" className="flex gap-4 items-center text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors" onClick={closeSidebar}>
                     <FaInfoCircle size={18} className="text-gray-500 dark:text-slate-100" />
                     عننا
                   </Link>

@@ -336,6 +336,20 @@ export default function HomePage() {
 
           {courses && courses.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {(() => {
+                console.log('🎯 HomePage rendering courses from Redux state:', {
+                  totalCourses: courses.length,
+                  allCourses: courses.map(c => ({
+                    id: c._id,
+                    title: c.title,
+                    stage: c.stage,
+                    stageName: c.stage?.name,
+                    hasStage: !!c.stage,
+                    hasName: !!c.stage?.name
+                  }))
+                });
+                return null;
+              })()}
               {courses.slice(0, 6).map((course, index) => (
                 <div
                   key={course._id}
@@ -378,7 +392,33 @@ export default function HomePage() {
                     
                     <div className="absolute top-4 right-4">
                       <span className="px-2 py-1 bg-white bg-opacity-90 text-gray-800 text-xs font-medium rounded-full">
-                        {course.stage?.name || 'غير محدد'}
+                        {(() => {
+                          const stageName = course.stage?.name;
+                          const fallback = 'غير محدد';
+                          const result = stageName || fallback;
+                          
+                          console.log('🏷️ HomePage Stage Debug for course:', course.title, {
+                            stage: course.stage,
+                            stageName: stageName,
+                            stageType: typeof course.stage,
+                            hasStage: !!course.stage,
+                            hasName: !!stageName,
+                            finalResult: result,
+                            willShowFallback: result === fallback
+                          });
+                          
+                          if (result === fallback && course.stage) {
+                            console.error('🚨 ISSUE: Stage exists but name is missing!', {
+                              courseTitle: course.title,
+                              stage: course.stage,
+                              stageKeys: Object.keys(course.stage || {}),
+                              stageName: course.stage?.name,
+                              stageNameType: typeof course.stage?.name
+                            });
+                          }
+                          
+                          return result;
+                        })()}
                       </span>
                     </div>
                   </div>

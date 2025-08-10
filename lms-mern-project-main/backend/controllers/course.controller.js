@@ -2,6 +2,7 @@ import Course from '../models/course.model.js';
 import AppError from '../utils/error.utils.js';
 import cloudinary from 'cloudinary';
 import fs from 'fs';
+import jwt from 'jsonwebtoken';
 
 // Create a new course
 export const createCourse = async (req, res, next) => {
@@ -77,7 +78,7 @@ export const getAdminCourses = async (req, res, next) => {
     const courses = await Course.find()
       .populate('instructor', 'name')
       .populate('stage', 'name')
-      .populate('subject', 'name');
+      .populate('subject', 'title');
 
     return res.status(200).json({ success: true, data: { courses } });
   } catch (error) {
@@ -90,17 +91,51 @@ export const getAllCourses = async (req, res, next) => {
   try {
     let query = {};
     
+    console.log('getAllCourses called with user:', {
+      hasUser: !!req.user,
+      userId: req.user?.id,
+      userStage: req.user?.stage,
+      userStageName: req.user?.stageName
+    });
+    
     // If user is logged in and has a stage, filter courses by their stage
     if (req.user && req.user.stage) {
       query.stage = req.user.stage;
-      console.log('Filtering courses by user stage:', req.user.stage);
+      console.log('🎯 Filtering courses by user stage:', req.user.stage, '(' + req.user.stageName + ')');
+    } else {
+      console.log('⚠️ No stage filtering applied - showing all courses');
+      if (req.user && !req.user.stage) {
+        console.log('User logged in but has no stage assigned');
+      }
     }
     
     const courses = await Course.find(query)
       .populate('instructor', 'name')
       .populate('stage', 'name')
-      .populate('subject', 'name')
+      .populate('subject', 'title')
       .select('-units.lessons.exams.questions.correctAnswer -units.lessons.trainings.questions.correctAnswer -directLessons.exams.questions.correctAnswer -directLessons.trainings.questions.correctAnswer -units.lessons.exams.userAttempts -units.lessons.trainings.userAttempts -directLessons.exams.userAttempts -directLessons.trainings.userAttempts');
+
+    console.log('📊 Raw courses before processing:', courses.map(c => ({
+      id: c._id,
+      title: c.title,
+      stage: c.stage,
+      stageType: typeof c.stage,
+      hasStage: !!c.stage,
+      stageName: c.stage?.name,
+      stageId: c.stage?._id,
+      fullStageObject: c.stage,
+      isStagePopulated: c.stage && c.stage.name !== undefined
+    })));
+
+    // Check if any courses have invalid stage references
+    const coursesWithMissingStages = courses.filter(c => !c.stage || !c.stage.name);
+    if (coursesWithMissingStages.length > 0) {
+      console.log('⚠️ Found courses with missing/invalid stage data:', coursesWithMissingStages.map(c => ({
+        id: c._id,
+        title: c.title,
+        stageRef: c.stage
+      })));
+    }
 
     // Further filter sensitive data from nested structures
     const secureCourses = courses.map(course => {
@@ -142,6 +177,15 @@ export const getAllCourses = async (req, res, next) => {
       return courseObj;
     });
 
+    console.log(`📚 Returning ${secureCourses.length} courses for user`, {
+      userStage: req.user?.stage,
+      coursesReturned: secureCourses.map(c => ({ 
+        id: c._id, 
+        title: c.title, 
+        stage: c.stage?.name 
+      }))
+    });
+
     return res.status(200).json({ success: true, data: { courses: secureCourses } });
   } catch (error) {
     return next(new AppError(error.message, 500));
@@ -151,10 +195,28 @@ export const getAllCourses = async (req, res, next) => {
 // Get featured courses (secure version)
 export const getFeaturedCourses = async (req, res, next) => {
   try {
-    const courses = await Course.find()
+    let query = {};
+    
+    // Check if this route also needs stage filtering (based on how it's called)
+    const token = req.cookies?.token || req.header('Authorization')?.replace('Bearer ', '');
+    if (token) {
+      try {
+        const userDetails = await jwt.verify(token, process.env.JWT_SECRET);
+        const User = (await import('../models/user.model.js')).default;
+        const user = await User.findById(userDetails.id).populate('stage');
+        if (user && user.stage) {
+          query.stage = user.stage._id;
+          console.log('🎯 Filtering featured courses by user stage:', user.stage.name);
+        }
+      } catch (error) {
+        console.log('Optional auth failed for featured courses, showing all');
+      }
+    }
+    
+    const courses = await Course.find(query)
       .populate('instructor', 'name')
       .populate('stage', 'name')
-      .populate('subject', 'name')
+      .populate('subject', 'title')
       .limit(6);
 
     // Create secure versions without sensitive data
@@ -462,7 +524,7 @@ export const updateCourse = async (req, res, next) => {
     )
       .populate('instructor', 'name')
       .populate('stage', 'name')
-      .populate('subject', 'name')
+      .populate('subject', 'title')
       .select('title description instructor stage subject image createdAt updatedAt'); // Only select basic fields
     
     console.log('✅ Course updated successfully');

@@ -187,11 +187,21 @@ const LiveMeetingDashboard = () => {
       return;
     }
 
+    console.log('Debug - Frontend addAttendees data:', {
+      meetingId: selectedMeeting._id,
+      attendees: attendeesFormData.selectedUsers,
+      selectedUsersCount: attendeesFormData.selectedUsers.length,
+      hasNullValues: attendeesFormData.selectedUsers.some(id => !id)
+    });
+
     try {
-      await dispatch(addAttendees({
+      const result = await dispatch(addAttendees({
         meetingId: selectedMeeting._id,
         attendees: attendeesFormData.selectedUsers
       })).unwrap();
+      
+      console.log('Debug - Backend response:', result);
+      
       setShowAttendeesModal(false);
       setAttendeesFormData({ selectedUsers: [] });
       dispatch(getAllLiveMeetings({ page: currentPage, limit: 10 }));
@@ -262,7 +272,8 @@ const LiveMeetingDashboard = () => {
     
     return users.filter(user => {
       // Don't show users who are already attendees
-      if (selectedMeeting.attendees?.some(attendee => attendee.user._id === user._id)) {
+      const userId = user.id || user._id;
+      if (selectedMeeting.attendees?.some(attendee => attendee.user._id === userId || attendee.user.id === userId)) {
         return false;
       }
       
@@ -281,8 +292,11 @@ const LiveMeetingDashboard = () => {
       if (!matchesSearch) return false;
       
       // Filter by stage
-      if (attendeeStageFilter && user.stage !== attendeeStageFilter) {
-        return false;
+      if (attendeeStageFilter) {
+        const userStageId = user.stage?._id || user.stage;
+        if (userStageId !== attendeeStageFilter) {
+          return false;
+        }
       }
       
       return true;
@@ -1065,8 +1079,16 @@ const LiveMeetingDashboard = () => {
                     {getFilteredUsers().length > 0 && (
                       <button
                         onClick={() => {
-                          const allUserIds = getFilteredUsers().map(user => user._id);
+                          const allUserIds = getFilteredUsers()
+                            .map(user => user.id || user._id) // Support both id and _id fields
+                            .filter(id => id); // Filter out null/undefined IDs
                           const allSelected = allUserIds.every(id => attendeesFormData.selectedUsers.includes(id));
+                          
+                          console.log('Debug - Select All clicked:', { 
+                            filteredUserIds: allUserIds, 
+                            hasNullIds: getFilteredUsers().some(user => !(user.id || user._id)),
+                            allSelected 
+                          });
                           
                           if (allSelected) {
                             // Deselect all
@@ -1082,7 +1104,7 @@ const LiveMeetingDashboard = () => {
                         }}
                         className="text-sm bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full transition-colors"
                       >
-                        {getFilteredUsers().every(user => attendeesFormData.selectedUsers.includes(user._id)) ? 'إلغاء الكل' : 'اختر الكل'}
+                        {getFilteredUsers().every(user => attendeesFormData.selectedUsers.includes(user.id || user._id)) ? 'إلغاء الكل' : 'اختر الكل'}
                       </button>
                     )}
                   </div>
@@ -1092,18 +1114,21 @@ const LiveMeetingDashboard = () => {
                   {getFilteredUsers().length > 0 ? (
                     <div className="p-4 space-y-3">
                       {getFilteredUsers().map((user) => (
-                        <div key={user._id} className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <div key={user.id || user._id} className="flex items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                           <input
                             type="checkbox"
-                            checked={attendeesFormData.selectedUsers.includes(user._id)}
+                            checked={attendeesFormData.selectedUsers.includes(user.id || user._id)}
                             onChange={(e) => {
-                              if (e.target.checked) {
+                              const userId = user.id || user._id;
+                              if (e.target.checked && userId) {
+                                console.log('Debug - Adding user:', { userId, userName: user.fullName });
                                 setAttendeesFormData({
-                                  selectedUsers: [...attendeesFormData.selectedUsers, user._id]
+                                  selectedUsers: [...attendeesFormData.selectedUsers, userId]
                                 });
                               } else {
+                                console.log('Debug - Removing user:', { userId, userName: user.fullName });
                                 setAttendeesFormData({
-                                  selectedUsers: attendeesFormData.selectedUsers.filter(id => id !== user._id)
+                                  selectedUsers: attendeesFormData.selectedUsers.filter(id => id !== userId)
                                 });
                               }
                             }}
@@ -1127,11 +1152,11 @@ const LiveMeetingDashboard = () => {
                               <div className="text-right">
                                 {user.stage && (
                                   <div className="text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 px-2 py-1 rounded-full">
-                                    {stages.find(s => s._id === user.stage)?.name || 'مرحلة غير محددة'}
+                                    {user.stage.name || user.stage || 'مرحلة غير محددة'}
                                   </div>
                                 )}
                                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  {user.role === 'ADMIN' ? 'مدير' : 'طالب'}
+                                  {user.role === 'ADMIN' ? 'مدير' : user.role === 'USER' ? 'طالب' : user.role}
                                 </div>
                               </div>
                             </div>
